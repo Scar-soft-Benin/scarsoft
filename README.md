@@ -1,100 +1,95 @@
-# Welcome to React Router!
+# Scar-Soft - Website & Dashboard
 
-A modern, production-ready template for building full-stack React applications using React Router.
+## 💪 Scar-Soft: Digital Solutions for Your Success!
+We transform your ideas into efficient and innovative solutions.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+### 📝 Who Are We?
+Since 2015, Scar-Soft has brought together a team of engineers, digital marketing experts, and IT recruitment specialists to support businesses in their digital transformation.
 
-## Features
+Our expertise includes:
+- Software Development
+- Digital Strategy
+- Talent Management
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+We create innovative solutions tailored to our clients' needs.
 
 ---
 
-Built with ❤️ using React Router.
+## 🌐 Technologies Used
+### Frontend:
+- **React** (JavaScript Framework)
+- **TypeScript** (Static Typing)
+- **TailwindCSS** (Modern CSS Framework)
+
+### Backend:
+- **Python Django** (Robust Backend Framework)
+- **MySQL** (Relational Database)
+
+---
+
+## 📊 Project Features
+
+### 🌐 Public Website
+The website allows visitors to:
+- Discover **Scar-Soft**, our services, and achievements
+- Access a **contact page** to send messages
+- View the **list of projects** we have worked on
+- Apply for **available job positions** at Scar-Soft
+
+### 🛠️ Admin Dashboard
+A dedicated space for secretaries and managers to manage the website:
+
+#### 1. **Email & Client Requests Management**
+- Receive messages sent via the contact page
+- Ability to **reply directly** to clients
+
+#### 2. **Recruitment Management**
+- Display available job offers
+- Receive and manage applications
+- Automatically reject applications that do not match the job requirements
+
+#### 3. **Project Management**
+- Add **new projects**
+- Include **descriptions and images**
+- Display completed projects for visitors
+
+#### 4. **Upcoming Features**
+The application will evolve over time with new feature additions.
+
+---
+
+## 📚 Installation & Setup
+### Prerequisites
+- **Node.js** (v16+)
+- **Python** (v3.9+)
+- **MySQL**
+- **Django**
+
+### Start the Frontend (React + TypeScript + TailwindCSS)
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+### Start the Backend (Django + MySQL)
+```sh
+cd backend
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+pip install -r requirements.txt
+...
+```
+
+---
+
+## 🛠️ Contributing
+We welcome contributions to improve the platform!
+1. Fork the project
+2. Create a branch with your feature
+3. Submit a pull request
+
+---
+
+## 💌 Contact
+For any inquiries, feel free to contact us at [contact@scar-soft.com](mailto:contact@scar-soft.com).
