@@ -1,0 +1,40 @@
+services:
+    server:
+        build: ./server
+        container_name: scarsoft_server
+        ports:
+            - "8000:8000"
+        env_file:
+            - .env
+        depends_on:
+            - db
+        volumes:
+            - ./server:/app
+    client:
+        container_name: scarsoft_client
+        build:
+            context: ./client
+            dockerfile: Dockerfile # Make sure the Dockerfile is in the client folder
+        ports:
+            - "5173:5173" # Adjust port based on your client's default
+        environment:
+            - REACT_APP_API_URL=http://server:5173 # Point to the server container's internal URL
+        depends_on:
+            - server
+
+    db:
+        image: mysql:8
+        container_name: scarsoft_db
+        restart: always
+        environment:
+            MYSQL_DATABASE: ${DB_NAME}
+            MYSQL_USER: ${DB_USER}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - "3307:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+volumes:
+    mysql_data:
