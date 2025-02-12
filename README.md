@@ -1,4 +1,4 @@
-# Scar-Soft - Website & Dashboard
+# Scar-Soft - Company Website
 
 ## 💪 Scar-Soft: Digital Solutions for Your Success!
 We transform your ideas into efficient and innovative solutions.
@@ -59,20 +59,68 @@ The application will evolve over time with new feature additions.
 ---
 
 ## 📚 Installation & Setup
-### Prerequisites
-- **Node.js** (v16+)
-- **Python** (v3.9+)
-- **MySQL**
-- **Django**
 
-### Start the Frontend (React + TypeScript + TailwindCSS)
+### 🐳 Running the Project with Docker
+Scar-Soft's project can be run using Docker for both frontend and backend services. This makes the setup easy and ensures that all dependencies are handled correctly.
+
+1. **Clone the Repository**:
+   ```sh
+   git clone https://github.com/Omo-oba18/scarsoft.git
+   cd scarsoft
+   ```
+
+2. **Build and Start the Containers**:
+   Ensure you have Docker and Docker Compose installed. To build and run the project, use the following command:
+   ```sh
+   docker-compose up --build
+   ```
+
+   This will:
+   - Build the frontend and backend images
+   - Start the containers for the frontend and backend services
+   - Automatically link the services for smooth communication
+
+3. **Access the Application**:
+   - The frontend (React app) will be available at `http://localhost:5173`
+   - The backend (Django app) will be available at `http://localhost:8000`
+
+4. **Stopping the Containers**:
+   To stop the running containers, use:
+   ```sh
+   docker-compose down
+   ```
+
+   If you want to remove the containers, images, and volumes, use:
+   ```sh
+   docker-compose down --volumes --rmi all
+   ```
+
+---
+
+### 🐋 Development with Docker (Without Rebuilding Every Time)
+If you want to develop without rebuilding the images each time, you can run the containers in detached mode:
+```sh
+docker-compose up -d
+```
+
+To view the logs for the frontend container, for example:
+```sh
+docker-compose logs frontend
+```
+
+---
+
+### Without Docker (Manual Setup)
+If you prefer to run the project without Docker, you can still follow these steps:
+
+#### Start the Frontend (React + TypeScript + TailwindCSS)
 ```sh
 cd frontend
 npm install
 npm run dev
 ```
 
-### Start the Backend (Django + MySQL)
+#### Start the Backend (Django + MySQL)
 ```sh
 cd backend
 python -m venv env
