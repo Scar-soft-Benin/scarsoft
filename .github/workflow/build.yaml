@@ -11,7 +11,7 @@ jobs:
 
         services:
             node:
-                image: node:18
+                image: node:20
                 options: --name node-container
             python:
                 image: python:3.10
