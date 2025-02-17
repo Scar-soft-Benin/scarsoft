@@ -56,8 +56,8 @@ INSTALLED_APPS = [
     'recruitments',
     'projects',
     'contacts',
-    'partners'
-    'userauths.apps.UserauthsConfig',
+    'partners',
+    'auths.apps.AuthsConfig',
     'api.apps.ApiConfig',
 
     'drf_yasg',
@@ -175,13 +175,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.{}'.format(
-            os.getenv('DB_ENGINE', 'mysql')
+            os.getenv('DB_ENGINE')
         ),
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', 'db'),
-        'PORT': os.getenv('DB_PORT', '3308'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
         # 'ENGINE': 'django.db.backends.postgresql',
         # 'NAME': 'scarsoft_db',
         # 'USER': 'postgres',
@@ -194,7 +194,7 @@ DATABASES = {
 FRONTEND_SITE_URL = os.getenv("FRONTEND_SITE_URL")
 
 
-AUTH_USER_MODEL = 'userauths.User'
+AUTH_USER_MODEL = 'auths.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
