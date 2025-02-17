@@ -5,3 +5,80 @@
 /.react-router/
 /build/
 .env
+
+# PYTHON SERVER
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+*.env
+*.venv
+
+# Django secret key and environment variables
+.env
+.env.local
+.env.*.local
+config/settings/local.py
+config/settings/*.local.py
+
+# Database
+db.sqlite3
+db.sqlite3-journal
+
+# Logs
+logs/
+*.log
+debug.log
+
+# Media & Static files (optional, unless managed externally)
+media/
+staticfiles/
+static/
+
+# Compiled code (C extensions)
+*.so
+
+# Testing
+coverage/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# MyPy & Pyre type checking
+.mypy_cache/
+.pyre/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Celery beat scheduler
+celerybeat-schedule
+
+# Pipenv / Poetry
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Node.js dependencies (if using npm/yarn)
+node_modules/
+package-lock.json
+yarn.lock
