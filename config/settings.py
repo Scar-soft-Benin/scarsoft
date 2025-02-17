@@ -14,10 +14,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / '.env')
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+MEDIA_URL='/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -30,6 +32,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -46,9 +50,11 @@ INSTALLED_APPS = [
     'recruitments',
     'projects',
     'contacts',
+    'partners'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
