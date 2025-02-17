@@ -1,0 +1,143 @@
+name: Build and Test ScarSoft with Docker and MySQL
+
+on:
+    pull_request:
+        branches:
+            - develop
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        services:
+            node:
+                image: node:20
+                options: --name node-container
+            python:
+                image: python:3.10
+                options: --name python-container
+            mysql:
+                image: mysql:8
+                env:
+                    MYSQL_ROOT_PASSWORD: root
+                    MYSQL_DATABASE: test_db
+                    MYSQL_USER: test_user
+                    MYSQL_PASSWORD: test_pass
+                ports:
+                    - 3306:3306
+                options: --health-cmd="mysqladmin ping -h 127.0.0.1 --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+
+        steps:
+            # 1. Checkout Code
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            # 2. Get the GitHub username and email of the committer
+            - name: Set commit author information
+              run: |
+                  AUTHOR_NAME=$(git log -1 --pretty=format:'%an')  # Get the author's name
+                  AUTHOR_EMAIL=$(git log -1 --pretty=format:'%ae') # Get the author's email
+                  echo "AUTHOR_NAME=$AUTHOR_NAME" >> $GITHUB_ENV
+                  echo "AUTHOR_EMAIL=$AUTHOR_EMAIL" >> $GITHUB_ENV
+            # 3. Create log file
+            - name: Create log file
+              run: |
+                  touch build_logs.txt  # Creates an empty log file
+
+            # 4. Notify Slack job started
+            - name: Notify Slack job started
+              run: |
+                  echo "Job started for build-and-test" >> build_logs.txt  # Log to file
+                  curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"Job started for build-and-test"}' \
+                  ${{ secrets.SLACK_WEBHOOK_URL }}
+
+            # ----- React Client (Inside Node.js Container) -----
+            - name: Install dependencies (React)
+              run: |
+                  docker exec node-container bash -c "cd /client && npm install" >> build_logs.txt 2>&1  # Redirect stdout and stderr to log file
+
+            - name: Run ESLint (React)
+              run: |
+                  docker exec node-container bash -c "cd /client && npx eslint . --max-warnings=0" >> build_logs.txt 2>&1
+
+            - name: Build React App
+              run: |
+                  docker exec node-container bash -c "cd /client && npm run build" >> build_logs.txt 2>&1
+
+            - name: Run tests (React)
+              run: |
+                  docker exec node-container bash -c "cd /client && npm test -- --coverage" >> build_logs.txt 2>&1
+
+            # ----- Python Backend (Inside Python Container) -----
+            - name: Install dependencies (Python)
+              run: |
+                  docker exec python-container bash -c "cd /server && pip install -r requirements.txt" >> build_logs.txt 2>&1
+
+            - name: Wait for MySQL to be Ready
+              run: |
+                  for i in {1..30}; do
+                    docker exec python-container bash -c "mysqladmin ping -h mysql --silent" && break
+                    sleep 2
+                  done >> build_logs.txt 2>&1
+
+            - name: Run database migrations
+              run: |
+                  docker exec python-container bash -c "cd /server && python manage.py migrate" >> build_logs.txt 2>&1
+
+            - name: Run tests (Python)
+              run: |
+                  docker exec python-container bash -c "cd /server && pytest --cov=./" >> build_logs.txt 2>&1
+
+            - name: Check test coverage (Python)
+              run: |
+                  COVERAGE=$(docker exec python-container bash -c "cd /server && pytest --cov=./" | grep TOTAL | awk '{print $NF}' | sed 's/%//')
+                  echo "Coverage: $COVERAGE%" >> build_logs.txt 2>&1
+                  if (( $(echo "$COVERAGE < 50" | bc -l) )); then
+                    echo "Test coverage is below 50% ($COVERAGE%)" >> build_logs.txt 2>&1
+                    exit 1
+                  fi
+
+            # 14. Upload coverage to Codecov
+            - name: Upload coverage to Codecov
+              run: |
+                  bash <(curl -s https://codecov.io/bash) >> build_logs.txt 2>&1
+
+            # 15. Check Node.js Version
+            - name: Check Node.js version
+              run: |
+                  node -v >> build_logs.txt 2>&1
+
+            # 16. Check Python Version
+            - name: Check Python version
+              run: |
+                  python --version >> build_logs.txt 2>&1
+
+            # ----- Notifications -----
+
+            # 17. Notify Slack on failure (with logs)
+            - name: Notify Slack if build fails
+              if: failure()
+              run: |
+                  curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"Job failed for build-and-test. Check the logs at https://github.com/${{ github.repository }}/blob/${{ github.ref }}/build_logs.txt"}' \
+                  ${{ secrets.SLACK_WEBHOOK_URL }}
+
+            # 18. Notify Slack on success
+            - name: Notify Slack if build succeeds
+              if: success()
+              run: |
+                  curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"Job succeeded for build-and-test"}' \
+                  ${{ secrets.SLACK_WEBHOOK_URL }}
+
+            # 19. Commit log file to repository
+            - name: Commit logs to repo
+              run: |
+                  git config --global user.name "${{ env.AUTHOR_NAME }}"
+                  git config --global user.email "${{ env.AUTHOR_EMAIL }}"
+                  git add build_logs.txt
+                  git commit -m "Add build logs"
+                  git push
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
