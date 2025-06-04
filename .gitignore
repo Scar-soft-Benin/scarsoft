@@ -1,7 +1,9 @@
 .DS_Store
 client/node_modules/
-
-# React Router
 client/.react-router/
 client/build/
+server/vendor/
+server/storage/logs/
 .env
+.env.backup
+docker-compose.override.yml

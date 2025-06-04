@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
-import { FiMenu, FiX } from "react-icons/fi"; // Importing icons from react-icons/fi
+import { useEffect, useState, useRef } from "react";
+import { FiMenu, FiX } from "react-icons/fi";
+import { gsap } from "gsap";
 import AppBaseButton from "~/components/appBaseButton";
+import Logo from "./SS-Mono.png"; // Adjust path to your SVG
+import { Link } from "react-router";
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // State to manage drawer visibility
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const logoRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -12,6 +16,42 @@ const Navbar = () => {
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    useEffect(() => {
+        if (logoRef.current) {
+            // Animate logo
+            gsap.fromTo(
+                logoRef.current,
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.8,
+                    ease: "back.out(1.7)",
+                    delay: 0.5,
+                }
+            );
+
+            // Hover effect
+            logoRef.current.addEventListener("mouseenter", () => {
+                gsap.to(logoRef.current, {
+                    scale: 1.1,
+                    duration: 0.3,
+                    ease: "power2.out",
+                });
+            });
+            logoRef.current.addEventListener("mouseleave", () => {
+                gsap.to(logoRef.current, {
+                    scale: 1,
+                    duration: 0.3,
+                    ease: "power2.out",
+                });
+            });
+        }
     }, []);
 
     const menuItems = [
@@ -32,8 +72,15 @@ const Navbar = () => {
                 }`}
             >
                 <div className="container mx-auto flex justify-between items-center py-4 px-6">
-                    {/* Logo */}
-                    <div>SCAR-SOFT</div>
+                    {/* SVG Logo */}
+                    <Link to="/" >
+                        <img
+                            src={Logo}
+                            alt="ScarSoft Logo"
+                            className="h-15 w-48 object-contain"
+                            ref={logoRef}
+                        />
+                    </Link>
 
                     {/* Hamburger Icon (only on small screens) */}
                     <div

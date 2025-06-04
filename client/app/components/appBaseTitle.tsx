@@ -1,10 +1,10 @@
-import React from "react";
-import ellipse from "./Ellipse-4.png";
+import { useEffect, useRef } from "react";
+import { gsap } from "~/utils/gsap";
 
 interface AppBaseTitleProps {
     title: string;
-    subtitle?: string;
-    children?: React.ReactNode; // Optional children prop
+    subtitle: string;
+    children?: React.ReactNode;
 }
 
 const AppBaseTitle: React.FC<AppBaseTitleProps> = ({
@@ -12,21 +12,32 @@ const AppBaseTitle: React.FC<AppBaseTitleProps> = ({
     subtitle,
     children
 }) => {
+    const titleRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        gsap.fromTo(
+            titleRef.current,
+            { opacity: 0, y: 30 },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: titleRef.current,
+                    start: "top 80%",
+                    end: "bottom 20%",
+                    toggleActions: "play none none reverse"
+                }
+            }
+        );
+    }, []);
+
     return (
-        <div className="mx-4 my-16 px-8 md:px-32 flex flex-col relative">
-            <div className="flex flex-col md:flex-row items-center sm:justify-between">
-                <div className="flex flex-col sm:flex-row items-center">
-                    <img
-                        src={ellipse}
-                        alt="ellipse"
-                        className="absolute w-96 h-96 left-0 -top-48 sm:-top-36"
-                    />
-                    <h2 className="font-chivo text-4xl md:text-6xl">{title}</h2>
-                    <p className="sm:ml-6 sm:text-xl mt-4">{subtitle}</p>
-                </div>
-                {children}
-            </div>
-            <div className="my-4 w-[80vw] border-t-1 border-gray-200"></div>
+        <div ref={titleRef} className="text-center py-8">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4">{title}</h2>
+            <p className="text-lg sm:text-xl text-gray-600 mb-4">{subtitle}</p>
+            {children}
         </div>
     );
 };
