@@ -20,10 +20,16 @@ We create innovative solutions tailored to our clients' needs.
 - **React** (JavaScript Framework)
 - **TypeScript** (Static Typing)
 - **TailwindCSS** (Modern CSS Framework)
+- **Vite** (Build Tool)
 
 ### Backend:
-- **Python Django** (Robust Backend Framework)
+- **Laravel** (PHP Framework)
 - **MySQL** (Relational Database)
+
+### Infrastructure:
+- **Docker** (Containerization)
+- **Nginx** (Web Server)
+- **PHP-FPM** (PHP Processing)
 
 ---
 
@@ -61,83 +67,96 @@ The application will evolve over time with new feature additions.
 ## 📚 Installation & Setup
 
 ### 🐳 Running the Project with Docker
-Scar-Soft's project can be run using Docker for both frontend and backend services. This makes the setup easy and ensures that all dependencies are handled correctly.
+Scar-Soft's project is dockerized to ensure consistent environments across team members (Linux and Windows). The setup includes services for the React frontend, Laravel backend, MySQL database, and Nginx web server.
 
+#### Prerequisites
+- Docker
+- Docker Compose
+- Git
+
+#### Steps
 1. **Clone the Repository**:
    ```sh
    git clone https://github.com/Omo-oba18/scarsoft.git
    cd scarsoft
    ```
+2. **Set Up Environment**:
+   Copy the .env.example file to server/.env for Laravel configuration:
+   sh
 
-2. **Build and Start the Containers**:
-   Ensure you have Docker and Docker Compose installed. To build and run the project, use the following command:
-   ```sh
-   docker-compose up --build
+   ```
+   cp .env.example server/.env
    ```
 
-   This will:
-   - Build the frontend and backend images
-   - Start the containers for the frontend and backend services
-   - Automatically link the services for smooth communication
+   - Build and Start the Containers:
+   Run the following command to build and start all services:
+   sh
 
-3. **Access the Application**:
-   - The frontend (React app) will be available at `http://localhost:5173`
-   - The backend (Django app) will be available at `http://localhost:8000`
+      ```
+      docker-compose up -d --build
+      ```
 
-4. **Stopping the Containers**:
-   To stop the running containers, use:
-   ```sh
+      This will:
+      Build images for PHP, Nginx, and MySQL
+
+      Start containers for the frontend (Node.js), backend (PHP-FPM), MySQL, and Nginx Link services via the scarsoft-network network
+
+   - Install Dependencies:
+      Frontend (React):
+      ```
+      docker-compose exec node npm install
+      ```
+      Backend (Laravel):
+      ```
+      docker-compose exec php composer install
+      ```
+
+    - Configure Laravel:
+      Generate the application key:
+      ``` 
+      docker-compose exec php php artisan key:generate
+      ```
+   - Run database migrations:
+   ```
+   docker-compose exec php php artisan migrate
+   ```
+   - Access the Application:
+      Frontend (React app): http://localhost:5173
+
+      Backend (Laravel API): http://localhost/api
+
+      MySQL (optional, for debugging): Connect to localhost:3306 with credentials scarsoft_user/secret
+
+   - View Logs (for debugging):
+   ```
+   docker-compose logs <service> 
+   docker-compose logs php
+   ```
+   Stopping the Containers:
+   Stop running containers:
+   
+   ```
    docker-compose down
    ```
 
-   If you want to remove the containers, images, and volumes, use:
-   ```sh
+   To remove containers, volumes, and images:
+   ```
    docker-compose down --volumes --rmi all
    ```
+   - Development Workflow
+      Frontend: Changes in client/ are hot-reloaded via Vite (http://localhost:5173).
 
----
+      Backend: Changes in server/ are automatically reflected (PHP-FPM reloads).
 
-### 🐋 Development with Docker (Without Rebuilding Every Time)
-If you want to develop without rebuilding the images each time, you can run the containers in detached mode:
-```sh
-docker-compose up -d
-```
+      Database: Persistent data is stored in the mysql-data Docker volume.
 
-To view the logs for the frontend container, for example:
-```sh
-docker-compose logs frontend
-```
+   - Troubleshooting
+   Permission Issues: Ensure Laravel’s storage directories are writable:
+   ```
+   docker-compose exec php chmod -R 775 /var/www/html storage /var/www/html/bootstrap/cache
+   ```
 
----
+      MySQL Connection: Verify DB_HOST=mysql in server/.env.
 
-### Without Docker (Manual Setup)
-If you prefer to run the project without Docker, you can still follow these steps:
+      Port Conflicts: If ports 80 or 3306 are in use, edit docker-compose.yml (e.g., change 80:80 to 8080:80).
 
-#### Start the Frontend (React + TypeScript + TailwindCSS)
-```sh
-cd frontend
-npm install
-npm run dev
-```
-
-#### Start the Backend (Django + MySQL)
-```sh
-cd backend
-python -m venv env
-source env/bin/activate  # On Windows: env\Scripts\activate
-pip install -r requirements.txt
-...
-```
-
----
-
-## 🛠️ Contributing
-We welcome contributions to improve the platform!
-1. Fork the project
-2. Create a branch with your feature
-3. Submit a pull request
-
----
-
-## 💌 Contact
-For any inquiries, feel free to contact us at [contact@scar-soft.com](mailto:contact@scar-soft.com).
