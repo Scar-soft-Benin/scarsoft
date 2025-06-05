@@ -39,14 +39,17 @@ services:
     container_name: scarsoft-frontend
     volumes:
       - ./client:/app:cached
+      - node_modules:/app/node_modules
     ports:
       - "5173:5173"
     networks:
       - scarsoft-network
+    command: sh -c "npm install && npm run dev"
 
 volumes:
   mysql-data:
     name: scarsoft-mysql-data
+  node_modules:
 
 networks:
   scarsoft-network:
