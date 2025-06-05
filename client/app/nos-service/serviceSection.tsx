@@ -1,5 +1,5 @@
-import AppBaseTitle from "~/components/appBaseTitle";
 import AppBaseButton from "~/components/appBaseButton";
+import AppBaseTitle from "~/components/appBaseTitle";
 
 interface ServiceSectionProps {
     title: string;
@@ -20,7 +20,7 @@ const ServiceSection: React.FC<ServiceSectionProps> = ({
 }) => {
     return (
         <div>
-            <AppBaseTitle title={title} />
+            <AppBaseTitle title={title} subtitle={""} />
             <div
                 className={`flex flex-col sm:flex-row ${
                     reverse ? "sm:flex-row-reverse" : ""

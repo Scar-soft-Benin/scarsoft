@@ -1,6 +1,6 @@
-import React from "react";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { Link } from "react-router";
+import Logo from '../header/SS-Vert.svg'
 
 const socialIcons = [
     { icon: <FaFacebook />, link: "#" },
@@ -35,7 +35,14 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row justify-around gap-8">
                     {/* Company Info */}
                     <div className="flex flex-col items-baseline sm:items-center md:items-start">
-                        <h2 className="text-2xl font-bold">SCAR SOFT</h2>
+                        {/* SVG Logo */}
+                        <div>
+                            <img
+                                src={Logo}
+                                alt="ScarSoft Logo"
+                                className="h-30 w-auto"
+                            />
+                        </div>
                         <div className="flex space-x-4 my-4">
                             {socialIcons.map((item, index) => (
                                 <a
@@ -78,13 +85,17 @@ const Footer = () => {
                 </div>
             </div>
 
-            {/* Divider & Copyright (Always at the bottom) */}
+            {/* Divider & Copyright */}
             <div className="mx-6 sm:mx-16">
                 <hr className="border-gray-600 my-6" />
-                <div className="text-center text-gray-400 flex flex-col items-start sm:flex-row justify-center">
+                <div className="text-center text-gray-400 flex flex-col items-start sm:flex-row justify-center gap-2">
                     © 2025 SCAR SOFT. Tous droits réservés.
-                    <Link to="/policy" style={{margin:"0 .5rem"}}>Politique de confidentialité</Link>
-                    <Link to="/conditions">Condition d’utilisation</Link>
+                    <Link to="/policy" className="hover:text-secondary">
+                        Politique de confidentialité
+                    </Link>
+                    <Link to="/conditions" className="hover:text-secondary">
+                        Condition d’utilisation
+                    </Link>
                 </div>
             </div>
         </footer>

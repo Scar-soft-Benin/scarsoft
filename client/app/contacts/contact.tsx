@@ -1,7 +1,64 @@
+import { useEffect, useRef } from "react";
 import AppBaseButton from "~/components/appBaseButton";
 import AppBaseTitle from "~/components/appBaseTitle";
+import { gsap, ScrollTrigger } from "~/utils/gsap";
 
 const Contact = () => {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const formRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Animate content section
+        if (contentRef.current) {
+            gsap.fromTo(
+                contentRef.current,
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: contentRef.current,
+                        start: "top 80%",
+                        end: "bottom 20%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        }
+
+        // Animate form fields with stagger
+        if (formRef.current) {
+            const formFields =
+                formRef.current.querySelectorAll("input, textarea");
+            if (formFields.length > 0) {
+                gsap.fromTo(
+                    formFields,
+                    { opacity: 0, x: -20 },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        duration: 0.6,
+                        stagger: 0.2,
+                        ease: "power3.out",
+                        scrollTrigger: {
+                            trigger: formRef.current,
+                            start: "top 80%",
+                            end: "bottom 20%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            }
+        }
+
+        // Cleanup ScrollTrigger on unmount
+        return () => {
+            ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+        };
+    }, []);
+
     return (
         <>
             <AppBaseTitle
@@ -9,7 +66,10 @@ const Contact = () => {
                 subtitle="Besoin d’une solution digitale sur mesure ? Contactez-nous !"
             />
             <div className="flex flex-col sm:flex-row items-center justify-around p-8 md:px-24">
-                <div className="flex flex-col items-start w-full sm:w-xl">
+                <div
+                    ref={contentRef}
+                    className="flex flex-col items-start w-full sm:w-xl"
+                >
                     <p className="mb-6 sm:mb-8 text-lg sm:text-2xl text-justify">
                         Par e-mail, téléphone ou via notre formulaire, découvrez
                         comment Scar-Soft peut répondre à vos besoins
@@ -52,8 +112,8 @@ const Contact = () => {
                     </div>
                 </div>
 
-                {/* Form */}
                 <div
+                    ref={formRef}
                     className="flex flex-col w-full sm:w-xl p-6 rounded-lg shadow-lg"
                     style={{
                         background: "#04FF0003",

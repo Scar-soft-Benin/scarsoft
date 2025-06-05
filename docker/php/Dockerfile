@@ -28,10 +28,11 @@ COPY server/ .
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev || true
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Set permissions (cross-platform compatibility)
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port
-EXPOSE 9000
+# Expose port for Artisan serve
+EXPOSE 8000
 
-CMD ["php-fpm"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

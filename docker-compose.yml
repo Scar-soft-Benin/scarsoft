@@ -1,35 +1,21 @@
-version: '3.8'
 
 services:
-  # Laravel Backend (PHP-FPM)
+  # Laravel Backend (Development Server)
   php:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: scarsoft-php
     volumes:
-      - ./server:/var/www/html
+      - ./server:/var/www/html:cached
+    ports:
+      - "8000:8000"
     depends_on:
       - mysql
     networks:
       - scarsoft-network
     env_file: .env
-
-  # Nginx Web Server
-  nginx:
-    build:
-      context: .
-      dockerfile: docker/nginx/Dockerfile
-    container_name: scarsoft-nginx
-    ports:
-      - "88:88"
-    volumes:
-      - ./server/public:/var/www/html/public
-      - ./client/build:/var/www/html/public/frontend # Serve React build
-    depends_on:
-      - php
-    networks:
-      - scarsoft-network
+    command: php artisan serve --host=0.0.0.0 --port=8000
 
   # MySQL Database
   mysql:
@@ -46,15 +32,15 @@ services:
       - scarsoft-network
 
   # Node.js for React Development
-  node:
-    image: node:20
-    container_name: scarsoft-node
-    working_dir: /app
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: scarsoft-frontend
     volumes:
-      - ./client:/app
+      - ./client:/app:cached
     ports:
-      - "5173:5173" # Vite default port
-    command: npm run dev
+      - "5173:5173"
     networks:
       - scarsoft-network
 

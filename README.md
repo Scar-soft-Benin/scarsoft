@@ -1,162 +1,192 @@
-# Scar-Soft - Company Website
+# ScarSoft Project
 
-## 💪 Scar-Soft: Digital Solutions for Your Success!
-We transform your ideas into efficient and innovative solutions.
-
-### 📝 Who Are We?
-Since 2015, Scar-Soft has brought together a team of engineers, digital marketing experts, and IT recruitment specialists to support businesses in their digital transformation.
-
-Our expertise includes:
-- Software Development
-- Digital Strategy
-- Talent Management
-
-We create innovative solutions tailored to our clients' needs.
+ScarSoft is a full-stack web application powered by a **Laravel backend** and a **React frontend**, designed for **local development using Docker**. It integrates a PHP-FPM backend, Nginx web server, MySQL database, and a Node.js container for React development and build processes.
 
 ---
 
-## 🌐 Technologies Used
-### Frontend:
-- **React** (JavaScript Framework)
-- **TypeScript** (Static Typing)
-- **TailwindCSS** (Modern CSS Framework)
-- **Vite** (Build Tool)
+## 📁 Project Structure
 
-### Backend:
-- **Laravel** (PHP Framework)
-- **MySQL** (Relational Database)
-
-### Infrastructure:
-- **Docker** (Containerization)
-- **Nginx** (Web Server)
-- **PHP-FPM** (PHP Processing)
-
----
-
-## 📊 Project Features
-
-### 🌐 Public Website
-The website allows visitors to:
-- Discover **Scar-Soft**, our services, and achievements
-- Access a **contact page** to send messages
-- View the **list of projects** we have worked on
-- Apply for **available job positions** at Scar-Soft
-
-### 🛠️ Admin Dashboard
-A dedicated space for secretaries and managers to manage the website:
-
-#### 1. **Email & Client Requests Management**
-- Receive messages sent via the contact page
-- Ability to **reply directly** to clients
-
-#### 2. **Recruitment Management**
-- Display available job offers
-- Receive and manage applications
-- Automatically reject applications that do not match the job requirements
-
-#### 3. **Project Management**
-- Add **new projects**
-- Include **descriptions and images**
-- Display completed projects for visitors
-
-#### 4. **Upcoming Features**
-The application will evolve over time with new feature additions.
+```
+scarsoft/
+├── client/               # React frontend (Vite + TypeScript)
+├── server/               # Laravel backend
+├── docker/               # Docker configurations
+│   ├── frontend/         # Dockerfile for frontend build
+│   ├── nginx/            # Nginx configuration
+│   ├── php/              # PHP-FPM configuration
+│   └── mysql/            # MySQL configuration
+├── docker-compose.yml    # Docker Compose configuration
+├── README.md             # Project documentation
+└── .gitignore            # Git ignore file
+```
 
 ---
 
-## 📚 Installation & Setup
+## ✅ Prerequisites
 
-### 🐳 Running the Project with Docker
-Scar-Soft's project is dockerized to ensure consistent environments across team members (Linux and Windows). The setup includes services for the React frontend, Laravel backend, MySQL database, and Nginx web server.
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- A `.env` file at the root with the following variables:
 
-#### Prerequisites
-- Docker
-- Docker Compose
-- Git
+```env
+DB_HOST=mysql
+DB_PORT=3310
+DB_DATABASE=scarsoft
+DB_USERNAME=root
+DB_PASSWORD=secret
+```
 
-#### Steps
-1. **Clone the Repository**:
-   ```sh
-   git clone https://github.com/Omo-oba18/scarsoft.git
-   cd scarsoft
-   ```
-2. **Set Up Environment**:
-   Copy the .env.example file to server/.env for Laravel configuration:
-   sh
+---
 
-   ```
-   cp .env.example server/.env
-   ```
+## 🚀 Getting Started
 
-   - Build and Start the Containers:
-   Run the following command to build and start all services:
-   sh
+### 1. Build Docker Images
 
-      ```
-      docker-compose up -d --build
-      ```
+```bash
+docker compose -f docker-compose.yml build
+```
 
-      This will:
-      Build images for PHP, Nginx, and MySQL
+### 2. Start Docker Containers
 
-      Start containers for the frontend (Node.js), backend (PHP-FPM), MySQL, and Nginx Link services via the scarsoft-network network
+```bash
+docker compose -f docker-compose.yml up -d
+```
 
-   - Install Dependencies:
-      Frontend (React):
-      ```
-      docker-compose exec node npm install
-      ```
-      Backend (Laravel):
-      ```
-      docker-compose exec php composer install
-      ```
+### 3. Install Backend Dependencies
 
-    - Configure Laravel:
-      Generate the application key:
-      ``` 
-      docker-compose exec php php artisan key:generate
-      ```
-   - Run database migrations:
-   ```
-   docker-compose exec php php artisan migrate
-   ```
-   - Access the Application:
-      Frontend (React app): http://localhost:5173
+```bash
+docker compose -f docker-compose.yml exec php composer install
+```
 
-      Backend (Laravel API): http://localhost/api
+### 4. Run Database Migrations
 
-      MySQL (optional, for debugging): Connect to localhost:3306 with credentials scarsoft_user/secret
+```bash
+docker compose -f docker-compose.yml exec php php artisan migrate
+```
 
-   - View Logs (for debugging):
-   ```
-   docker-compose logs <service> 
-   docker-compose logs php
-   ```
-   Stopping the Containers:
-   Stop running containers:
-   
-   ```
-   docker-compose down
-   ```
+### 5. Install Frontend Dependencies
 
-   To remove containers, volumes, and images:
-   ```
-   docker-compose down --volumes --rmi all
-   ```
-   - Development Workflow
-      Frontend: Changes in client/ are hot-reloaded via Vite (http://localhost:5173).
+```bash
+docker compose -f docker-compose.yml exec node npm install
+```
 
-      Backend: Changes in server/ are automatically reflected (PHP-FPM reloads).
+---
 
-      Database: Persistent data is stored in the mysql-data Docker volume.
+## 🌐 Access the Application
 
-   - Troubleshooting
-   Permission Issues: Ensure Laravel’s storage directories are writable:
-   ```
-   docker-compose exec php chmod -R 775 /var/www/html storage /var/www/html/bootstrap/cache
-   ```
+- **Frontend (Development):** [http://localhost:5173](http://localhost:5173)
+- **Frontend (Production):** [http://localhost:88/frontend/](http://localhost:88/frontend/)
+- **Backend (Laravel):** [http://localhost:88](http://localhost:88)
+- **MySQL:** Connect via `localhost:3310` using `.env` credentials.
 
-      MySQL Connection: Verify DB_HOST=mysql in server/.env.
+---
 
-      Port Conflicts: If ports 80 or 3306 are in use, edit docker-compose.yml (e.g., change 80:80 to 8080:80).
+## 🛠 Optional Commands
+
+### Generate Frontend Build
+
+```bash
+docker compose -f docker-compose.yml exec node npm run build
+```
+
+### Run ESLint
+
+```bash
+docker compose -f docker-compose.yml exec node npm run lint
+```
+
+### Run TypeScript Check
+
+```bash
+docker compose -f docker-compose.yml exec node npm run typecheck
+```
+
+### Stop All Containers
+
+```bash
+docker compose -f docker-compose.yml stop
+```
+
+### Restart Containers
+
+```bash
+docker compose -f docker-compose.yml up -d
+```
+
+---
+
+## 🧩 Troubleshooting
+
+- **Missing `client/build`:** Ensure `frontend-build` service runs correctly:
+  ```bash
+  docker logs scarsoft-frontend-build
+  ```
+
+- **Nginx 404 Errors:** Check Nginx config and ensure the build is mounted properly.
+
+- **DB Connection Issues:** Validate `.env` and run:
+  ```bash
+  docker logs scarsoft-mysql
+  ```
+
+- **Frontend Dev Server Not Working:** Ensure port `5173` is free and check:
+  ```bash
+  docker logs scarsoft-node
+  ```
+
+---
+
+## 📚 Development Notes
+
+- **Frontend:**  
+  - React + Vite + TypeScript  
+  - TailwindCSS  
+  - GSAP + ScrollTrigger  
+  - React Router
+
+- **Backend:**  
+  - Laravel + PHP 8.2  
+  - Composer for dependency management
+
+- **Docker:**  
+  - Dev (Vite hot-reload) and production builds (Nginx-served)
+
+---
+
+## 📦 Dependencies
+
+### Frontend
+
+- React
+- TypeScript
+- TailwindCSS
+- Vite
+- GSAP (with ScrollTrigger)
+- React Router
+
+### Backend
+
+- Laravel
+- PHP 8.2
+- Composer
+- MySQL
+
+---
+
+## 🤝 Contributing
+
+For issues, suggestions, or contributions, please [open an issue](../../issues) or submit a pull request.
+
+---
+
+## 📁 Setup Notes
+
+If not already created, add the frontend build Dockerfile:
+
+```bash
+mkdir -p docker/frontend
+touch docker/frontend/Dockerfile
+```
+
+Then populate `docker/frontend/Dockerfile` with your build instructions.
 

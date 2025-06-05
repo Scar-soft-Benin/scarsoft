@@ -1,3 +1,4 @@
+//layout/mainLayout.tsx
 import { Outlet, useLocation } from "react-router";
 import Footer from "~/footer/footer";
 import Header from "~/header/header";
@@ -16,7 +17,7 @@ export default function MainLayout() {
                 btnText={btnText}
             />
             <main>
-                <Outlet /> {/* This will render the current page content */}
+                <Outlet /> 
             </main>
             <Footer />
         </>
