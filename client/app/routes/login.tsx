@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "~/context/authContext";
 import { useLoading } from "~/context/loadingContext";
 import { useNavigate } from "react-router";
+import { useMessage } from "~/context/messageContext";
 
 const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -15,6 +16,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function Login() {
     const { login } = useAuth();
     const { showLoading, hideLoading } = useLoading();
+    const { addMessage } = useMessage();
     const navigate = useNavigate();
     const {
         register,
@@ -29,8 +31,10 @@ export default function Login() {
         try {
             showLoading();
             await login(data.email, data.password);
+            addMessage("Login successful!", "success");
             navigate("/dashboard");
         } catch (error: unknown) {
+            addMessage("Invalid credentials. Please try again.", "error");
             const message =
                 error instanceof Error ? error.message : "Invalid credentials";
             setError("root", { message });

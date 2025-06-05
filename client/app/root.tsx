@@ -13,6 +13,9 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import "../i18n.js";
 import { useEffect } from "react";
+import Message from "./components/message";
+import { MessageProvider } from "./context/messageContext";
+import { ThemeProvider } from "./context/themeContext";
 
 export const links: Route.LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -41,6 +44,7 @@ function AppContent() {
     return (
         <>
             <Loading />
+            <Message />
             <Outlet />
         </>
     );
@@ -69,11 +73,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
     return (
-        <AuthProvider>
-            <LoadingProvider>
-                <AppContent />
-            </LoadingProvider>
-        </AuthProvider>
+        <ThemeProvider>
+            <MessageProvider>
+                <AuthProvider>
+                    <LoadingProvider>
+                        <AppContent />
+                    </LoadingProvider>
+                </AuthProvider>
+            </MessageProvider>
+        </ThemeProvider>
     );
 }
 

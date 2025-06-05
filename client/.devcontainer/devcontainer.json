@@ -1,0 +1,14 @@
+{
+    "name": "Scarsoft Frontend",
+    "service": "frontend",
+    "dockerComposeFile": "../../docker-compose.yml",
+    "workspaceFolder": "/app",
+    "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
+    ],
+    "settings": {
+        "typescript.tsdk": "/app/node_modules/typescript/lib"
+    }
+}
