@@ -80,8 +80,8 @@ const Header: React.FC<HeaderProps> = ({
                         <div className="mt-12">
                             <AppBaseButton
                                 text={btnText}
-                                textColor="text-white"
-                                bgColor="bg-transparent"
+                                textColor="text-black"
+                                bgColor="bg-green-500"
                                 type="second"
                                 href={undefined}
                             />

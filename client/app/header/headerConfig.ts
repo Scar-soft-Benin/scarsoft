@@ -2,6 +2,7 @@
 import homeBanner from "./banner.jpeg";
 import aboutBanner from "../about-us/about-us.jpeg";
 import serviceBanner from '../nos-service/banner.jpeg'
+import contactBanner from '../contact-us/banner.jpg'
 
 export const headerConfig: Record<
     string,
@@ -31,5 +32,11 @@ export const headerConfig: Record<
         title: "Détail des Services",
         subtitle: "Chez Scar-Soft, nous offrons des solutions adaptées aux besoins des entreprises grâce à notre expertise en développement d’applications et logiciels, marketing digital, community management et recrutement IT. Découvrez en détail nos services et comment ils peuvent booster votre activité.",
         btnText: "Obtenir un devis"
+    },
+    "/contactez-nous": {
+        bannerImage: contactBanner,
+        title: "Contactez-nous",
+        subtitle: "Que vous ayez un projet en développement d’applications, en marketing digital, en community management ou en recrutement IT, notre équipe est à votre disposition pour répondre à vos besoins.",
+        btnText: "Contactez-nous dès maintenant"
     }
 };
