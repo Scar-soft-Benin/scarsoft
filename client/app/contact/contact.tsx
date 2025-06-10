@@ -146,7 +146,7 @@ const Contact = () => {
                         />
                         <textarea
                             placeholder="Votre message"
-                            className="p-2 border border-gray-300 rounded-md"
+                            className="p-2 border border-gray-300"
                             rows={8}
                         ></textarea>
                         <AppBaseButton

@@ -6,16 +6,17 @@ interface AppBaseButtonProps {
   bgColor: string;
   type: 'first' | 'second'; 
   href?: string; 
+  className? : string; // Optional class prop for additional styles
 }
 
-const AppBaseButton: React.FC<AppBaseButtonProps> = ({ text, textColor, bgColor, type, href }) => {
+const AppBaseButton: React.FC<AppBaseButtonProps> = ({ text, textColor, bgColor, type, href, className = '', ...rest }) => {
   const baseStyles =
     "px-5 py-2 flex items-center justify-center transition-all";
   const typeStyles =
     type === "first"
       ? "p-[10px_20px] rounded-[50px]"
       : "p-[10px_20px] rounded-[50px] border border-solid";
-
+  const classes = `${baseStyles} ${typeStyles} ${bgColor} ${textColor} ${className}`.trim();
   if (href) {
     return (
       <a
@@ -28,7 +29,7 @@ const AppBaseButton: React.FC<AppBaseButtonProps> = ({ text, textColor, bgColor,
   }
 
   return (
-    <button className={`${baseStyles} ${typeStyles} ${bgColor} ${textColor}`}>
+    <button className={classes} {...(rest as React.HTMLAttributes<HTMLButtonElement>)}>
       {text}
     </button>
   );
