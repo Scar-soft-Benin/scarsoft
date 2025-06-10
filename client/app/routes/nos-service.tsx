@@ -10,7 +10,7 @@ export function meta() {
     ];
 }
 
-export default function APropos() {
+export default function NosService() {
     return (
         <>
             <Services />

@@ -34,10 +34,30 @@ const AppBaseTitle: React.FC<AppBaseTitleProps> = ({
     }, []);
 
     return (
-        <div ref={titleRef} className="text-center py-8">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4">{title}</h2>
-            <p className="text-lg sm:text-xl text-gray-600 mb-4">{subtitle}</p>
-            {children}
+        <div 
+            ref={titleRef} 
+            className="relative w-full h-32 md:h-40 bg-gradient-to-r from-green-100 via-green-50 to-green-100/30 flex items-center px-6 md:px-12 lg:px-24"
+        >
+            {/* Titre principal à gauche */}
+            <div className="flex-shrink-0">
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800">
+                    {title}
+                </h1>
+            </div>
+            
+            {/* Sous-titre à droite */}
+            <div className="flex-1 ml-8 md:ml-16 flex items-center">
+                <p className="text-sm md:text-lg lg:text-xl text-gray-600 font-medium">
+                    {subtitle}
+                </p>
+            </div>
+            
+            {/* Children si présents */}
+            {children && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                    {children}
+                </div>
+            )}
         </div>
     );
 };

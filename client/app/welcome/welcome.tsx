@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import About from "~/about-us/about";
-import Contact from "~/contacts/contact";
+import Contact from "~/contact/contact";
 import NosProject from "~/nos-projets/nos-projet";
 import Service from "~/nos-service/service";
 import { gsap } from "~/utils/gsap";
