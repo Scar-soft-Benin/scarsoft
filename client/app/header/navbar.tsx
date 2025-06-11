@@ -113,7 +113,7 @@ const Navbar = () => {
                             textColor="text-dark"
                             bgColor="bg-secondary"
                             type="first"
-                            href="/contact"
+                            href="/contactez-nous"
                         />
                     </div>
                 </div>
