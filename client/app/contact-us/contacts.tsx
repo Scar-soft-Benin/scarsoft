@@ -144,7 +144,7 @@ const Contacts = () => {
             {/* Section formulaire */}
             <div className="bg-gray-200 py-16">
                 <div className="max-w-4xl mx-auto px-6">
-                    <div className="text-center mb-12">
+                    <div className="text-center mb-24">
                         <p className="text-gray-600 text-lg">
                             Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.
                         </p>
@@ -156,12 +156,12 @@ const Contacts = () => {
                                 <input
                                     type="text"
                                     placeholder="Nom complet"
-                                    className="w-full p-4 border border-transparent bg-white rounded-full focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
+                                    className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
                                 <input
                                     type="email"
                                     placeholder="Email"
-                                    className="w-full p-4 border border-transparent bg-white rounded-full focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
+                                    className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
                             </div>
                             
@@ -169,29 +169,29 @@ const Contacts = () => {
                                 <input
                                     type="tel"
                                     placeholder="Téléphone"
-                                    className="w-full p-4 border border-transparent bg-white rounded-full focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
+                                    className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
                                 <input
                                     type="text"
                                     placeholder="Objet"
-                                    className="w-full p-4 border border-transparent bg-white rounded-3xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
+                                    className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
                             </div>
                             
                             <textarea
                                 placeholder="Écrivez votre message..."
                                 rows={6}
-                                className="w-full p-4 border border-transparent bg-white rounded-full focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 resize-none"
+                                className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 resize-none"
                             ></textarea>
                             
-                            <div className="">
-                                <button
-                                    type="submit"
-                                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-12 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-                                >
-                                    Envoyer
-                                </button>
-                            </div>
+                            <AppBaseButton
+                                type="first"
+                                bgColor="bg-secondary"
+                                textColor="text-dark"
+                                href={undefined}
+                                text="Envoyer"
+                                className="w-1/3 rounded-xl"
+                            />
                         </form>
                     </div>
                 </div>
