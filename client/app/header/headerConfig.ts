@@ -3,6 +3,8 @@ import homeBanner from "./banner.jpeg";
 import aboutBanner from "../about-us/about-us.jpeg";
 import serviceBanner from '../nos-service/banner.jpeg'
 import contactBanner from '../contact-us/banner.jpg'
+import projectBanner from '../nos-projets/banner.jpg'
+
 
 export const headerConfig: Record<
     string,
@@ -38,5 +40,12 @@ export const headerConfig: Record<
         title: "Contactez-nous",
         subtitle: "Que vous ayez un projet en développement d’applications, en marketing digital, en community management ou en recrutement IT, notre équipe est à votre disposition pour répondre à vos besoins.",
         btnText: "Contactez-nous dès maintenant"
-    }
+    },
+    "/nos-projets": {
+        bannerImage: projectBanner,
+        title: "Réalisations et études de cas",
+        subtitle: "Découvrez quelques-unes de nos réalisations qui témoignent de notre expertise et de notre engagement envers nos clients.",
+        btnText: "Discutons de votre projet"
+    },
+    
 };

@@ -17,6 +17,10 @@ import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
 
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+
 export const links: Route.LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     {
