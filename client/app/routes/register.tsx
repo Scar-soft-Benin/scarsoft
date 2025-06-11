@@ -3,6 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLoading } from "~/context/loadingContext";
 import { useNavigate } from "react-router";
+import { useMessage } from "~/context/messageContext";
 
 const registerSchema = z
     .object({
@@ -19,6 +20,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function Register() {
     const { showLoading, hideLoading } = useLoading();
+    const { addMessage } = useMessage();
     const navigate = useNavigate();
     const {
         register,
@@ -33,8 +35,10 @@ export default function Register() {
         try {
             showLoading();
             await mockRegister(data.email, data.password);
+            addMessage("Registration successful! Please log in.", "success");
             navigate("/login");
         } catch (error: unknown) {
+            addMessage("Registration failed. Please try again.", "error");
             const message =
                 error instanceof Error ? error.message : "Registration failed";
             setError("root", { message });
