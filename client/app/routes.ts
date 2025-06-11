@@ -9,7 +9,9 @@ export default [
     layout("./layout/mainLayout.tsx", [
         index("routes/home.tsx"), // Home Page
         route("a-propos", "routes/a-propos.tsx"), // About Us Page
-        route("nos-service", "routes/nos-service.tsx") // Service Page
+        route("nos-service", "routes/nos-service.tsx"), // Service Page
+        route("nos-projets", "routes/nos-projets.tsx") // Project Page
+
     ]),
     route("login", "routes/login.tsx"), // Login Page
     route("register", "routes/register.tsx"), // Register Page
