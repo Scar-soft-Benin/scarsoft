@@ -58,7 +58,7 @@ const Navbar = () => {
         { name: "Accueil", link: "/" },
         { name: "À propos", link: "a-propos" },
         { name: "Nos Services", link: "nos-service" },
-        { name: "Projets", link: "maintenance" },
+        { name: "Projets", link: "nos-projets" },
         { name: "Carrières", link: "carrieres" }
     ];
 

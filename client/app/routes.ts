@@ -14,6 +14,8 @@ export default [
         route("carrieres", "routes/carriere.tsx"), // ✅ Carrière Page
         route("carriere-candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page
         route("faq", "routes/faq.tsx"), // ✅ FAQ Page
+        route("nos-projets", "routes/nos-projets.tsx") // Project Page
+
     ]),
     route("login", "routes/login.tsx"), // Login Page
     route("register", "routes/register.tsx"), // Register Page
