@@ -19,10 +19,7 @@ const AppBaseButton: React.FC<AppBaseButtonProps> = ({ text, textColor, bgColor,
   const classes = `${baseStyles} ${typeStyles} ${bgColor} ${textColor} ${className}`.trim();
   if (href) {
     return (
-      <a
-        href={href}
-        className={`${baseStyles} ${typeStyles} ${bgColor} ${textColor}`}
-      >
+      <a href={href} className={classes} {...(rest as React.HTMLAttributes<HTMLAnchorElement>)}>
         {text}
       </a>
     );

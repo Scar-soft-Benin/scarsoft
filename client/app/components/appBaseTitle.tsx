@@ -39,8 +39,8 @@ const AppBaseTitle: React.FC<AppBaseTitleProps> = ({
             className="relative w-full h-32 md:h-40 bg-gradient-to-r from-green-100 via-green-50 to-green-100/30 flex items-center px-6 md:px-12 lg:px-24"
         >
             {/* Titre principal à gauche */}
-            <div className="flex-shrink-0">
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800">
+            <div className="flex-flex-shrink-1">
+                <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-gray-800">
                     {title}
                 </h1>
             </div>
