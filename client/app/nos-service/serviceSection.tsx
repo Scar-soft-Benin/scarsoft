@@ -19,7 +19,7 @@ const ServiceSection: React.FC<ServiceSectionProps> = ({
     reverse = false
 }) => {
     return (
-        <div>
+        <div className="my-6 sm:16">
             <AppBaseTitle title={title} subtitle={""} />
             <div
                 className={`flex flex-col sm:flex-row ${
@@ -37,7 +37,8 @@ const ServiceSection: React.FC<ServiceSectionProps> = ({
                         textColor="text-dark"
                         bgColor="bg-secondary"
                         type="first"
-                        href={undefined}
+                        href={'/contactez-nous'}
+                        className="w-full sm:w-2/3"
                     />
                 </div>
                 <img src={image} alt={title} className="w-full sm:w-1/2 my-4" />
