@@ -11,7 +11,9 @@ export default [
         route("a-propos", "routes/a-propos.tsx"), // About Us Page
         route("nos-service", "routes/nos-service.tsx"), // Service Page
         route("contactez-nous", "routes/contacts.tsx"), // Contact Page
-        route("faq", "routes/faq.tsx") // ✅ FAQ Page ajoutée ici
+        route("carrieres", "routes/carriere.tsx"), // ✅ Carrière Page
+        route("carriere-candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page
+        route("faq", "routes/faq.tsx"), // ✅ FAQ Page
     ]),
     route("login", "routes/login.tsx"), // Login Page
     route("register", "routes/register.tsx"), // Register Page
