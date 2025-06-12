@@ -1,0 +1,24 @@
+{
+  "name": "Laravel Dev (Docker)",
+  "context": "..",
+  "dockerComposeFile": "../../docker-compose.yml",
+  "service": "php",
+  "workspaceFolder": "/var/www/html",
+
+  "settings": {
+    "intelephense.environment.includePaths": [
+      "/var/www/html/vendor"
+    ],
+    "php.validate.executablePath": "/usr/bin/php"
+  },
+
+  "extensions": [
+    "bmewburn.vscode-intelephense-client",
+    "amiralizadeh9480.laravel-extra-intellisense",
+    "onecentlin.laravel-blade",
+    "ryannaddy.laravel-artisan"
+  ],
+
+  "postCreateCommand": "composer install",
+  "remoteUser": "root"
+}
