@@ -11,8 +11,8 @@ export default [
         route("a-propos", "routes/a-propos.tsx"), // About Us Page
         route("nos-service", "routes/nos-service.tsx"), // Service Page
         route("contactez-nous", "routes/contacts.tsx"), // Contact Page
-        route("nos-projets", "routes/nos-projets.tsx") // Project Page
-        route("faq", "routes/faq.tsx") // ✅ FAQ Page ajoutée ici
+        route("nos-projets", "routes/nos-projets.tsx"), // Project Page
+        route("faq", "routes/faq.tsx"), // ✅ FAQ Page ajoutée ici
     ]),
     route("login", "routes/login.tsx"), // Login Page
     route("register", "routes/register.tsx"), // Register Page

@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
+import { SidebarProvider } from "~/context/sidebarContext";
 
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -80,9 +81,11 @@ export default function App() {
         <ThemeProvider>
             <MessageProvider>
                 <AuthProvider>
-                    <LoadingProvider>
-                        <AppContent />
-                    </LoadingProvider>
+                    <SidebarProvider>
+                        <LoadingProvider>
+                            <AppContent />
+                        </LoadingProvider>
+                    </SidebarProvider>
                 </AuthProvider>
             </MessageProvider>
         </ThemeProvider>
