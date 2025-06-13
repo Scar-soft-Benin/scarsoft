@@ -1,15 +1,17 @@
-import { NavLink, Link } from "react-router";
+import { NavLink, Link } from "react-router"; 
 import { useAuth } from "~/context/authContext";
 import { useMessage } from "~/context/messageContext";
-import { FiLogOut, FiMail, FiUsers } from "react-icons/fi";
+import { FiLogOut, FiMail, FiUsers, FiChevronDown, FiChevronUp, FiBriefCase } from "react-icons/fi";
 import Logo from "~/header/SS-Vert.svg";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
 export default function Sidebar() {
     const { user, logout } = useAuth();
     const { addMessage } = useMessage();
     const sidebarRef = useRef<HTMLElement>(null);
+    const submenuRef = useRef<HTMLDivElement>(null);
+    const [recruitmentOpen, setRecruitmentOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -18,7 +20,6 @@ export default function Sidebar() {
 
     useEffect(() => {
         if (sidebarRef.current) {
-            // Fade in and slide from left
             gsap.fromTo(
                 sidebarRef.current,
                 { opacity: 0, x: -50 },
@@ -27,15 +28,37 @@ export default function Sidebar() {
         }
     }, []);
 
+    // Animate dropdown opening/closing
+    useEffect(() => {
+        const submenu = submenuRef.current;
+        if (!submenu) return;
+
+        if (recruitmentOpen) {
+            gsap.to(submenu, {
+                height: "auto",
+                opacity: 1,
+                duration: 0.3,
+                ease: "power2.out",
+                display: "block",
+            });
+        } else {
+            gsap.to(submenu, {
+                height: 0,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    if (submenu) submenu.style.display = "none";
+                },
+            });
+        }
+    }, [recruitmentOpen]);
+
     return (
-        <aside ref={sidebarRef} className="w-64 bg-white shadow-md">
+        <aside ref={sidebarRef} className="w-64 bg-white shadow-md h-full">
             <div className="p-4">
                 <Link to="/">
-                    <img
-                        src={Logo}
-                        alt="ScarSoft Logo"
-                        className="h-35 w-48 object-contain"
-                    />
+                    <img src={Logo} alt="ScarSoft Logo" className="h-35 w-48 object-contain" />
                 </Link>
                 <p className="text-sm text-gray-600">Welcome, {user?.email}</p>
             </div>
@@ -51,6 +74,7 @@ export default function Sidebar() {
                 >
                     <FiUsers className="mr-2" /> Overview
                 </NavLink>
+
                 <NavLink
                     to="/dashboard/contacts"
                     className={({ isActive }) =>
@@ -70,6 +94,16 @@ export default function Sidebar() {
                     }
                 >
                     <FiUsers className="mr-2" /> Recruitment
+                </NavLink>
+                <NavLink
+                    to="/dashboard/jobs"
+                    className={({ isActive }) =>
+                        `flex items-center p-4 text-gray-700 hover:bg-gray-200 ${
+                            isActive ? "bg-gray-200" : ""
+                        }`
+                    }
+                >
+                    <FiBriefcase className="mr-2" /> Offres d'emploi
                 </NavLink>
                 <button
                     onClick={handleLogout}

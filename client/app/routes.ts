@@ -11,8 +11,11 @@ export default [
         route("a-propos", "routes/a-propos.tsx"), // About Us Page
         route("nos-service", "routes/nos-service.tsx"), // Service Page
         route("contactez-nous", "routes/contacts.tsx"), // Contact Page
+        route("carrieres", "routes/carriere.tsx"), // ✅ Carrière Page
+        route("carriere-candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page
         route("nos-projets", "routes/nos-projets.tsx"), // Project Page
-        route("faq", "routes/faq.tsx") // ✅ FAQ Page ajoutée ici
+        route("faq", "routes/faq.tsx"), // ✅ FAQ Page
+
     ]),
     route("login", "routes/login.tsx"), // Login Page
     route("register", "routes/register.tsx"), // Register Page
@@ -20,7 +23,8 @@ export default [
         route("dashboard", "./dashboard/dashboard.tsx", [
             index("./dashboard/dashboardOverview.tsx"), // Dashboard Overview
             route("contacts", "./dashboard/contact/contact.tsx"), // Contact Emails
-            route("recruitment", "./dashboard/recruitment/recruitment.tsx") // Recruitment Submissions
+            route("recruitment", "./dashboard/recruitment/recruitment.tsx"), // Recruitment Submissions
+            route("jobs", "./dashboard/job-management/jobManagementRoute.tsx"),
         ])
     ]),
     route("maintenance", "routes/errors/maintenance.tsx"), // Under Construction Page

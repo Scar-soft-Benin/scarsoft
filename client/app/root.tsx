@@ -17,6 +17,9 @@ import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
 
+import { PrimeReactProvider } from 'primereact/api';
+
+
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -77,15 +80,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
     return (
-        <ThemeProvider>
-            <MessageProvider>
-                <AuthProvider>
-                    <LoadingProvider>
-                        <AppContent />
-                    </LoadingProvider>
-                </AuthProvider>
-            </MessageProvider>
-        </ThemeProvider>
+            <ThemeProvider>
+                <MessageProvider>
+                    <AuthProvider>
+                        <LoadingProvider>
+                            <AppContent />
+                        </LoadingProvider>
+                    </AuthProvider>
+                </MessageProvider>
+            </ThemeProvider>
     );
 }
 

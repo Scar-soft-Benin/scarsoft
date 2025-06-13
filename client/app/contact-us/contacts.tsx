@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef } from "react";
 import AppBaseButton from "~/components/appBaseButton";
 import AppBaseTitle from "~/components/appBaseTitle";

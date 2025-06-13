@@ -76,12 +76,12 @@ const Header: React.FC<HeaderProps> = ({
                         <h2 className="font-bold text-4xl md:text-8xl leading-tight">
                             {title}
                         </h2>
-                        <p className="text-xl md:text-2xl mt-4">{subtitle}</p>
+                        <p className="text-xl md:text-2xl mt-4 ">{subtitle}</p>
                         <div className="mt-12">
                             <AppBaseButton
                                 text={btnText}
                                 textColor="text-black"
-                                bgColor="bg-green-500"
+                                bgColor="bg-secondary"
                                 type="second"
                                 href={undefined}
                             />
