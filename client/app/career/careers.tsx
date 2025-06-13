@@ -1,22 +1,40 @@
-// src/pages/Careers.tsx
-import { useEffect, useRef } from "react";
+'use client'
+
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import AppBaseTitle from "~/components/appBaseTitle";
 import { gsap, ScrollTrigger } from "~/utils/gsap";
-import { getAllJobs } from "~/data/jobsData";
+import { jobService, type ExtendedJobOffer } from "~/services/jobService";
 
 const Careers = () => {
     const navigate = useNavigate();
     const cardsRef = useRef<HTMLDivElement>(null);
-    
-    // Récupérer les données des offres d'emploi
-    const jobOffers = getAllJobs();
+    const [jobOffers, setJobOffers] = useState<ExtendedJobOffer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (cardsRef.current) {
+        loadActiveJobs();
+    }, []);
+
+    const loadActiveJobs = async () => {
+        try {
+            setLoading(true);
+            const data = await jobService.getActiveJobs();
+            setJobOffers(data);
+        } catch (err) {
+            setError('Impossible de charger les offres d\'emploi');
+            console.error('Error loading jobs:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (cardsRef.current && !loading) {
             const cards = cardsRef.current.querySelectorAll(".job-card");
             if (cards.length > 0) {
                 gsap.fromTo(
@@ -42,7 +60,7 @@ const Careers = () => {
         return () => {
             ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
         };
-    }, []);
+    }, [jobOffers, loading]);
 
     const handleApply = (jobId: string) => {
         navigate(`/carriere-candidature/${jobId}`);
@@ -60,6 +78,45 @@ const Careers = () => {
                 return 'info';
         }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <AppBaseTitle
+                    title="Carrières"
+                    subtitle="Nous sommes toujours à la recherche de talents motivés pour renforcer notre équipe !"
+                />
+                <div className="container mx-auto px-6 py-12 text-center">
+                    <i className="pi pi-spin pi-spinner text-green-500 text-3xl mb-4"></i>
+                    <p className="text-gray-600">Chargement des offres d'emploi...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <AppBaseTitle
+                    title="Carrières"
+                    subtitle="Nous sommes toujours à la recherche de talents motivés pour renforcer notre équipe !"
+                />
+                <div className="container mx-auto px-6 py-12 text-center">
+                    <i className="pi pi-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                        Erreur de chargement
+                    </h3>
+                    <p className="text-gray-500 mb-6">{error}</p>
+                    <Button 
+                        label="Réessayer" 
+                        icon="pi pi-refresh"
+                        onClick={loadActiveJobs}
+                        className="p-button-success"
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">

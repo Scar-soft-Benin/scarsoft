@@ -1,0 +1,145 @@
+.
+├── LICENSE.md
+├── app
+│   ├── about-us
+│   │   ├── Check.png
+│   │   ├── about-img.jpeg
+│   │   ├── about-us.jpeg
+│   │   ├── about-us.tsx
+│   │   ├── about.tsx
+│   │   ├── adapatibility.png
+│   │   ├── chinese-company-logo.jpeg
+│   │   ├── collaboration.png
+│   │   ├── connect-logo.jpeg
+│   │   ├── demarchIllustration.jpeg
+│   │   ├── excellence.png
+│   │   ├── expertise.png
+│   │   ├── halal-logo.jpeg
+│   │   ├── img-1.jpeg
+│   │   ├── img-2.jpeg
+│   │   ├── img-3.jpeg
+│   │   ├── img-4.jpeg
+│   │   ├── img-5.jpeg
+│   │   ├── innovation.png
+│   │   ├── name-logo.jpeg
+│   │   ├── ohie-logo.jpeg
+│   │   └── responsability.png
+│   ├── app.css
+│   ├── career
+│   │   ├── banner.jpg
+│   │   ├── careerApplication.tsx
+│   │   └── careers.tsx
+│   ├── components
+│   │   ├── Ellipse-4.png
+│   │   ├── appBaseButton.tsx
+│   │   ├── appBaseTitle.tsx
+│   │   ├── loading.tsx
+│   │   └── message.tsx
+│   ├── contact
+│   │   └── contact.tsx
+│   ├── contact-us
+│   │   ├── banner.jpg
+│   │   └── contacts.tsx
+│   ├── context
+│   │   ├── authContext.tsx
+│   │   ├── loadingContext.tsx
+│   │   ├── messageContext.tsx
+│   │   └── themeContext.tsx
+│   ├── dashboard
+│   │   ├── components
+│   │   │   ├── header.tsx
+│   │   │   ├── mainContent.tsx
+│   │   │   └── sidebar.tsx
+│   │   ├── contact
+│   │   │   └── contact.tsx
+│   │   ├── dashboard.tsx
+│   │   ├── dashboardOverview.tsx
+│   │   └── recruitment
+│   │       └── recruitment.tsx
+│   ├── data
+│   │   └── jobsData.ts
+│   ├── faq
+│   │   └── faq.tsx
+│   ├── footer
+│   │   └── footer.tsx
+│   ├── header
+│   │   ├── SS-Blanc.png
+│   │   ├── SS-Image.jpg
+│   │   ├── SS-Ini.jpg
+│   │   ├── SS-Ini.png
+│   │   ├── SS-Mono.png
+│   │   ├── SS-Noir.png
+│   │   ├── SS-Vert.png
+│   │   ├── SS-Vert.svg
+│   │   ├── SS-Vert.webp
+│   │   ├── banner.jpeg
+│   │   ├── header.tsx
+│   │   ├── headerConfig.ts
+│   │   ├── logo.png
+│   │   └── navbar.tsx
+│   ├── layout
+│   │   ├── dashboardLayout.tsx
+│   │   ├── mainLayout.tsx
+│   │   └── protectedLayout.tsx
+│   ├── nos-projets
+│   │   ├── banner.jpg
+│   │   ├── nos-projet.tsx
+│   │   ├── project_1.jpeg
+│   │   ├── project_2.jpeg
+│   │   ├── projet10.jpg
+│   │   ├── projet11.jpg
+│   │   ├── projet3.jpg
+│   │   ├── projet4.jpg
+│   │   ├── projet5.jpg
+│   │   ├── projet6.jpg
+│   │   ├── projet7.jpg
+│   │   ├── projet8.jpg
+│   │   └── projet9.jpg
+│   ├── nos-service
+│   │   ├── banner.jpeg
+│   │   ├── card-1.jpeg
+│   │   ├── card-2.jpeg
+│   │   ├── card-3.jpeg
+│   │   ├── marketingImg.jpeg
+│   │   ├── service.tsx
+│   │   ├── serviceCard.tsx
+│   │   ├── serviceSection.tsx
+│   │   ├── services.tsx
+│   │   └── web-dev.jpeg
+│   ├── root.tsx
+│   ├── routes
+│   │   ├── a-propos.tsx
+│   │   ├── carriere-candidature.tsx
+│   │   ├── carriere.tsx
+│   │   ├── contacts.tsx
+│   │   ├── errors
+│   │   │   ├── construction-illustration.jpg
+│   │   │   ├── maintenance.tsx
+│   │   │   ├── not-found.tsx
+│   │   │   └── notFound.jpg
+│   │   ├── faq.tsx
+│   │   ├── home.tsx
+│   │   ├── login.tsx
+│   │   ├── nos-projets.tsx
+│   │   ├── nos-service.tsx
+│   │   └── register.tsx
+│   ├── routes.ts
+│   ├── structurer.txt
+│   ├── utils
+│   │   └── gsap.ts
+│   └── welcome
+│       └── welcome.tsx
+├── eslint.config.js
+├── i18n.js
+├── package-lock.json
+├── package.json
+├── public
+│   └── favicon.ico
+├── react-router.config.ts
+├── scarsoft.code-workspace
+├── structure_client.txt
+├── tailwind.config.js
+├── tsconfig.json
+└── vite.config.ts
+
+23 directories, 119 files

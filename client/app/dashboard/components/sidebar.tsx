@@ -1,7 +1,7 @@
 import { NavLink, Link } from "react-router";
 import { useAuth } from "~/context/authContext";
 import { useMessage } from "~/context/messageContext";
-import { FiLogOut, FiMail, FiUsers } from "react-icons/fi";
+import { FiLogOut, FiMail, FiUsers, FiBriefcase } from "react-icons/fi";
 import Logo from "~/header/SS-Vert.svg";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
@@ -70,6 +70,16 @@ export default function Sidebar() {
                     }
                 >
                     <FiUsers className="mr-2" /> Recruitment
+                </NavLink>
+                <NavLink
+                    to="/dashboard/jobs"
+                    className={({ isActive }) =>
+                        `flex items-center p-4 text-gray-700 hover:bg-gray-200 ${
+                            isActive ? "bg-gray-200" : ""
+                        }`
+                    }
+                >
+                    <FiBriefcase className="mr-2" /> Offres d'emploi
                 </NavLink>
                 <button
                     onClick={handleLogout}

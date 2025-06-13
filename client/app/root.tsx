@@ -80,7 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
     return (
-        <PrimeReactProvider>
+        // <PrimeReactProvider>
             <ThemeProvider>
                 <MessageProvider>
                     <AuthProvider>
@@ -90,7 +90,7 @@ export default function App() {
                     </AuthProvider>
                 </MessageProvider>
             </ThemeProvider>
-        </PrimeReactProvider>
+        // </PrimeReactProvider>
     );
 }
 

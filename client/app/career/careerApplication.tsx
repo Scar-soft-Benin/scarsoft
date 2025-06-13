@@ -1,4 +1,4 @@
-// src/pages/CareerApplication.tsx
+'use client'
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
@@ -7,32 +7,44 @@ import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { Message } from "primereact/message";
 import { gsap, ScrollTrigger } from "~/utils/gsap";
-import { getJobById, type JobOffer } from "~/data/jobsData";
+import { jobService, type ExtendedJobOffer } from "~/services/jobService";
 
 const CareerApplication = () => {
     const { jobId } = useParams<{ jobId: string }>();
     const navigate = useNavigate();
-    const [job, setJob] = useState<JobOffer | null>(null);
+    const [job, setJob] = useState<ExtendedJobOffer | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (jobId) {
-            // Simuler un petit délai de chargement (optionnel)
-            setTimeout(() => {
-                const jobData = getJobById(jobId);
-                if (jobData) {
-                    setJob(jobData);
-                } else {
-                    // Rediriger si l'offre n'existe pas
-                    navigate('/carrieres');
-                }
-                setLoading(false);
-            }, 300);
+            loadJob(jobId);
         } else {
             navigate('/carrieres');
         }
     }, [jobId, navigate]);
+
+    const loadJob = async (id: string) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const jobData = await jobService.getJobById(id);
+            
+            if (jobData && jobData.status === 'active') {
+                setJob(jobData);
+            } else if (jobData && jobData.status !== 'active') {
+                setError('Cette offre d\'emploi n\'est plus disponible.');
+            } else {
+                setError('Offre d\'emploi non trouvée.');
+            }
+        } catch (err) {
+            setError('Impossible de charger l\'offre d\'emploi.');
+            console.error('Error loading job:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (contentRef.current && job && !loading) {
@@ -83,14 +95,18 @@ const CareerApplication = () => {
         );
     }
 
-    // Offre non trouvée
-    if (!job) {
+    // Erreur ou offre non trouvée
+    if (error || !job) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <i className="pi pi-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Offre non trouvée</h2>
-                    <p className="text-gray-600 mb-6">L'offre d'emploi que vous recherchez n'existe pas ou a été supprimée.</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                        {error || 'Offre non trouvée'}
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                        {error || 'L\'offre d\'emploi que vous recherchez n\'existe pas ou a été supprimée.'}
+                    </p>
                     <Button 
                         label="Retour aux carrières" 
                         icon="pi pi-arrow-left"
@@ -105,7 +121,7 @@ const CareerApplication = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header avec bouton retour */}
-            {/* <div className="bg-white shadow-sm border-b">
+            <div className="bg-white shadow-sm border-b">
                 <div className="container mx-auto px-6 py-4">
                     <Button
                         icon="pi pi-arrow-left"
@@ -115,7 +131,7 @@ const CareerApplication = () => {
                         style={{ color: '#10b981', fontWeight: '600' }}
                     />
                 </div>
-            </div> */}
+            </div>
 
             <div ref={contentRef} className="container mx-auto px-6 py-8 max-w-4xl">
                 {/* En-tête avec titre et tags */}
@@ -250,7 +266,7 @@ const CareerApplication = () => {
                                 label="Contacter RH"
                                 icon="pi pi-phone"
                                 className="p-button-outlined p-button-success flex-1"
-                                onClick={() => navigate('/contact')}
+                                onClick={() => navigate('/contactez-nous')}
                             />
                         </div>
                         
