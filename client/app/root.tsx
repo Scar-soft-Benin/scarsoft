@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
+import { SidebarProvider } from "~/context/sidebarContext";
 
 import { PrimeReactProvider } from 'primereact/api';
 
