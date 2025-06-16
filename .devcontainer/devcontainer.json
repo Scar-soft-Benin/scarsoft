@@ -1,0 +1,7 @@
+{
+  "name": "ScarSoft Backend (Default)",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "php",
+  "workspaceFolder": "/var/www/html",
+  "remoteUser": "root"
+}

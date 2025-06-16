@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "name": "Backend",
+      "path": "server"
+    },
+    {
+      "name": "Frontend",
+      "path": "client"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true
+    }
+  }
+}
