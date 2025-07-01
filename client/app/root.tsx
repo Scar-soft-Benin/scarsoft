@@ -18,12 +18,17 @@ import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
 import { SidebarProvider } from "~/context/sidebarContext";
 
-import { PrimeReactProvider } from 'primereact/api';
-
-
-import 'primereact/resources/themes/lara-light-indigo/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
+// Extend ImportMeta to include 'env' for Vite or similar environments
+declare global {
+    interface ImportMeta {
+        env: {
+            [key: string]: string | boolean | undefined;
+            DEV?: boolean;
+            PROD?: boolean;
+            [key: `VITE_${string}`]: string | undefined;
+        };
+    }
+}
 
 export const links: Route.LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -84,9 +89,11 @@ export default function App() {
             <ThemeProvider>
                 <MessageProvider>
                     <AuthProvider>
-                        <LoadingProvider>
-                            <AppContent />
-                        </LoadingProvider>
+                        <SidebarProvider>
+                            <LoadingProvider>
+                                <AppContent />
+                            </LoadingProvider>
+                        </SidebarProvider>
                     </AuthProvider>
                 </MessageProvider>
             </ThemeProvider>

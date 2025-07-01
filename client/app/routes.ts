@@ -24,7 +24,7 @@ export default [
             index("./dashboard/dashboardOverview.tsx"), // Dashboard Overview
             route("contacts", "./dashboard/contact/contact.tsx"), // Contact Emails
             route("recruitment", "./dashboard/recruitment/recruitment.tsx"), // Recruitment Submissions
-            route("jobs", "./dashboard/job-management/jobManagementRoute.tsx"),
+            route("jobs", "./dashboard/job-management/jobRoute.tsx"),
         ])
     ]),
     route("maintenance", "routes/errors/maintenance.tsx"), // Under Construction Page

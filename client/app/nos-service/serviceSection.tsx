@@ -26,7 +26,7 @@ const ServiceSection: React.FC<ServiceSectionProps> = ({
                     reverse ? "sm:flex-row-reverse" : ""
                 } items-center justify-center px-4 sm:px-16`}
             >
-                <div className="w-full sm:w-1/2 mx-8">
+                <div className="w-full my-8 sm:w-1/2 mx-8">
                     <p className="text-sm sm:text-2xl text-left">
                         {description}
                     </p>

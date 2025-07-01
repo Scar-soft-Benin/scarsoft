@@ -139,10 +139,10 @@ const AboutUs = () => {
 
             <AppBaseTitle
                 title="Notre équipe"
-                subtitle="Notre équipe est composée de professionnels passionnés et expérimentés dans divers domaines "
+                subtitle="Composée de professionnels passionnés et expérimentés dans divers domaines"
             />
 
-            <div className="flex flex-col sm:flex-row sm:px-32 mb-16 relative">
+            <div className="flex flex-col sm:flex-row sm:px-32 md:my-16 relative">
                 <div className="flex flex-col">
                     <div className="bg-secondary text-white rounded-2xl p-8 sm:w-sm">
                         <h2 className="text-8xl">+ 10</h2>
@@ -156,7 +156,7 @@ const AboutUs = () => {
                         <p className="my-2 sm:text-xl">Consultants en recrutement </p>
                     </div>
                 </div>
-                <div className="sm:-ml-24 mt-8 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[150px] z-30">
+                <div className="sm:-ml-24 mt-8 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[250px] z-30">
                     {images.map((img, index) => (
                         <div
                             key={index}
@@ -165,7 +165,7 @@ const AboutUs = () => {
                             <img
                                 src={img.src}
                                 alt={img.alt}
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover ${[0, 1].includes(index) ? 'sm:h-[600px]' : ''} ${[4].includes(index) ? 'sm:h-[550px]' : ''} ${index === 1 ? 'h-2/5' : ''}`}
                             />
                         </div>
                     ))}

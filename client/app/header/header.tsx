@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({
                 contentRef.current.querySelectorAll("h2, p, div"),
                 {
                     opacity: 0,
-                    y: 50,
+                    y: 50
                 },
                 {
                     opacity: 1,
@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({
                     duration: 1,
                     stagger: 0.3,
                     ease: "power3.out",
-                    delay: 0.2,
+                    delay: 0.2
                 }
             );
         }
@@ -47,7 +47,9 @@ const Header: React.FC<HeaderProps> = ({
                 className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${
                     imageLoaded ? "opacity-0" : "opacity-100 blur-lg"
                 }`}
-                style={{ backgroundImage: `url(${bannerImage}?w=50&blur=10)` }}
+                style={{
+                    backgroundImage: `url(${bannerImage}?w=50&blur=10)`
+                }}
             ></div>
 
             {/* Hidden <img> to detect when the high-quality image is fully loaded */}
@@ -65,23 +67,25 @@ const Header: React.FC<HeaderProps> = ({
                 }`}
                 style={{ backgroundImage: `url(${bannerImage})` }}
             >
-                <div className="flex flex-col items-center justify-center min-h-screen text-center text-white px-6 rounded-3xl bg-dim-green">
+                <div className="flex flex-col items-center justify-center min-h-screen text-center text-white px-6 rounded-3xl bg-dime-green">
                     <div className="absolute left-0 top-0">
                         <Navbar />
                     </div>
                     <div
-                        className="flex flex-col items-center mt-20 max-w-8xl"
+                        className="flex flex-col items-center mt-20"
                         ref={contentRef}
                     >
-                        <h2 className="font-bold text-4xl md:text-8xl leading-tight">
+                        <h2 className="font-bold text-2xl md:text-5xl max-w-lg md:max-w-4/5">
                             {title}
                         </h2>
-                        <p className="text-xl md:text-2xl mt-4 ">{subtitle}</p>
+                        <p className="text-lg md:text-lg mt-4 max-w-lg md:max-w-1/2">
+                            {subtitle}
+                        </p>
                         <div className="mt-12">
                             <AppBaseButton
                                 text={btnText}
-                                textColor="text-black"
-                                bgColor="bg-secondary"
+                                textColor="text-white"
+                                bgColor="bg-transparent"
                                 type="second"
                                 href={undefined}
                             />

@@ -65,9 +65,9 @@ const Navbar = () => {
     return (
         <div className="p-2">
             <nav
-                className={`w-[calc(99vw-0.75rem)] fixed transition-all duration-300 ${
+                className={`w-[calc(99vw-0.75rem)] fixed duration-300 ${
                     scrolled
-                        ? "z-50 rounded-3xl shadow-lg bg-dim-green"
+                        ? "z-50 rounded-3xl shadow-lg bg-dime-green"
                         : "bg-transparent z-50"
                 }`}
             >

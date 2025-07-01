@@ -1,22 +1,18 @@
-// ~/dashboard/job-management/jobForm.tsx
-import { useState, useEffect, useRef } from "react";
+// ~/dashboard/job-management/JobForm.tsx
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Dropdown } from 'primereact/dropdown';
-import { Button } from 'primereact/button';
-import { Chips } from 'primereact/chips';
-import { Toast } from 'primereact/toast';
 import { useLoading } from "~/context/loadingContext";
-import { jobService, type ExtendedJobOffer, type JobServiceCreateRequest } from "~/services/jobService";
+import { useMessage } from "~/context/messageContext";
+import { jobService, type ExtendedJobOffer } from "~/services/jobService";
+import TagInput from "../components/tagInput";
+import AppButton from "../components/appButton";
 
-// Schéma de validation
 const jobSchema = z.object({
   title: z.string().min(5, "Le titre doit contenir au moins 5 caractères"),
-  type: z.enum(['Recrutement', 'Stage', 'Freelance'], {
-    errorMap: () => ({ message: "Veuillez sélectionner un type" })
+  type: z.enum(["Recrutement", "Stage", "Freelance"], {
+    errorMap: () => ({ message: "Veuillez sélectionner un type" }),
   }),
   contract: z.string().optional(),
   location: z.string().min(2, "Le lieu doit contenir au moins 2 caractères"),
@@ -24,9 +20,9 @@ const jobSchema = z.object({
   mission: z.string().min(50, "La mission doit contenir au moins 50 caractères"),
   skills: z.array(z.string()).min(1, "Au moins une compétence est requise"),
   requirements: z.array(z.string()).min(1, "Au moins un prérequis est requis"),
-  status: z.enum(['active', 'archived', 'draft'], {
-    errorMap: () => ({ message: "Veuillez sélectionner un statut" })
-  })
+  status: z.enum(["active", "archived", "draft"], {
+    errorMap: () => ({ message: "Veuillez sélectionner un statut" }),
+  }),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -37,351 +33,357 @@ interface JobFormProps {
   onCancel: () => void;
 }
 
-const JobForm: React.FC<JobFormProps> = ({ job, onSave, onCancel }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export default function JobForm({ job, onSave, onCancel }: JobFormProps) {
   const { showLoading, hideLoading } = useLoading();
-  const toast = useRef<Toast>(null);
+  const { addMessage } = useMessage();
 
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
-    setValue,
-    watch
   } = useForm<JobFormData>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      title: '',
-      type: 'Recrutement',
-      contract: '',
-      location: 'Cotonou, Bénin',
-      salary: '',
-      mission: '',
+      title: "",
+      type: "Recrutement",
+      contract: "",
+      location: "Cotonou, Bénin",
+      salary: "",
+      mission: "",
       skills: [],
       requirements: [],
-      status: 'active'
-    }
+      status: "active",
+    },
   });
 
   useEffect(() => {
     if (job) {
-      // Pré-remplir le formulaire pour l'édition
       reset({
         title: job.title,
-        // type: job.type,
-        contract: job.contract || '',
+        type: (["Recrutement", "Stage", "Freelance"].includes(job.type) ? job.type : "Recrutement") as "Recrutement" | "Stage" | "Freelance",
+        contract: job.contract || "",
         location: job.location,
-        salary: job.salary || '',
+        salary: job.salary || "",
         mission: job.mission,
         skills: job.skills,
         requirements: job.requirements,
-        status: job.status
+        status: job.status,
       });
     } else {
-      // Réinitialiser pour un nouveau job
       reset({
-        title: '',
-        type: 'Recrutement',
-        contract: '',
-        location: 'Cotonou, Bénin',
-        salary: '',
-        mission: '',
+        title: "",
+        type: "Recrutement",
+        contract: "",
+        location: "Cotonou, Bénin",
+        salary: "",
+        mission: "",
         skills: [],
         requirements: [],
-        status: 'active'
+        status: "active",
       });
     }
   }, [job, reset]);
 
   const onSubmit = async (data: JobFormData) => {
     try {
-      setIsSubmitting(true);
       showLoading();
-
       if (job) {
-        // Mise à jour
-        await jobService.updateJob({
-          id: job.id,
-          ...data
-        });
+        await jobService.updateJob({ id: job.id, ...data });
+        addMessage("Offre modifiée avec succès", "success");
       } else {
-        // Création
         await jobService.createJob(data);
+        addMessage("Offre créée avec succès", "success");
       }
-
       onSave();
-    } catch (error) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: job 
-          ? 'Impossible de modifier l\'offre' 
-          : 'Impossible de créer l\'offre',
-        life: 3000
-      });
+    } catch {
+      addMessage(
+        job ? "Impossible de modifier l'offre" : "Impossible de créer l'offre",
+        "error"
+      );
     } finally {
-      setIsSubmitting(false);
       hideLoading();
     }
   };
 
-  // Options pour les dropdowns
   const typeOptions = [
-    { label: 'Recrutement', value: 'Recrutement' },
-    { label: 'Stage', value: 'Stage' },
-    { label: 'Freelance', value: 'Freelance' }
+    { label: "Recrutement", value: "Recrutement" },
+    { label: "Stage", value: "Stage" },
+    { label: "Freelance", value: "Freelance" },
   ];
 
   const statusOptions = [
-    { label: 'Active', value: 'active' },
-    { label: 'Brouillon', value: 'draft' },
-    { label: 'Archivée', value: 'archived' }
+    { label: "Active", value: "active" },
+    { label: "Brouillon", value: "draft" },
+    { label: "Archivée", value: "archived" },
   ];
 
   const contractOptions = [
-    { label: 'CDI', value: 'CDI' },
-    { label: 'CDD', value: 'CDD' },
-    { label: 'Stage', value: 'Stage' },
-    { label: 'Freelance', value: 'Freelance' },
-    { label: 'Temps partiel', value: 'Temps partiel' }
+    { label: "Aucun", value: "" },
+    { label: "CDI", value: "CDI" },
+    { label: "CDD", value: "CDD" },
+    { label: "Stage", value: "Stage" },
+    { label: "Freelance", value: "Freelance" },
+    { label: "Temps partiel", value: "Temps partiel" },
   ];
 
   return (
-    <div className="job-form">
-      <Toast ref={toast} />
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="p-fluid">
-        <div className="grid formgrid p-fluid">
-          {/* Titre */}
-          <div className="field col-12">
-            <label htmlFor="title" className="font-bold">
-              Titre du poste *
-            </label>
-            <Controller
-              name="title"
-              control={control}
-              render={({ field }) => (
-                <InputText
-                  id="title"
-                  {...field}
-                  className={errors.title ? 'p-invalid' : ''}
-                  placeholder="Ex: Développeur Full Stack React/Node.js"
-                />
-              )}
-            />
-            {errors.title && (
-              <small className="p-error">{errors.title.message}</small>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="col-span-1 md:col-span-2">
+          <label
+            htmlFor="title"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Titre du poste *
+          </label>
+          <Controller
+            name="title"
+            control={control}
+            render={({ field }) => (
+              <input
+                id="title"
+                {...field}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.title ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+                placeholder="Ex: Développeur Full Stack React/Node.js"
+              />
             )}
-          </div>
-
-          {/* Type et Statut */}
-          <div className="field col-12 md:col-6">
-            <label htmlFor="type" className="font-bold">
-              Type *
-            </label>
-            <Controller
-              name="type"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  id="type"
-                  {...field}
-                  options={typeOptions}
-                  className={errors.type ? 'p-invalid' : ''}
-                  placeholder="Sélectionner un type"
-                />
-              )}
-            />
-            {errors.type && (
-              <small className="p-error">{errors.type.message}</small>
-            )}
-          </div>
-
-          <div className="field col-12 md:col-6">
-            <label htmlFor="status" className="font-bold">
-              Statut *
-            </label>
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  id="status"
-                  {...field}
-                  options={statusOptions}
-                  className={errors.status ? 'p-invalid' : ''}
-                  placeholder="Sélectionner un statut"
-                />
-              )}
-            />
-            {errors.status && (
-              <small className="p-error">{errors.status.message}</small>
-            )}
-          </div>
-
-          {/* Contrat et Lieu */}
-          <div className="field col-12 md:col-6">
-            <label htmlFor="contract" className="font-bold">
-              Type de contrat
-            </label>
-            <Controller
-              name="contract"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  id="contract"
-                  {...field}
-                  options={contractOptions}
-                  className={errors.contract ? 'p-invalid' : ''}
-                  placeholder="Sélectionner un type de contrat"
-                  showClear
-                />
-              )}
-            />
-            {errors.contract && (
-              <small className="p-error">{errors.contract.message}</small>
-            )}
-          </div>
-
-          <div className="field col-12 md:col-6">
-            <label htmlFor="location" className="font-bold">
-              Lieu *
-            </label>
-            <Controller
-              name="location"
-              control={control}
-              render={({ field }) => (
-                <InputText
-                  id="location"
-                  {...field}
-                  className={errors.location ? 'p-invalid' : ''}
-                  placeholder="Ex: Cotonou, Bénin"
-                />
-              )}
-            />
-            {errors.location && (
-              <small className="p-error">{errors.location.message}</small>
-            )}
-          </div>
-
-          {/* Salaire */}
-          <div className="field col-12">
-            <label htmlFor="salary" className="font-bold">
-              Salaire
-            </label>
-            <Controller
-              name="salary"
-              control={control}
-              render={({ field }) => (
-                <InputText
-                  id="salary"
-                  {...field}
-                  className={errors.salary ? 'p-invalid' : ''}
-                  placeholder="Ex: 800 000 - 1 200 000 FCFA"
-                />
-              )}
-            />
-            {errors.salary && (
-              <small className="p-error">{errors.salary.message}</small>
-            )}
-          </div>
-
-          {/* Mission */}
-          <div className="field col-12">
-            <label htmlFor="mission" className="font-bold">
-              Description de la mission *
-            </label>
-            <Controller
-              name="mission"
-              control={control}
-              render={({ field }) => (
-                <InputTextarea
-                  id="mission"
-                  {...field}
-                  rows={6}
-                  className={errors.mission ? 'p-invalid' : ''}
-                  placeholder="Décrivez en détail la mission et les responsabilités du poste..."
-                />
-              )}
-            />
-            {errors.mission && (
-              <small className="p-error">{errors.mission.message}</small>
-            )}
-          </div>
-
-          {/* Compétences */}
-          <div className="field col-12">
-            <label htmlFor="skills" className="font-bold">
-              Compétences requises *
-            </label>
-            <Controller
-              name="skills"
-              control={control}
-              render={({ field }) => (
-                <Chips
-                  id="skills"
-                  {...field}
-                  className={errors.skills ? 'p-invalid' : ''}
-                  placeholder="Appuyez sur Entrée pour ajouter une compétence"
-                />
-              )}
-            />
-            {errors.skills && (
-              <small className="p-error">{errors.skills.message}</small>
-            )}
-            <small className="text-gray-500">
-              Appuyez sur Entrée après chaque compétence pour l'ajouter à la liste
-            </small>
-          </div>
-
-          {/* Prérequis */}
-          <div className="field col-12">
-            <label htmlFor="requirements" className="font-bold">
-              Prérequis *
-            </label>
-            <Controller
-              name="requirements"
-              control={control}
-              render={({ field }) => (
-                <Chips
-                  id="requirements"
-                  {...field}
-                  className={errors.requirements ? 'p-invalid' : ''}
-                  placeholder="Appuyez sur Entrée pour ajouter un prérequis"
-                />
-              )}
-            />
-            {errors.requirements && (
-              <small className="p-error">{errors.requirements.message}</small>
-            )}
-            <small className="text-gray-500">
-              Appuyez sur Entrée après chaque prérequis pour l'ajouter à la liste
-            </small>
-          </div>
+          />
+          {errors.title && <small className="text-danger">{errors.title.message}</small>}
         </div>
 
-        {/* Boutons d'action */}
-        <div className="flex justify-content-end gap-2 mt-4">
-          <Button
-            type="button"
-            label="Annuler"
-            icon="pi pi-times"
-            className="p-button-text p-button-secondary"
-            onClick={onCancel}
-            disabled={isSubmitting}
+        <div>
+          <label
+            htmlFor="type"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Type *
+          </label>
+          <Controller
+            name="type"
+            control={control}
+            render={({ field }) => (
+              <select
+                id="type"
+                {...field}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.type ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+              >
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
           />
-          <Button
-            type="submit"
-            label={job ? 'Modifier' : 'Créer'}
-            icon={job ? 'pi pi-pencil' : 'pi pi-plus'}
-            className="p-button-success"
-            loading={isSubmitting}
-          />
+          {errors.type && <small className="text-danger">{errors.type.message}</small>}
         </div>
-      </form>
-    </div>
+
+        <div>
+          <label
+            htmlFor="status"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Statut *
+          </label>
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <select
+                id="status"
+                {...field}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.status ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+              >
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
+          {errors.status && <small className="text-danger">{errors.status.message}</small>}
+        </div>
+
+        <div>
+          <label
+            htmlFor="contract"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Type de contrat
+          </label>
+          <Controller
+            name="contract"
+            control={control}
+            render={({ field }) => (
+              <select
+                id="contract"
+                {...field}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.contract ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+              >
+                {contractOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
+          {errors.contract && <small className="text-danger">{errors.contract.message}</small>}
+        </div>
+
+        <div>
+          <label
+            htmlFor="location"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Lieu *
+          </label>
+          <Controller
+            name="location"
+            control={control}
+            render={({ field }) => (
+              <input
+                id="location"
+                {...field}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.location ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+                placeholder="Ex: Cotonou, Bénin"
+              />
+            )}
+          />
+          {errors.location && <small className="text-danger">{errors.location.message}</small>}
+        </div>
+
+        <div className="col-span-1 md:col-span-2">
+          <label
+            htmlFor="salary"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Salaire
+          </label>
+          <Controller
+            name="salary"
+            control={control}
+            render={({ field }) => (
+              <input
+                id="salary"
+                {...field}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.salary ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+                placeholder="Ex: 800 000 - 1 200 000 FCFA"
+              />
+            )}
+          />
+          {errors.salary && <small className="text-danger">{errors.salary.message}</small>}
+        </div>
+
+        <div className="col-span-1 md:col-span-2">
+          <label
+            htmlFor="mission"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Description de la mission *
+          </label>
+          <Controller
+            name="mission"
+            control={control}
+            render={({ field }) => (
+              <textarea
+                id="mission"
+                {...field}
+                rows={6}
+                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                  errors.mission ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                } focus:ring-primary focus:border-primary`}
+                placeholder="Décrivez en détail la mission et les responsabilités du poste..."
+              />
+            )}
+          />
+          {errors.mission && <small className="text-danger">{errors.mission.message}</small>}
+        </div>
+
+        <div className="col-span-1 md:col-span-2">
+          <label
+            htmlFor="skills"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Compétences requises *
+          </label>
+          <Controller
+            name="skills"
+            control={control}
+            render={({ field }) => (
+              <TagInput
+                value={field.value}
+                onChange={field.onChange}
+                name="skills"
+                placeholder="Appuyez sur Entrée pour ajouter une compétence"
+                error={errors.skills?.message}
+              />
+            )}
+          />
+          <small className="text-neutral-light-secondary dark:text-neutral-dark-secondary mt-1">
+            Appuyez sur Entrée après chaque compétence pour l'ajouter à la liste
+          </small>
+        </div>
+
+        <div className="col-span-1 md:col-span-2">
+          <label
+            htmlFor="requirements"
+            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+          >
+            Prérequis *
+          </label>
+          <Controller
+            name="requirements"
+            control={control}
+            render={({ field }) => (
+              <TagInput
+                value={field.value}
+                onChange={field.onChange}
+                name="requirements"
+                placeholder="Appuyez sur Entrée pour ajouter un prérequis"
+                error={errors.requirements?.message}
+              />
+            )}
+          />
+          <small className="text-neutral-light-secondary dark:text-neutral-dark-secondary mt-1">
+            Appuyez sur Entrée après chaque prérequis pour l'ajouter à la liste
+          </small>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 mt-4">
+        <AppButton
+          label="Annuler"
+          type="secondary"
+          size="md"
+          outlined
+          onClick={onCancel}
+          disabled={isSubmitting}
+          className="bg-amber-100 dark:bg-amber-300 text-neutral-light-text dark:text-neutral-dark-text border-amber-500 dark:border-amber-700 hover:bg-amber-200 dark:hover:bg-amber-400 "
+        />
+        <AppButton
+          label={job ? "Modifier" : "Créer"}
+          type="primary"
+          size="md"
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          className="bg-teal-800 dark:bg-teal-400 text-white dark:text-neutral-dark-text"
+        />
+      </div>
+    </form>
   );
-};
-
-export default JobForm;
+}

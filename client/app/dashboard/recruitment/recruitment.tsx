@@ -1,7 +1,17 @@
-import DataTable from "../components/DataTable";
+// pages/Recruitment.tsx
 
-// Mock data (replace with API fetch later)
-const mockRecruitments = [
+import Table, { type Column } from "../components/Table";
+
+interface Recruitment {
+  id: string;
+  name: string;
+  email: string;
+  position: string;
+  resume: string;
+  date: string;
+}
+
+const mockRecruitments: Recruitment[] = [
   {
     id: "1",
     name: "Alice Brown",
@@ -21,19 +31,20 @@ const mockRecruitments = [
 ];
 
 export default function Recruitment() {
-  const columns = [
+  const columns: Column<Recruitment>[] = [
     { header: "Nom", field: "name" },
     { header: "Email", field: "email" },
     { header: "Poste", field: "position" },
     {
       header: "CV",
       field: "resume",
-      render: (row: any) => (
+      render: (row: Recruitment) => (
         <a
           href={row.resume}
           className="text-emerald-500 hover:underline"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()} // Prevent row click navigation
         >
           Télécharger
         </a>
@@ -43,10 +54,11 @@ export default function Recruitment() {
   ];
 
   return (
-    <DataTable
+    <Table
       data={mockRecruitments}
       columns={columns}
       title="Candidatures"
+      detailPath="/recruitment"
     />
   );
 }

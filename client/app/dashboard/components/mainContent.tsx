@@ -1,3 +1,4 @@
+// ~/dashboard/components/MainContent.tsx
 import { Outlet } from "react-router";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
@@ -7,7 +8,6 @@ export default function MainContent() {
 
     useEffect(() => {
         if (mainRef.current) {
-            // Fade in
             gsap.fromTo(
                 mainRef.current,
                 { opacity: 0 },
@@ -17,7 +17,10 @@ export default function MainContent() {
     }, []);
 
     return (
-        <main ref={mainRef} className="flex-1 p-6">
+        <main
+            ref={mainRef}
+            className="flex-1 p-6 bg-neutral-light-bg dark:bg-neutral-dark-bg"
+        >
             <Outlet />
         </main>
     );
