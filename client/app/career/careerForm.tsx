@@ -55,8 +55,8 @@ export default function CareerForm({ visible, onClose, onSubmit }: CareerFormPro
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-400">Tous les champs marqués * sont obligatoires</p>
           <div className="flex gap-2">
-            <AppBaseButton text="Annuler" type="second" textColor={""} bgColor={""} onClick={onClose} />
-            <AppBaseButton text="Envoyer" type="first" textColor={""} bgColor={""} onClick={handleSubmit(submitForm)} />
+            <AppBaseButton text="Annuler" type="second" bgColor="bg-transparent" textColor="text-green-500" onClick={onClose} />
+            <AppBaseButton text="Envoyer" type="first" bgColor="bg-green-500" textColor="text-white" onClick={handleSubmit(submitForm)} />
           </div>
         </div>
       }

@@ -1,12 +1,12 @@
 // pages/Contacts.tsx
 import { useState, useRef, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { gsap } from "gsap";
-import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
 import Dialog from "../components/Dialog";
 import Table, { type Column } from "../components/Table";
 import { useMessage } from "~/context/messageContext";
+import AppBaseButton from "~/components/appBaseButton";
+import { FaEnvelope } from "react-icons/fa";
 
 interface Contact {
   id: string;
@@ -37,9 +37,14 @@ export default function Contacts() {
   const { addMessage } = useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [replySubject, setReplySubject] = useState("");
-  const [replyMessage, setReplyMessage] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const { control, handleSubmit, reset } = useForm({
+    defaultValues: {
+      replySubject: "",
+      replyMessage: "",
+    },
+  });
 
   useEffect(() => {
     if (isModalOpen && modalRef.current) {
@@ -53,22 +58,17 @@ export default function Contacts() {
 
   const handleReply = (contact: Contact) => {
     setSelectedContact(contact);
-    setReplySubject(`Re: Votre message du ${contact.date}`);
-    setReplyMessage("");
+    reset({ replySubject: `Re: Votre message du ${contact.date}`, replyMessage: "" });
     setIsModalOpen(true);
   };
 
-  const handleSendReply = () => {
+  const onSubmit = (data: { replySubject: string; replyMessage: string }) => {
     if (selectedContact) {
-      console.log("Envoi de l'email à", selectedContact.email, {
-        subject: replySubject,
-        message: replyMessage,
-      });
+      console.log("Envoi de l'email à", selectedContact.email, data);
       addMessage("Réponse envoyée avec succès.", "success");
     }
     setIsModalOpen(false);
-    setReplySubject("");
-    setReplyMessage("");
+    reset();
   };
 
   const columns: Column<Contact>[] = [
@@ -80,12 +80,16 @@ export default function Contacts() {
       header: "Action",
       field: "action",
       render: (row: Contact) => (
-        <Button
-          label="Répondre"
-          icon="pi pi-envelope"
+        <AppBaseButton
+          text="Répondre"
+          icon={<FaEnvelope />}
+          type="first"
+          textColor=""
+          bgColor="bg-transparent"
+          iconPos="left"
           className="p-button-sm p-button-text"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent row click navigation
+            e.stopPropagation();
             handleReply(row);
           }}
         />
@@ -95,15 +99,21 @@ export default function Contacts() {
 
   const dialogFooter = (
     <div className="flex justify-end gap-2">
-      <Button
-        label="Annuler"
+      <AppBaseButton
+        text="Annuler"
+        type="second"
+        textColor=""
+        bgColor="bg-transparent"
         className="p-button-sm p-button-outlined"
         onClick={() => setIsModalOpen(false)}
       />
-      <Button
-        label="Envoyer"
+      <AppBaseButton
+        text="Envoyer"
+        type="first"
+        textColor=""
+        bgColor="bg-transparent"
         className="p-button-sm p-button-raised"
-        onClick={handleSendReply}
+        onClick={handleSubmit(onSubmit)}
       />
     </div>
   );
@@ -122,26 +132,37 @@ export default function Contacts() {
         onHide={() => setIsModalOpen(false)}
         footer={dialogFooter}
       >
-        <div ref={modalRef} className="p-4">
-          <div className="mb-4">
+        <div ref={modalRef} className="p-4 space-y-4">
+          <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Sujet
             </label>
-            <InputText
-              value={replySubject}
-              onChange={(e) => setReplySubject(e.target.value)}
-              className="w-full p-inputtext-sm"
+            <Controller
+              name="replySubject"
+              control={control}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                />
+              )}
             />
           </div>
-          <div className="mb-4">
+          <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Message
             </label>
-            <InputTextarea
-              value={replyMessage}
-              onChange={(e) => setReplyMessage(e.target.value)}
-              rows={5}
-              className="w-full p-inputtext-sm"
+            <Controller
+              name="replyMessage"
+              control={control}
+              render={({ field }) => (
+                <textarea
+                  {...field}
+                  rows={5}
+                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                />
+              )}
             />
           </div>
         </div>
