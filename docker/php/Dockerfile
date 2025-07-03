@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
+    default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions

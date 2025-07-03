@@ -1,0 +1,2450 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SCARSOFT API",
+        "description": "API SCARSOFT de recrutement et d'offres d'emploi",
+        "contact": {
+            "name": "Support SCARSOFT",
+            "email": "support@scarsoft.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Serveur de développement SCARSOFT"
+        }
+    ],
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "operationId": "eb3623f9bcd09a1dacbefaac07aed1bb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "verification_required": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user - Step 1: Verify credentials and send OTP",
+                "operationId": "f77777235d676b651c9465807d8f9485",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "iPhone 12"
+                                    },
+                                    "device_type": {
+                                        "type": "string",
+                                        "example": "mobile"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Credentials verified, OTP sent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Credentials verified. OTP sent to your email"
+                                        },
+                                        "login_session_id": {
+                                            "type": "string",
+                                            "example": "abc123..."
+                                        },
+                                        "otp_expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "next_step": {
+                                            "type": "string",
+                                            "example": "verify_login_otp"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/verify-login-otp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login user - Step 2: Verify OTP and get tokens",
+                "operationId": "5ab80b6d378df2047913b2ce3ca195ff",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "code",
+                                    "login_session_id"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "login_session_id": {
+                                        "type": "string",
+                                        "example": "abc123..."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "refresh_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 900
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/resend-login-otp": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Resend login OTP code",
+                "operationId": "77a179b1fb3eaa3635a697ba37e8f420",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "login_session_id"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "login_session_id": {
+                                        "type": "string",
+                                        "example": "abc123..."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login OTP resent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login OTP resent"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh access token",
+                "operationId": "a11d4212c7e49cbf5852d9bb2e3d5054",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "refresh_token"
+                                ],
+                                "properties": {
+                                    "refresh_token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "refresh_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 900
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "operationId": "c4b3c6f1776909e546a421283c044ac3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "refresh_token"
+                                ],
+                                "properties": {
+                                    "refresh_token": {
+                                        "type": "string"
+                                    },
+                                    "logout_all_devices": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get current user information",
+                "operationId": "57247eca7a7733a6b79ce17999f79422",
+                "responses": {
+                    "200": {
+                        "description": "User information retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/companies": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Get all companies",
+                "operationId": "80eb39cf3f8d7b480171fea2f33d6060",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search companies by name, email or contact person",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "inactive"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Companies retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "TechCorp Solutions"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "example": "contact@techcorp.com"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "active"
+                                                    },
+                                                    "job_offers_count": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Create a new company",
+                "operationId": "cee123b1da67beec88470f8ceb3fcb95",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "TechCorp Solutions"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "contact@techcorp.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "0123456789"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "123 Business Street, City"
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "example": "https://techcorp.com"
+                                    },
+                                    "contact_person": {
+                                        "type": "string",
+                                        "example": "John Manager"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Important client notes"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Company created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/companies/{id}": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Get company details",
+                "operationId": "fd3858af6b6071f4a94538a412bab106",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Company details retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Update company",
+                "operationId": "c125e6ebfb9c7669666225b619092333",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "website": {
+                                        "type": "string"
+                                    },
+                                    "contact_person": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "inactive"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Company updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Delete company",
+                "operationId": "124aa61ff352c83ede5872644b0ac00d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Company deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/companies/{id}/statistics": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Get company statistics",
+                "operationId": "ac2c8aade1a516ca2fbdaa8e13ec19a1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Company statistics retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/contacts": {
+            "post": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Submit contact form",
+                "operationId": "c469cce0315d4e1beb4f2a1fb3747ec8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "subject",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "0123456789"
+                                    },
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "Service inquiry"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "I would like to know more about your services."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact message sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message sent successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/contacts": {
+            "get": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Get all contact messages (Admin only)",
+                "operationId": "68b60f6ed9a6959d828831c284593bf8",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "unread",
+                                "read",
+                                "replied",
+                                "archived"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search in name, email, subject or message",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contact messages retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/contacts/{id}": {
+            "get": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Get contact message details (Admin only)",
+                "operationId": "3dbb937750511cc841149ac2ddaa7362",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contact message retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Delete contact message (Admin only)",
+                "operationId": "45311946368fea1ed487f85f9bbf9264",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contact message deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/contacts/{id}/reply": {
+            "put": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Reply to contact message (Admin only)",
+                "operationId": "718b7020c55311b4312b02c7cbf4b3f7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reply_message"
+                                ],
+                                "properties": {
+                                    "reply_message": {
+                                        "type": "string",
+                                        "example": "Thank you for your message. We will get back to you soon."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reply sent successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/contacts/{id}/status": {
+            "put": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Update contact message status (Admin only)",
+                "operationId": "4b98cf860bc5d1f058d5d36d7ec84040",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "unread",
+                                            "read",
+                                            "replied",
+                                            "archived"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/contacts/statistics": {
+            "get": {
+                "tags": [
+                    "Contact Management"
+                ],
+                "summary": "Get contact statistics (Admin only)",
+                "operationId": "c720d518fd9b20fb306678350432dbc4",
+                "responses": {
+                    "200": {
+                        "description": "Contact statistics retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/notifications/send-to-candidate": {
+            "post": {
+                "tags": [
+                    "Email Notifications"
+                ],
+                "summary": "Send email to candidate (Admin only)",
+                "operationId": "b20e552a04dc85c7e98d2559f1ac26eb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "candidate_email",
+                                    "message",
+                                    "job_offer_id"
+                                ],
+                                "properties": {
+                                    "candidate_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "candidate@example.com"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Nous avons le plaisir de vous informer que votre candidature a été retenue..."
+                                    },
+                                    "job_offer_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email envoyé au candidat avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/notifications/send-to-company": {
+            "post": {
+                "tags": [
+                    "Email Notifications"
+                ],
+                "summary": "Send candidate information to company (Admin only)",
+                "operationId": "3ee53c241766c6bce1ab06e911671a74",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "company_email",
+                                    "message",
+                                    "candidate_id",
+                                    "job_offer_id"
+                                ],
+                                "properties": {
+                                    "company_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "rh@company.com"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Nous vous présentons la candidature de M. Jean Dupont pour le poste..."
+                                    },
+                                    "candidate_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "job_offer_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Candidature transférée à l'entreprise avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/email/verify": {
+            "post": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Verify email with OTP code",
+                "operationId": "331b0cdacb7a42381796740de03dae8b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "code"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Email verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email verified successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired code",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid verification code"
+                                        },
+                                        "error_code": {
+                                            "type": "string",
+                                            "example": "INVALID_CODE"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/email/resend": {
+            "post": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Resend email verification code",
+                "operationId": "3dade8d639ba719c9c9055aa36088993",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Verification code sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Verification code sent"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Please wait before requesting another code"
+                                        },
+                                        "error_code": {
+                                            "type": "string",
+                                            "example": "TOO_FREQUENT"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/email/status": {
+            "get": {
+                "tags": [
+                    "Email Verification"
+                ],
+                "summary": "Get email verification status",
+                "operationId": "08537d1729601de8f17aceb050438934",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Verification status retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "email_verified": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "has_active_code": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "attempts_remaining": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "code_expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/job-offers/{jobOfferId}/apply": {
+            "post": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Apply for a job offer",
+                "operationId": "9d6705b779f79ebd502cfb0ef726a3fe",
+                "parameters": [
+                    {
+                        "name": "jobOfferId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "applicant_name",
+                                    "applicant_email",
+                                    "applicant_phone",
+                                    "cv",
+                                    "cover_letter_type"
+                                ],
+                                "properties": {
+                                    "applicant_name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "applicant_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "applicant_phone": {
+                                        "type": "string",
+                                        "example": "0123456789"
+                                    },
+                                    "cv": {
+                                        "description": "CV file (PDF, DOC, DOCX)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "cover_letter_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "text",
+                                            "file"
+                                        ]
+                                    },
+                                    "cover_letter_content": {
+                                        "description": "Text cover letter (if type=text)",
+                                        "type": "string"
+                                    },
+                                    "cover_letter_file": {
+                                        "description": "Cover letter file (if type=file)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Application submitted successfully"
+                    }
+                }
+            }
+        },
+        "/api/admin/job-applications": {
+            "get": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Get all job applications (Admin only)",
+                "operationId": "2fda93ec949e8a6e1ef9955853cf701e",
+                "parameters": [
+                    {
+                        "name": "job_offer_id",
+                        "in": "query",
+                        "description": "Filter by job offer",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "under_review",
+                                "shortlisted",
+                                "rejected",
+                                "accepted"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job applications retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/job-applications/{id}": {
+            "get": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Get job application details (Admin only)",
+                "operationId": "8f4dcd242add13df174e6ae52e071047",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job application details retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Delete job application (Admin only)",
+                "operationId": "29e76b22cf219c4a4c7d0fbcde395449",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job application deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/job-applications/{id}/status": {
+            "put": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Update job application status (Admin only)",
+                "operationId": "1f1f48fb0f3f56b0d4c41e4a87e7fc55",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "under_review",
+                                            "shortlisted",
+                                            "rejected",
+                                            "accepted"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Excellent profile, proceed to interview"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Application status updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/job-applications/statistics": {
+            "get": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Get job applications statistics (Admin only)",
+                "operationId": "a66dc52d5bece9657140ea8cf1078807",
+                "responses": {
+                    "200": {
+                        "description": "Job applications statistics retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/job-applications/{id}/download/{type}": {
+            "get": {
+                "tags": [
+                    "Job Applications"
+                ],
+                "summary": "Download application file (Admin only)",
+                "operationId": "660a2a49dc0401f7dd6bc26557ba11f0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "cv",
+                                "cover-letter"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File download initiated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/job-offers": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Get public job offers",
+                "operationId": "e3c1d4ec22d28966b887603df529912a",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filter by job type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Recrutement",
+                                "Stage",
+                                "Freelance"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "description": "Filter by location",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search in title, location, mission",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job offers retrieved successfully"
+                    }
+                }
+            }
+        },
+        "/api/admin/job-offers": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Get all job offers (Admin only)",
+                "operationId": "0fda1cb6eeb3ce206e65bc345677120e",
+                "responses": {
+                    "200": {
+                        "description": "Job offers retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Create a new job offer (Admin only)",
+                "operationId": "187acedd9a27f2e149b23f00de325469",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "type",
+                                    "location",
+                                    "mission",
+                                    "skills",
+                                    "requirements",
+                                    "company_id"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Développeur Full Stack"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Recrutement",
+                                            "Stage",
+                                            "Freelance"
+                                        ]
+                                    },
+                                    "contract": {
+                                        "type": "string",
+                                        "example": "CDI"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Cotonou, Bénin"
+                                    },
+                                    "salary": {
+                                        "type": "string",
+                                        "example": "800 000 - 1 200 000 FCFA"
+                                    },
+                                    "mission": {
+                                        "type": "string",
+                                        "example": "Développer des applications web modernes"
+                                    },
+                                    "skills": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "requirements": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "company_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "company_contact_email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "is_internal": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Job offer created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/job-offers/{id}": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Get job offer details",
+                "operationId": "8dcf03500c86f0fb052b5739d7243d0b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job offer details retrieved successfully"
+                    }
+                }
+            }
+        },
+        "/api/admin/job-offers/{id}": {
+            "put": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Update job offer (Admin only)",
+                "operationId": "ee18af765b7f8b6f84a956d411c99471",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job offer updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Delete job offer (Admin only)",
+                "operationId": "640272642674b25843c140d1bd10d04e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job offer deleted successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/job-offers/statistics": {
+            "get": {
+                "tags": [
+                    "Job Offers"
+                ],
+                "summary": "Get job offers statistics (Admin only)",
+                "operationId": "b3cb2600e75f59a5f26d34f5e45b55d4",
+                "responses": {
+                    "200": {
+                        "description": "Job offers statistics retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/password/forgot": {
+            "post": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Request password reset",
+                "operationId": "f413f1cbf41c18bd82364e9f3073aec1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset code sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset code sent to your email"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Too many reset attempts"
+                                        },
+                                        "error_code": {
+                                            "type": "string",
+                                            "example": "RATE_LIMIT_EXCEEDED"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password/verify-code": {
+            "post": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Verify password reset code",
+                "operationId": "7dc5591dddcc0b612c17624558d78186",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "code"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Code verified successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Code verified successfully"
+                                        },
+                                        "reset_token": {
+                                            "type": "string",
+                                            "example": "abc123..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired code",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid verification code"
+                                        },
+                                        "error_code": {
+                                            "type": "string",
+                                            "example": "INVALID_CODE"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password/reset": {
+            "post": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Reset password with token",
+                "operationId": "96dac3536bb59039e5efbdb3c0d45d78",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "example": "abc123..."
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password reset successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid or expired reset token"
+                                        },
+                                        "error_code": {
+                                            "type": "string",
+                                            "example": "INVALID_TOKEN"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password/resend-code": {
+            "post": {
+                "tags": [
+                    "Password Reset"
+                ],
+                "summary": "Resend password reset code",
+                "operationId": "bbb6dc701acd9375f0e9e9497f6edbfb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reset code sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Reset code sent"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "PaginationMeta": {
+                "title": "Pagination Meta",
+                "description": "Métadonnées de pagination",
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 50
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 4
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "Modèle utilisateur",
+                "properties": {
+                    "id": {
+                        "description": "Identifiant unique de l'utilisateur",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nom complet de l'utilisateur",
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "description": "Adresse email de l'utilisateur",
+                        "type": "string",
+                        "format": "email",
+                        "example": "john.doe@example.com"
+                    },
+                    "email_verified_at": {
+                        "description": "Date et heure de vérification de l'email",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "description": "Statut d'activation du compte",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "last_login_at": {
+                        "description": "Date et heure de la dernière connexion",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T14:25:30Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Date et heure de création du compte",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-10T09:15:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Date et heure de dernière mise à jour",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T14:25:30Z"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiResponse": {
+                "title": "Réponse API standard",
+                "description": "Structure de réponse standard de l'API",
+                "properties": {
+                    "success": {
+                        "description": "Indique si la requête a réussi",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "description": "Message descriptif de la réponse",
+                        "type": "string",
+                        "example": "Opération réussie"
+                    },
+                    "error_code": {
+                        "description": "Code d'erreur en cas d'échec",
+                        "type": "string",
+                        "example": "VALIDATION_FAILED",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "API endpoints for user authentication"
+        },
+        {
+            "name": "Company Management",
+            "description": "API endpoints for managing companies"
+        },
+        {
+            "name": "Contact Management",
+            "description": "API endpoints for contact form and management"
+        },
+        {
+            "name": "Email Notifications",
+            "description": "API endpoints for sending manual email notifications"
+        },
+        {
+            "name": "Email Verification",
+            "description": "API endpoints for email verification"
+        },
+        {
+            "name": "Job Applications",
+            "description": "API endpoints for job application management"
+        },
+        {
+            "name": "Job Offers",
+            "description": "API endpoints for job offer management"
+        },
+        {
+            "name": "Password Reset",
+            "description": "API endpoints for password reset functionality"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}

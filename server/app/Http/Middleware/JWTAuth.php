@@ -19,81 +19,75 @@ class JWTAuth
         $this->jwtService = $jwtService;
     }
 
-    public function handle(Request $request, Closure $next, ...$guards): Response
+    public function handle(Request $request, Closure $next): Response
     {
         $token = $this->extractToken($request);
 
         if (!$token) {
-            return $this->unauthorizedResponse('Token d\'authentification manquant');
+            return response()->json([
+                'success' => false,
+                'message' => 'Token d\'authentification manquant',
+                'error_code' => 'MISSING_TOKEN',
+            ], 401);
         }
 
         $validation = $this->jwtService->validateAccessToken($token);
 
         if (!$validation['valid']) {
-            if ($validation['expired']) {
-                return $this->unauthorizedResponse(
-                    'Token d\'authentification expiré',
-                    'TOKEN_EXPIRED'
-                );
-            }
+            $message = $validation['expired'] 
+                ? 'Token expiré' 
+                : 'Token invalide';
+            
+            $errorCode = $validation['expired'] 
+                ? 'TOKEN_EXPIRED' 
+                : 'INVALID_TOKEN';
 
-            return $this->unauthorizedResponse(
-                'Token d\'authentification invalide',
-                'INVALID_TOKEN'
-            );
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+                'error_code' => $errorCode,
+            ], 401);
         }
 
         $user = User::find($validation['user_id']);
 
         if (!$user) {
-            return $this->unauthorizedResponse(
-                'Utilisateur non trouvé',
-                'USER_NOT_FOUND'
-            );
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non trouvé',
+                'error_code' => 'USER_NOT_FOUND',
+            ], 401);
         }
 
         if (!$user->is_active) {
-            return $this->unauthorizedResponse(
-                'Compte utilisateur désactivé',
-                'ACCOUNT_DISABLED'
-            );
+            return response()->json([
+                'success' => false,
+                'message' => 'Compte désactivé',
+                'error_code' => 'ACCOUNT_DISABLED',
+            ], 403);
         }
 
         if ($user->isLocked()) {
-            return $this->unauthorizedResponse(
-                'Compte temporairement verrouillé',
-                'ACCOUNT_LOCKED'
-            );
+            return response()->json([
+                'success' => false,
+                'message' => 'Compte temporairement verrouillé',
+                'error_code' => 'ACCOUNT_LOCKED',
+                'locked_until' => $user->locked_until->toISOString(),
+            ], 423);
         }
 
-        // Vérifier si l'email est vérifié pour certaines routes
-        if ($this->requiresEmailVerification($request) && !$user->hasVerifiedEmail()) {
-            return $this->forbiddenResponse(
-                'Email non vérifié',
-                'EMAIL_NOT_VERIFIED'
-            );
-        }
-
-        // Attacher l'utilisateur et les informations du token à la requête
+        // Attacher l'utilisateur à la requête
         $request->setUserResolver(function () use ($user) {
             return $user;
         });
 
-        $request->attributes->set('jwt_payload', $validation['payload']);
-        $request->attributes->set('jwt_token', $token);
-
         return $next($request);
     }
-
     private function extractToken(Request $request): ?string
     {
         $authHeader = $request->header('Authorization');
 
-        if (!$authHeader) {
-            return null;
-        }
-
-        if (!str_starts_with($authHeader, 'Bearer ')) {
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
             return null;
         }
 

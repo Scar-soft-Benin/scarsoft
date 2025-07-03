@@ -125,20 +125,18 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             RateLimiter::hit($key);
-            dd($e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la création du compte',
                 'error_code' => 'REGISTRATION_FAILED',
             ], 500);
-
         }
     }
 
     /**
      * @OA\Post(
      *     path="/api/auth/login",
-     *     summary="Login user",
+     *     summary="Login user - Step 1: Verify credentials and send OTP",
      *     tags={"Authentication"},
      *     @OA\RequestBody(
      *         required=true,
@@ -152,15 +150,13 @@ class AuthController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Login successful",
+     *         description="Credentials verified, OTP sent",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Login successful"),
-     *             @OA\Property(property="access_token", type="string"),
-     *             @OA\Property(property="refresh_token", type="string"),
-     *             @OA\Property(property="token_type", type="string", example="Bearer"),
-     *             @OA\Property(property="expires_in", type="integer", example=900),
-     *             @OA\Property(property="user", ref="#/components/schemas/User")
+     *             @OA\Property(property="message", type="string", example="Credentials verified. OTP sent to your email"),
+     *             @OA\Property(property="login_session_id", type="string", example="abc123..."),
+     *             @OA\Property(property="otp_expires_at", type="string", format="date-time"),
+     *             @OA\Property(property="next_step", type="string", example="verify_login_otp")
      *         )
      *     )
      * )
@@ -228,19 +224,129 @@ class AuthController extends Controller
             ], 423);
         }
 
-        // Connexion réussie
-        RateLimiter::clear($key);
-        $user->resetFailedAttempts();
-        $user->updateLastLogin($request->ip());
-
-        // Générer les tokens
-        $accessToken = $this->jwtService->generateAccessToken($user);
-        $refreshTokenModel = $this->jwtService->generateRefreshToken($user, [
+        // Identifiants valides - Générer OTP de connexion
+        $otpResult = $this->otpService->generateLoginVerificationCode($user->email, [
             'device_name' => $request->device_name,
             'device_type' => $request->device_type,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        if (!$otpResult['success']) {
+            RateLimiter::hit($key);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération du code de vérification',
+                'error_code' => 'OTP_GENERATION_FAILED',
+            ], 500);
+        }
+
+        RateLimiter::clear($key);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Identifiants vérifiés. Code de vérification envoyé par email.',
+            'login_session_id' => $otpResult['login_session_id'],
+            'otp_expires_at' => $otpResult['expires_at'],
+            'next_step' => 'verify_login_otp',
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/verify-login-otp",
+     *     summary="Login user - Step 2: Verify OTP and get tokens",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","code","login_session_id"},
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             @OA\Property(property="code", type="string", example="123456"),
+     *             @OA\Property(property="login_session_id", type="string", example="abc123...")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Login successful"),
+     *             @OA\Property(property="access_token", type="string"),
+     *             @OA\Property(property="refresh_token", type="string"),
+     *             @OA\Property(property="token_type", type="string", example="Bearer"),
+     *             @OA\Property(property="expires_in", type="integer", example=900),
+     *             @OA\Property(property="user", ref="#/components/schemas/User")
+     *         )
+     *     )
+     * )
+     */
+    public function verifyLoginOtp(Request $request): JsonResponse
+    {
+        $key = 'login_verify:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $seconds = RateLimiter::availableIn($key);
+            return response()->json([
+                'success' => false,
+                'message' => 'Trop de tentatives de vérification. Réessayez dans ' . $seconds . ' secondes.',
+                'error_code' => 'RATE_LIMIT_EXCEEDED',
+            ], 429);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+            'login_session_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            RateLimiter::hit($key);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreurs de validation',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        
+        if (!$user) {
+            RateLimiter::hit($key);
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non trouvé',
+                'error_code' => 'USER_NOT_FOUND',
+            ], 404);
+        }
+
+        // Vérifier l'OTP de connexion
+        $verification = $this->otpService->verifyLoginCode(
+            $request->email,
+            $request->code,
+            $request->login_session_id
+        );
+
+        if (!$verification['valid']) {
+            RateLimiter::hit($key);
+            return response()->json([
+                'success' => false,
+                'message' => $verification['error'],
+                'error_code' => $verification['error_code'],
+                'attempts_left' => $verification['attempts_left'] ?? null,
+            ], 400);
+        }
+
+        // Connexion réussie
+        RateLimiter::clear($key);
+        $user->resetFailedAttempts();
+        $user->updateLastLogin($request->ip());
+
+        // Récupérer les informations de device stockées
+        $deviceInfo = $verification['device_info'] ?? [];
+
+        // Générer les tokens
+        $accessToken = $this->jwtService->generateAccessToken($user);
+        $refreshTokenModel = $this->jwtService->generateRefreshToken($user, $deviceInfo);
 
         return response()->json([
             'success' => true,
@@ -257,6 +363,85 @@ class AuthController extends Controller
                 'is_active' => $user->is_active,
                 'last_login_at' => $user->last_login_at,
             ],
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/resend-login-otp",
+     *     summary="Resend login OTP code",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","login_session_id"},
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             @OA\Property(property="login_session_id", type="string", example="abc123...")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login OTP resent successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Login OTP resent"),
+     *             @OA\Property(property="expires_at", type="string", format="date-time")
+     *         )
+     *     )
+     * )
+     */
+    public function resendLoginOtp(Request $request): JsonResponse
+    {
+        $key = 'login_resend:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $seconds = RateLimiter::availableIn($key);
+            return response()->json([
+                'success' => false,
+                'message' => 'Trop de demandes de renvoi. Réessayez dans ' . $seconds . ' secondes.',
+                'error_code' => 'RATE_LIMIT_EXCEEDED',
+            ], 429);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'login_session_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            RateLimiter::hit($key);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreurs de validation',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $result = $this->otpService->resendLoginCode($request->email, $request->login_session_id);
+
+        if (!$result['success']) {
+            if ($result['error_code'] === 'TOO_FREQUENT') {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['error'],
+                    'error_code' => $result['error_code'],
+                    'retry_after' => $result['retry_after'],
+                ], 429);
+            }
+
+            RateLimiter::hit($key);
+            return response()->json([
+                'success' => false,
+                'message' => $result['error'],
+                'error_code' => $result['error_code'],
+            ], 400);
+        }
+
+        RateLimiter::hit($key);
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['message'],
+            'expires_at' => $result['expires_at'],
         ]);
     }
 

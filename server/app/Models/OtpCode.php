@@ -94,6 +94,18 @@ class OtpCode extends Model
         ]);
     }
 
+    public static function createForLoginVerification(string $email): self
+    {
+        return static::create([
+            'identifier' => $email,
+            'code' => static::generateCode(),
+            'type' => 'login_verification',
+            'delivery_method' => 'email',
+            'expires_at' => Carbon::now()->addMinutes((int) config('auth.otp_expiration', 10)),
+            'ip_address' => request()->ip(),
+        ]);
+    }
+
     private static function generateCode(): string
     {
         $length = (int) config('auth.otp_length', 6);
