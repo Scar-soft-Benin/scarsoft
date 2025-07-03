@@ -29,7 +29,7 @@ const footerSections = [
 
 const Footer = () => {
     return (
-        <footer className="bg-black text-white h-full sm:h-[60vh] flex flex-col justify-between py-12">
+        <footer className="bg-black text-white h-full md:h-[60vh] flex flex-col justify-between py-12">
             <div className="container mx-auto px-6 flex-grow">
                 {/* Top Section */}
                 <div className="flex flex-col md:flex-row justify-around gap-8">
