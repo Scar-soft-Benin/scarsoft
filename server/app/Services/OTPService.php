@@ -1,12 +1,13 @@
 <?php
 namespace App\Services;
 
-
 use App\Models\OtpCode;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class OTPService
 {
@@ -69,6 +70,47 @@ class OTPService
         ];
     }
 
+    public function generateLoginVerificationCode(string $email, array $deviceInfo = []): array
+    {
+        $user = User::where('email', $email)->first();
+        
+        if (!$user) {
+            return [
+                'success' => false,
+                'error' => 'Utilisateur non trouvé',
+                'error_code' => 'USER_NOT_FOUND',
+            ];
+        }
+
+        // Invalider tous les codes précédents pour cet email et ce type
+        $this->invalidatePreviousCodes($email, 'login_verification');
+
+        $OtpCode = OtpCode::createForLoginVerification($email);
+
+        // Générer un identifiant de session unique pour cette tentative de connexion
+        $loginSessionId = Str::uuid()->toString();
+
+        // Stocker les informations de device en cache pour les récupérer après vérification
+        Cache::put("login_session:{$loginSessionId}", [
+            'email' => $email,
+            'otp_code_id' => $OtpCode->id,
+            'device_info' => $deviceInfo,
+            'created_at' => Carbon::now(),
+        ], $this->expirationMinutes * 60);
+
+        $sent = $this->sendLoginVerificationCode($email, $OtpCode->code, $user->name, $deviceInfo);
+
+        return [
+            'success' => $sent,
+            'code_id' => $OtpCode->id,
+            'login_session_id' => $loginSessionId,
+            'expires_at' => $OtpCode->expires_at,
+            'message' => $sent 
+                ? 'Code de vérification de connexion envoyé à votre adresse email'
+                : 'Erreur lors de l\'envoi du code de vérification',
+        ];
+    }
+
     public function verifyCode(string $identifier, string $code, string $type): array
     {
         $OtpCode = OtpCode::forIdentifier($identifier)
@@ -109,6 +151,37 @@ class OTPService
         ];
     }
 
+    public function verifyLoginCode(string $email, string $code, string $loginSessionId): array
+    {
+        // Récupérer les informations de la session de connexion
+        $sessionData = Cache::get("login_session:{$loginSessionId}");
+        
+        if (!$sessionData || $sessionData['email'] !== $email) {
+            return [
+                'valid' => false,
+                'error' => 'Session de connexion invalide ou expirée',
+                'error_code' => 'INVALID_LOGIN_SESSION',
+            ];
+        }
+
+        // Vérifier le code OTP standard
+        $verification = $this->verifyCode($email, $code, 'login_verification');
+
+        if (!$verification['valid']) {
+            return $verification;
+        }
+
+        // Si la vérification est réussie, nettoyer la session et retourner les infos de device
+        Cache::forget("login_session:{$loginSessionId}");
+
+        return [
+            'valid' => true,
+            'message' => 'Code de connexion vérifié avec succès',
+            'code_id' => $verification['code_id'],
+            'device_info' => $sessionData['device_info'] ?? [],
+        ];
+    }
+
     public function resendCode(string $identifier, string $type): array
     {
         // Vérifier s'il y a un code récent (moins de 1 minute)
@@ -139,6 +212,67 @@ class OTPService
                     'error_code' => 'UNSUPPORTED_TYPE',
                 ];
         }
+    }
+
+    public function resendLoginCode(string $email, string $loginSessionId): array
+    {
+        // Récupérer les informations de la session de connexion
+        $sessionData = Cache::get("login_session:{$loginSessionId}");
+        
+        if (!$sessionData || $sessionData['email'] !== $email) {
+            return [
+                'success' => false,
+                'error' => 'Session de connexion invalide ou expirée',
+                'error_code' => 'INVALID_LOGIN_SESSION',
+            ];
+        }
+
+        // Vérifier s'il y a un code récent (moins de 1 minute)
+        $recentCode = OtpCode::forIdentifier($email)
+            ->ofType('login_verification')
+            ->where('created_at', '>', Carbon::now()->subMinute())
+            ->first();
+
+        if ($recentCode) {
+            return [
+                'success' => false,
+                'error' => 'Veuillez attendre avant de demander un nouveau code',
+                'error_code' => 'TOO_FREQUENT',
+                'retry_after' => 60 - Carbon::now()->diffInSeconds($recentCode->created_at),
+            ];
+        }
+
+        // Régénérer un code de connexion
+        $user = User::where('email', $email)->first();
+        
+        if (!$user) {
+            return [
+                'success' => false,
+                'error' => 'Utilisateur non trouvé',
+                'error_code' => 'USER_NOT_FOUND',
+            ];
+        }
+
+        // Invalider l'ancien code
+        $this->invalidatePreviousCodes($email, 'login_verification');
+
+        // Créer un nouveau code
+        $OtpCode = OtpCode::createForLoginVerification($email);
+
+        // Mettre à jour la session avec le nouveau code
+        $sessionData['otp_code_id'] = $OtpCode->id;
+        Cache::put("login_session:{$loginSessionId}", $sessionData, $this->expirationMinutes * 60);
+
+        $sent = $this->sendLoginVerificationCode($email, $OtpCode->code, $user->name, $sessionData['device_info'] ?? []);
+
+        return [
+            'success' => $sent,
+            'code_id' => $OtpCode->id,
+            'expires_at' => $OtpCode->expires_at,
+            'message' => $sent 
+                ? 'Nouveau code de connexion envoyé à votre adresse email'
+                : 'Erreur lors de l\'envoi du nouveau code',
+        ];
     }
 
     private function invalidatePreviousCodes(string $identifier, string $type): void
@@ -185,6 +319,29 @@ class OTPService
             return true;
         } catch (\Exception $e) {
             Log::error('Erreur envoi email de réinitialisation: ' . $e->getMessage(), [
+                'email' => $email,
+                'code' => $code,
+            ]);
+            return false;
+        }
+    }
+
+    private function sendLoginVerificationCode(string $email, string $code, string $userName, array $deviceInfo = []): bool
+    {
+        try {
+            Mail::send('emails.login-verification', [
+                'code' => $code,
+                'user_name' => $userName,
+                'device_info' => $deviceInfo,
+                'expires_at' => Carbon::now()->addMinutes($this->expirationMinutes),
+            ], function ($message) use ($email) {
+                $message->to($email)
+                        ->subject('Code de vérification de connexion');
+            });
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Erreur envoi email de connexion: ' . $e->getMessage(), [
                 'email' => $email,
                 'code' => $code,
             ]);

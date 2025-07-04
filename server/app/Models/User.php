@@ -88,4 +88,34 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified' => !is_null($this->email_verified_at),
         ];
     }
+
+    public function createdCompanies(): HasMany
+    {
+        return $this->hasMany(Company::class, 'created_by');
+    }
+
+    public function createdJobOffers(): HasMany
+    {
+        return $this->hasMany(JobOffer::class, 'created_by');
+    }
+
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class);
+    }
+
+    public function reviewedApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class, 'reviewed_by');
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class);
+    }
+
+    public function repliedContacts(): HasMany
+    {
+        return $this->hasMany(Contact::class, 'replied_by');
+    }
 }
