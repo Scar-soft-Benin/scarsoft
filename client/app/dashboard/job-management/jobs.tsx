@@ -272,7 +272,7 @@ const Jobs = () => {
         data={jobs}
         columns={columns}
         title="Offres d'Emploi"
-        detailPath="/jobs"
+        // detailPath="/jobs"
         globalFilterFields={["title", "type", "location", "status"]}
       />
 

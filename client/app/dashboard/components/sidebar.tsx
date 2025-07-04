@@ -5,6 +5,7 @@ import { FiBriefcase, FiMail, FiUsers } from "react-icons/fi";
 import Logo from "~/header/SS-Vert.svg"; 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { FaBuilding } from "react-icons/fa";
 
 export default function Sidebar() {
     const { user } = useAuth();
@@ -86,6 +87,18 @@ export default function Sidebar() {
                     }
                 >
                     <FiBriefcase className="mr-2" /> Offres d'emploi
+                </NavLink>
+                <NavLink
+                    to="/dashboard/companies"
+                    className={({ isActive }) =>
+                        `flex items-center p-4 text-neutral-light-text dark:text-neutral-dark-text hover:bg-neutral-light-bg dark:hover:bg-neutral-dark-bg hover:text-primary ${
+                            isActive
+                                ? "bg-neutral-light-bg dark:bg-neutral-dark-bg text-primary"
+                                : ""
+                        }`
+                    }
+                >
+                    <FaBuilding className="mr-2" /> Entreprises
                 </NavLink>
             </nav>
         </aside>
