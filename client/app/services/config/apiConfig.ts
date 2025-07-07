@@ -80,7 +80,7 @@ const createApiClient = (): AxiosInstance => {
                     localStorage.removeItem("auth_token");
                     localStorage.removeItem("refresh_token");
                     localStorage.removeItem("auth_user");
-                    window.location.href = "/login";
+                    window.location.href = "/auth/login";
                     return Promise.reject(refreshError);
                 }
             }

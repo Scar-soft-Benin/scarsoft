@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login, logout, fetchUser } from "../store/sagas/authSaga";
+import { login, logout, fetchUser, navigateTo } from "../store/sagas/authSaga";
 import { type User } from "../services/types/auth.types";
 import type { RootState } from "../store";
 
@@ -29,19 +29,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const dispatch = useDispatch();
     const authState = useSelector((state: RootState) => state.auth);
 
-    // Initialize auth state from localStorage
     useEffect(() => {
         const initializeAuth = async () => {
             const storedToken = localStorage.getItem(STORAGE_KEY.TOKEN);
             if (storedToken && !authState.user) {
                 console.log("AuthProvider: Fetching user on mount");
-                // dispatch(fetchUser());
+                dispatch(fetchUser());
             }
         };
         initializeAuth();
     }, [dispatch, authState.user]);
 
-    // Log auth state changes for debugging
     useEffect(() => {
         console.log("AuthProvider: authState updated", {
             user: authState.user,
@@ -62,32 +60,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const logoutAction = useCallback(() => {
         console.log("AuthProvider: Dispatching logout");
-        dispatch(logout());
-    }, [dispatch]);
+        const refreshToken =
+            authState.refreshToken ||
+            localStorage.getItem(STORAGE_KEY.REFRESH_TOKEN);
+        if (!refreshToken) {
+            console.warn("AuthProvider: No refresh token found for logout");
+            // Optionally handle missing refresh token (e.g., clear localStorage and redirect)
+            localStorage.removeItem(STORAGE_KEY.TOKEN);
+            localStorage.removeItem(STORAGE_KEY.REFRESH_TOKEN);
+            localStorage.removeItem(STORAGE_KEY.USER);
+            dispatch(navigateTo("/auth/login", undefined, true));
+            return;
+        }
+        dispatch(
+            logout({ refresh_token: refreshToken, logout_all_devices: false })
+        );
+    }, [dispatch, authState.refreshToken]);
 
     const fetchUserAction = useCallback(() => {
         console.log("AuthProvider: Dispatching fetchUser");
         dispatch(fetchUser());
     }, [dispatch]);
 
-    // Sync localStorage changes across tabs
     useEffect(() => {
         const handleStorageUpdate = () => {
             const storedToken = localStorage.getItem(STORAGE_KEY.TOKEN);
             if (storedToken && !authState.user) {
                 console.log("AuthProvider: Storage changed, fetching user");
                 dispatch(fetchUser());
-            } else if (!storedToken) {
+            } else if (!storedToken && authState.isAuthenticated) {
                 console.log(
                     "AuthProvider: Storage cleared, resetting auth state"
                 );
-                dispatch(logout());
+                const refreshToken =
+                    authState.refreshToken ||
+                    localStorage.getItem(STORAGE_KEY.REFRESH_TOKEN);
+                if (refreshToken) {
+                    dispatch(
+                        logout({
+                            refresh_token: refreshToken,
+                            logout_all_devices: false
+                        })
+                    );
+                } else {
+                    dispatch(navigateTo("/auth/login", undefined, true));
+                }
             }
         };
 
         window.addEventListener("storage", handleStorageUpdate);
         return () => window.removeEventListener("storage", handleStorageUpdate);
-    }, [dispatch, authState.user]);
+    }, [
+        dispatch,
+        authState.user,
+        authState.isAuthenticated,
+        authState.refreshToken
+    ]);
 
     const value: AuthContextType = {
         user: authState.user,

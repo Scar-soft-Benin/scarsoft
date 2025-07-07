@@ -6,7 +6,7 @@ export default function ProtectedLayout() {
     const { isAuthenticated } = useAuth();
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/auth/login" replace />;
     }
 
     return <DashboardLayout />;

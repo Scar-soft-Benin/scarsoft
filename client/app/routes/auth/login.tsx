@@ -19,7 +19,14 @@ export default function Login() {
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const authState = useSelector((state: RootState) => state.auth);
+    const authState = useSelector(
+        (state: RootState) => state.auth,
+        (prev, next) =>
+            prev.navigate?.path === next.navigate?.path &&
+            prev.login_session_id === next.login_session_id &&
+            prev.next_step === next.next_step &&
+            prev.token === next.token
+    );
     const isLoading = useSelector(
         (state: RootState) => state.loading.isLoading
     );
@@ -42,39 +49,57 @@ export default function Login() {
 
     const email = watch("email");
 
-    // Handle navigation from saga or auth state
     useEffect(() => {
-        if (!isMounted.current) return;
+        if (!isMounted.current) {
+            console.log("Login: Component unmounted, skipping useEffect");
+            return;
+        }
 
-        // Handle saga-driven navigation
+        console.log("Login: useEffect triggered with authState:", {
+            navigate: authState.navigate,
+            login_session_id: authState.login_session_id,
+            next_step: authState.next_step,
+            isAuthenticated,
+            token: authState.token,
+            email
+        });
+
         if (authState.navigate) {
-            console.log("Login: Navigating to", authState.navigate.path);
+            console.log(
+                "Login: Navigating to",
+                authState.navigate.path,
+                "with state:",
+                authState.navigate.state
+            );
             navigate(authState.navigate.path, {
                 state: authState.navigate.state,
                 replace: authState.navigate.replace ?? true
             });
-        }
-        // Handle direct auth state navigation
-        else if (
+        } else if (
             authState.login_session_id &&
             authState.next_step === "verify_login_otp"
         ) {
             console.log(
-                "Login: Navigating to /verify-otp with email:",
+                "Login: Fallback navigation to /verify-otp with email:",
                 email,
                 "and login_session_id:",
                 authState.login_session_id
             );
-            navigate("/verify-otp", {
+            navigate("/auth/verify-otp", {
                 state: { email, login_session_id: authState.login_session_id },
                 replace: true
             });
-        }
-        // Navigate to dashboard only if fully authenticated with token
-        else if (isAuthenticated && authState.token) {
+        } else if (isAuthenticated && authState.token) {
             console.log("Login: Navigating to /dashboard");
             navigate("/dashboard", { replace: true });
+        } else {
+            console.log("Login: No navigation triggered");
         }
+
+        return () => {
+            console.log("Login: Cleaning up useEffect");
+            isMounted.current = false;
+        };
     }, [
         isAuthenticated,
         authState.navigate,
@@ -85,7 +110,6 @@ export default function Login() {
         email
     ]);
 
-    // Handle auth errors
     useEffect(() => {
         if (authState.error && isMounted.current) {
             console.log("Login: Auth error:", authState.error);
@@ -95,9 +119,6 @@ export default function Login() {
             });
             reset({ password: "" });
         }
-        return () => {
-            isMounted.current = false;
-        };
     }, [authState.error, setError, reset]);
 
     const onSubmit: SubmitHandler<LoginForm> = (data, event) => {
@@ -175,7 +196,7 @@ export default function Login() {
             </form>
             <p className="text-center text-sm">
                 Don't have an account?{" "}
-                <a href="/register" className="text-blue-600 hover:underline">
+                <a href="/auth/register" className="text-blue-600 hover:underline">
                     Register
                 </a>
             </p>

@@ -6,7 +6,15 @@ import type {
     OTPVerificationPayload,
     ResendOTPPayload,
     User,
-    PasswordResetPayload
+    PasswordResetPayload,
+    VerifyOTPResponse,
+    RegisterPayload,
+    RegisterResponse,
+    EmailVerificationPayload,
+    VerifyEmailResponse,
+    ResendEmailVerificationPayload,
+    LogoutPayload,
+    LogoutResponse
 } from "../../services/types/auth.types";
 import {
     FETCH_USER_FAILURE,
@@ -20,7 +28,13 @@ import {
     RESEND_OTP_FAILURE,
     RESEND_OTP_SUCCESS,
     REQUEST_PASSWORD_RESET_SUCCESS,
-    REQUEST_PASSWORD_RESET_FAILURE
+    REQUEST_PASSWORD_RESET_FAILURE,
+    REGISTER_FAILURE,
+    REGISTER_SUCCESS,
+    EMAIL_VERIFICATION_FAILURE,
+    EMAIL_VERIFICATION_SUCCESS,
+    RESEND_EMAIL_VERIFICATION_FAILURE,
+    RESEND_EMAIL_VERIFICATION_SUCCESS
 } from "~/store/reducer/authReducer";
 import { addMessage } from "~/store/reducer/messageReducer";
 import { showLoading, hideLoading } from "~/store/reducer/loadingReducer";
@@ -33,21 +47,16 @@ export const FETCH_USER = "FETCH_USER";
 export const VERIFY_OTP = "VERIFY_OTP";
 export const RESEND_OTP = "RESEND_OTP";
 export const REQUEST_PASSWORD_RESET = "REQUEST_PASSWORD_RESET";
+export const REGISTER = "REGISTER";
 export const NAVIGATE = "NAVIGATE";
+export const VERIFY_EMAIL = "VERIFY_EMAIL";
+export const RESEND_EMAIL_VERIFICATION = "RESEND_EMAIL_VERIFICATION";
 
 // Define Action Interfaces
 interface LoginAction {
     type: typeof LOGIN;
     payload: LoginPayload;
 }
-
-// interface LogoutAction {
-//     type: typeof LOGOUT;
-// }
-
-// interface FetchUserAction {
-//     type: typeof FETCH_USER;
-// }
 
 interface VerifyOTPAction {
     type: typeof VERIFY_OTP;
@@ -63,14 +72,39 @@ interface RequestPasswordResetAction {
     type: typeof REQUEST_PASSWORD_RESET;
     payload: PasswordResetPayload;
 }
+interface RegisterAction {
+    type: typeof REGISTER;
+    payload: RegisterPayload;
+}
+
+interface VerifyEmailAction {
+    type: typeof VERIFY_EMAIL;
+    payload: OTPVerificationPayload;
+}
+
+interface ResendEmailVerificationAction {
+    type: typeof RESEND_EMAIL_VERIFICATION;
+    payload: ResendOTPPayload;
+}
+interface LogoutAction {
+    type: typeof LOGOUT;
+    payload: LogoutPayload;
+}
 
 // Action Creators
 export const login = (payload: LoginPayload) => ({
     type: LOGIN,
     payload
 });
+export const register = (payload: RegisterPayload) => ({
+    type: REGISTER,
+    payload
+});
 
-export const logout = () => ({ type: LOGOUT });
+export const logout = (payload: LogoutPayload) => ({
+    type: LOGOUT,
+    payload
+});
 
 export const fetchUser = () => ({ type: FETCH_USER });
 
@@ -102,8 +136,9 @@ export const loginFailure = (error: {
     payload: error
 });
 
-export const logoutSuccess = () => ({
-    type: LOGOUT_SUCCESS
+export const logoutSuccess = (response: LogoutResponse) => ({
+    type: LOGOUT_SUCCESS,
+    payload: response
 });
 
 export const logoutFailure = (error: {
@@ -127,8 +162,9 @@ export const fetchUserFailure = (error: {
     payload: error
 });
 
-export const otpVerificationSuccess = () => ({
-    type: OTP_VERIFICATION_SUCCESS
+export const otpVerificationSuccess = (response: VerifyOTPResponse) => ({
+    type: OTP_VERIFICATION_SUCCESS,
+    payload: response
 });
 
 export const otpVerificationFailure = (error: {
@@ -163,13 +199,63 @@ export const requestPasswordResetFailure = (error: {
     payload: error
 });
 
+export const registerSuccess = (response: RegisterResponse) => ({
+    type: REGISTER_SUCCESS,
+    payload: response
+});
+export const registerFailure = (error: {
+    message: string;
+    error_code?: string;
+    errors?: Record<string, string[]>;
+}) => ({
+    type: REGISTER_FAILURE,
+    payload: error
+});
+
 export const navigateTo = (
     path: string,
-    state?: Record<string, unknown> | undefined,
+    state?: Record<string, unknown>,
     replace = true
 ) => ({
     type: NAVIGATE,
     payload: { path, state, replace }
+});
+
+export const verifyEmail = (payload: EmailVerificationPayload) => ({
+    type: VERIFY_EMAIL,
+    payload
+});
+
+export const resendEmailVerification = (
+    payload: ResendEmailVerificationPayload
+) => ({
+    type: RESEND_EMAIL_VERIFICATION,
+    payload
+});
+
+export const emailVerificationSuccess = (response: VerifyEmailResponse) => ({
+    type: EMAIL_VERIFICATION_SUCCESS,
+    payload: response
+});
+
+export const emailVerificationFailure = (error: {
+    message: string;
+    error_code?: string;
+}) => ({
+    type: EMAIL_VERIFICATION_FAILURE,
+    payload: error
+});
+
+export const resendEmailVerificationSuccess = () => ({
+    type: RESEND_EMAIL_VERIFICATION_SUCCESS
+});
+
+export const resendEmailVerificationFailure = (error: {
+    message: string;
+    error_code?: string;
+}) => ({
+    type: RESEND_EMAIL_VERIFICATION_FAILURE,
+    payload: error
 });
 
 // Error Type Guard
@@ -181,6 +267,7 @@ function isApiError(error: unknown): error is ApiError {
         "status" in error
     );
 }
+
 // Sagas
 function* loginSaga(action: LoginAction) {
     try {
@@ -194,27 +281,17 @@ function* loginSaga(action: LoginAction) {
         if (response.data.next_step === "verify_login_otp") {
             console.log("loginSaga: Navigating to /verify-otp");
             yield put(
-                navigateTo("/verify-otp", {
+                navigateTo("/auth/verify-otp", {
                     email: action.payload.email,
                     login_session_id: response.data.login_session_id
                 })
             );
-        } else if (response.data.token && response.data.user) {
-            localStorage.setItem("auth_token", response.data.token);
-            localStorage.setItem(
-                "refresh_token",
-                response.data.refreshToken || ""
-            );
-            localStorage.setItem(
-                "auth_user",
-                JSON.stringify(response.data.user)
-            );
-            console.log("loginSaga: Navigating to /dashboard");
-            yield put(navigateTo("/dashboard"));
         }
         yield put(
             addMessage({
-                text: response.data.message || "Logged in successfully",
+                text:
+                    response.data.message ||
+                    "Credentials verified. OTP sent to your email",
                 type: "success"
             })
         );
@@ -231,24 +308,97 @@ function* loginSaga(action: LoginAction) {
     }
 }
 
-function* logoutSaga() {
+function* registerSaga(action: RegisterAction) {
     try {
         yield put(showLoading());
-        yield call(authService.logout);
-        yield put(logoutSuccess());
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("auth_user");
+        const response: ApiResponse<RegisterResponse> = yield call(
+            authService.register,
+            action.payload
+        );
+        console.log("registerSaga: Register response:", response);
+        yield put(registerSuccess(response.data));
         yield put(
-            addMessage({ text: "Logged out successfully", type: "success" })
+            addMessage({
+                text: response.data.message || "User registered successfully",
+                type: "success"
+            })
         );
     } catch (error: unknown) {
-        console.error("Raw logout error:", error);
+        console.error("registerSaga: Raw register error:", error);
         const apiError = isApiError(error)
             ? {
                   message: error.message,
                   error_code: error.error_code
               }
+            : { message: "Failed to register" };
+        console.log("registerSaga: Processed register error:", apiError);
+        yield put(registerFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+    }
+}
+
+function* verifyOTPSaga(action: VerifyOTPAction) {
+    try {
+        yield put(showLoading());
+        const response: ApiResponse<VerifyOTPResponse> = yield call(
+            authService.verifyOTP,
+            action.payload
+        );
+        console.log("verifyOTPSaga: Verify OTP response:", response);
+        yield put(otpVerificationSuccess(response.data));
+        if (response.data.access_token && response.data.user) {
+            localStorage.setItem("auth_token", response.data.access_token);
+            localStorage.setItem("refresh_token", response.data.refresh_token);
+            localStorage.setItem(
+                "auth_user",
+                JSON.stringify(response.data.user)
+            );
+            console.log("verifyOTPSaga: Navigating to /dashboard");
+            yield put(navigateTo("/dashboard"));
+        }
+        yield put(
+            addMessage({
+                text: response.data.message || "Login successful",
+                type: "success"
+            })
+        );
+    } catch (error: unknown) {
+        console.error("verifyOTPSaga: Raw verify OTP error:", error);
+        const apiError = isApiError(error)
+            ? { message: error.message, error_code: error.error_code }
+            : { message: "Failed to verify OTP" };
+        console.log("verifyOTPSaga: Processed verify OTP error:", apiError);
+        yield put(otpVerificationFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+    }
+}
+
+function* logoutSaga(action: LogoutAction) {
+    try {
+        yield put(showLoading());
+        const response: ApiResponse<LogoutResponse> = yield call(
+            authService.logout,
+            action.payload
+        );
+        yield put(logoutSuccess(response.data));
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("auth_user");
+        yield put(
+            addMessage({
+                text: response.data.message || "Logged out successfully",
+                type: "success"
+            })
+        );
+        yield put(navigateTo("/auth/login", undefined, true));
+    } catch (error: unknown) {
+        console.error("logoutSaga: Raw logout error:", error);
+        const apiError = isApiError(error)
+            ? { message: error.message, error_code: error.error_code }
             : { message: "Failed to logout" };
         yield put(logoutFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
@@ -265,43 +415,11 @@ function* fetchUserSaga() {
         );
         yield put(fetchUserSuccess(response.data));
     } catch (error: unknown) {
-        console.error("Raw fetch user error:", error);
+        console.error("fetchUserSaga: Raw fetch user error:", error);
         const apiError = isApiError(error)
-            ? {
-                  message: error.message,
-                  error_code: error.error_code
-              }
+            ? { message: error.message, error_code: error.error_code }
             : { message: "Failed to fetch user" };
         yield put(fetchUserFailure(apiError));
-        yield put(addMessage({ text: apiError.message, type: "error" }));
-    } finally {
-        yield put(hideLoading());
-    }
-}
-
-function* verifyOTPSaga(action: VerifyOTPAction) {
-    try {
-        yield put(showLoading());
-        const response: ApiResponse<null> = yield call(
-            authService.verifyOTP,
-            action.payload
-        );
-        yield put(otpVerificationSuccess());
-        yield put(
-            addMessage({
-                text: response.message || "OTP verified successfully",
-                type: "success"
-            })
-        );
-    } catch (error: unknown) {
-        console.error("Raw verify OTP error:", error);
-        const apiError = isApiError(error)
-            ? {
-                  message: error.message,
-                  error_code: error.error_code
-              }
-            : { message: "Failed to verify OTP" };
-        yield put(otpVerificationFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
         yield put(hideLoading());
@@ -311,24 +429,21 @@ function* verifyOTPSaga(action: VerifyOTPAction) {
 function* resendOTPSaga(action: ResendOTPAction) {
     try {
         yield put(showLoading());
-        const response: ApiResponse<null> = yield call(
+        const response: ApiResponse<LoginResponse> = yield call(
             authService.resendOTP,
             action.payload
         );
         yield put(resendOTPSuccess());
         yield put(
             addMessage({
-                text: response.message || "OTP resent successfully",
+                text: response.data.message || "OTP resent successfully",
                 type: "success"
             })
         );
     } catch (error: unknown) {
-        console.error("Raw resend OTP error:", error);
+        console.error("resendOTPSaga: Raw resend OTP error:", error);
         const apiError = isApiError(error)
-            ? {
-                  message: error.message,
-                  error_code: error.error_code
-              }
+            ? { message: error.message, error_code: error.error_code }
             : { message: "Failed to resend OTP" };
         yield put(resendOTPFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
@@ -352,14 +467,76 @@ function* requestPasswordResetSaga(action: RequestPasswordResetAction) {
             })
         );
     } catch (error: unknown) {
-        console.error("Raw password reset error:", error);
+        console.error(
+            "requestPasswordResetSaga: Raw password reset error:",
+            error
+        );
         const apiError = isApiError(error)
-            ? {
-                  message: error.message,
-                  error_code: error.error_code
-              }
+            ? { message: error.message, error_code: error.error_code }
             : { message: "Failed to request password reset" };
         yield put(requestPasswordResetFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+    }
+}
+
+function* verifyEmailSaga(action: VerifyEmailAction) {
+    try {
+        yield put(showLoading());
+        const response: ApiResponse<VerifyEmailResponse> = yield call(
+            authService.verifyEmail,
+            action.payload
+        );
+        console.log("verifyEmailSaga: Verify Email response:", response);
+        yield put(emailVerificationSuccess(response.data));
+        if (response.data.message && response.data.success) {
+            console.log("verifyEmailSaga: Navigating to /dashboard");
+            yield put(navigateTo("/dashboard"));
+        }
+        yield put(
+            addMessage({
+                text: response.data.message || "Email verified successfully",
+                type: "success"
+            })
+        );
+    } catch (error: unknown) {
+        console.error("verifyEmailSaga: Raw verify email error:", error);
+        const apiError = isApiError(error)
+            ? { message: error.message, error_code: error.error_code }
+            : { message: "Failed to verify email" };
+        console.log("verifyEmailSaga: Processed verify email error:", apiError);
+        yield put(emailVerificationFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+    }
+}
+
+function* resendEmailVerificationSaga(action: ResendEmailVerificationAction) {
+    try {
+        yield put(showLoading());
+        const response: ApiResponse<null> = yield call(
+            authService.resendEmailVerification,
+            action.payload
+        );
+        yield put(resendEmailVerificationSuccess());
+        yield put(
+            addMessage({
+                text:
+                    response.message || "Verification code resent successfully",
+                type: "success"
+            })
+        );
+    } catch (error: unknown) {
+        console.error(
+            "resendEmailVerificationSaga: Raw resend email error:",
+            error
+        );
+        const apiError = isApiError(error)
+            ? { message: error.message, error_code: error.error_code }
+            : { message: "Failed to resend verification code" };
+        yield put(resendEmailVerificationFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
         yield put(hideLoading());
@@ -373,4 +550,7 @@ export function* authSaga() {
     yield takeLatest(VERIFY_OTP, verifyOTPSaga);
     yield takeLatest(RESEND_OTP, resendOTPSaga);
     yield takeLatest(REQUEST_PASSWORD_RESET, requestPasswordResetSaga);
+    yield takeLatest(REGISTER, registerSaga);
+    yield takeLatest(VERIFY_EMAIL, verifyEmailSaga);
+    yield takeLatest(RESEND_EMAIL_VERIFICATION, resendEmailVerificationSaga);
 }

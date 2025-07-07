@@ -1,117 +1,150 @@
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "~/context/authContext";
-import { useNavigate, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router";
+import { useEffect, useRef } from "react";
 import { verifyOTP, resendOTP } from "~/store/sagas/authSaga";
-import { useEffect } from "react";
 import type { RootState } from "~/store";
 
 const otpSchema = z.object({
-    otp: z
-        .string()
+    digits: z
+        .array(z.string().regex(/^[0-9]?$/, "Must be a single digit"))
         .length(6, "OTP must be 6 digits")
-        .regex(/^\d+$/, "OTP must contain only digits")
 });
 
 type OTPForm = z.infer<typeof otpSchema>;
 
 export default function VerifyOTP() {
-    const { isAuthenticated, isOTPVerified } = useAuth();
-    const navigate = useNavigate();
     const location = useLocation();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
-    const authError = useSelector((state: RootState) => state.auth.error);
+    const authState = useSelector((state: RootState) => state.auth);
     const isLoading = useSelector(
         (state: RootState) => state.loading.isLoading
     );
+    const isMounted = useRef(true);
+
+    const email = location.state?.email as string | undefined;
+    const login_session_id = location.state?.login_session_id as
+        | string
+        | undefined;
 
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
         setError,
-        reset
+        setValue,
+        watch
     } = useForm<OTPForm>({
         resolver: zodResolver(otpSchema),
-        defaultValues: {
-            otp: ""
-        }
+        defaultValues: { digits: ["", "", "", "", "", ""] }
     });
 
-    // Redirect if authenticated and OTP verified
+    const digits = watch("digits");
+
     useEffect(() => {
-        if (isAuthenticated && isOTPVerified) {
-            navigate("/dashboard");
+        if (!isMounted.current) return;
+        if (!email || !login_session_id) {
+            console.log(
+                "VerifyOTP: Missing email or login_session_id, redirecting to /login"
+            );
+            navigate("/auth/login", { replace: true });
         }
-    }, [isAuthenticated, isOTPVerified, navigate]);
-
-    // Handle auth errors
-    useEffect(() => {
-        if (authError) {
-            setError("root", { message: authError.message });
-            reset({ otp: "" });
-        }
-    }, [authError, setError, reset]);
-
-    // Extract email from location state
-    const email = (location.state as { email?: string } | null)?.email || "";
-
-    const onSubmit = async (data: OTPForm) => {
-        if (!email) {
-            setError("root", {
-                message: "Email not provided. Please try logging in again."
+        if (authState.navigate) {
+            console.log("VerifyOTP: Navigating to", authState.navigate.path);
+            navigate(authState.navigate.path, {
+                state: authState.navigate.state,
+                replace: authState.navigate.replace ?? true
             });
-            return;
         }
-        dispatch(verifyOTP({ email, code: data.otp }));
+    }, [authState.navigate, email, login_session_id, navigate]);
+
+    useEffect(() => {
+        if (authState.error && isMounted.current) {
+            console.log("VerifyOTP: Auth error:", authState.error);
+            setError("root", {
+                message:
+                    authState.error.message ||
+                    "An error occurred during OTP verification"
+            });
+            setValue("digits", ["", "", "", "", "", ""]);
+        }
+        return () => {
+            isMounted.current = false;
+        };
+    }, [authState.error, setError, setValue]);
+
+    const handleDigitChange = (index: number, value: string) => {
+        if (/^[0-9]?$/.test(value)) {
+            const newDigits = [...digits];
+            newDigits[index] = value;
+            setValue("digits", newDigits);
+            if (value && index < 5) {
+                document.getElementById(`digit-${index + 1}`)?.focus();
+            }
+        }
+    };
+
+    const onSubmit: SubmitHandler<OTPForm> = (data, event) => {
+        event?.preventDefault();
+        if (!email || !login_session_id) return;
+        const otp = data.digits.join("");
+        console.log("VerifyOTP: Submitting OTP with data:", {
+            code: otp,
+            email,
+            login_session_id
+        });
+        dispatch(verifyOTP({ code: otp, email, login_session_id }));
     };
 
     const handleResendOTP = () => {
-        if (!email) {
-            setError("root", {
-                message: "Email not provided. Please try logging in again."
-            });
-            return;
-        }
-        dispatch(resendOTP({ email }));
+        if (!email || !login_session_id) return;
+        console.log("VerifyOTP: Resending OTP for email:", email);
+        dispatch(resendOTP({ email, login_session_id }));
+        setValue("digits", ["", "", "", "", "", ""]);
     };
+
+    if (!email || !login_session_id) {
+        return <div>Error: Missing email or login session ID</div>;
+    }
 
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-center">Verify OTP</h2>
-            <p className="text-sm text-gray-600 text-center">
-                Enter the 6-digit OTP sent to {email || "your email"}.
+            <p className="text-center text-sm">
+                A verification code has been sent to {email}.
             </p>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                    <label
-                        htmlFor="otp"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        OTP Code
-                    </label>
-                    <input
-                        id="otp"
-                        type="text"
-                        {...register("otp")}
-                        className="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
-                        placeholder="Enter 6-digit OTP"
-                        disabled={isSubmitting || isLoading}
-                        maxLength={6}
-                    />
-                    {errors.otp && (
-                        <p className="text-red-500 text-sm mt-1">
-                            {errors.otp.message}
-                        </p>
-                    )}
-                    {errors.root && (
-                        <p className="text-red-500 text-sm mt-1">
-                            {errors.root.message}
-                        </p>
-                    )}
+                <div className="flex justify-center gap-2">
+                    {digits.map((_, index) => (
+                        <input
+                            key={index}
+                            id={`digit-${index}`}
+                            type="text"
+                            maxLength={1}
+                            {...register(`digits.${index}`)}
+                            value={digits[index]}
+                            onChange={(e) =>
+                                handleDigitChange(index, e.target.value)
+                            }
+                            className="w-12 h-12 text-center border rounded-md focus:ring focus:ring-blue-300 disabled:bg-gray-100"
+                            disabled={isSubmitting || isLoading}
+                        />
+                    ))}
                 </div>
+                {errors.digits && (
+                    <p className="text-red-500 text-sm text-center">
+                        {errors.digits.message ||
+                            "Please enter a valid 6-digit OTP"}
+                    </p>
+                )}
+                {errors.root && (
+                    <p className="text-red-500 text-sm text-center">
+                        {errors.root.message}
+                    </p>
+                )}
                 <button
                     type="submit"
                     disabled={isSubmitting || isLoading}
@@ -123,18 +156,12 @@ export default function VerifyOTP() {
             <div className="text-center">
                 <button
                     onClick={handleResendOTP}
-                    disabled={isLoading}
+                    disabled={isSubmitting || isLoading}
                     className="text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
                 >
                     Resend OTP
                 </button>
             </div>
-            <p className="text-center text-sm">
-                Back to{" "}
-                <a href="/login" className="text-blue-600 hover:underline">
-                    Login
-                </a>
-            </p>
         </div>
     );
 }

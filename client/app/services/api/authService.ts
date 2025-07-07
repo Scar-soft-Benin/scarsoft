@@ -1,14 +1,20 @@
 import { apiClient } from "../config/apiConfig";
 import { parseApiError } from "../utils/errorParser";
-import { type ApiResponse } from "../types/common.types";
+import type { ApiResponse } from "../types/common.types";
 import type {
     User,
     LoginPayload,
     LoginResponse,
-    RegisterPayload,
     PasswordResetPayload,
     OTPVerificationPayload,
-    ResendOTPPayload
+    ResendOTPPayload,
+    VerifyOTPResponse,
+    RegisterPayload,
+    RegisterResponse,
+    EmailVerificationPayload,
+    ResendEmailVerificationPayload,
+    LogoutPayload,
+    LogoutResponse
 } from "../types/auth.types";
 
 export const authService = {
@@ -24,10 +30,7 @@ export const authService = {
                     message: response.data.message,
                     login_session_id: response.data.login_session_id,
                     otp_expires_at: response.data.otp_expires_at,
-                    next_step: response.data.next_step,
-                    user: response.data.user,
-                    token: response.data.token,
-                    refreshToken: response.data.refreshToken
+                    next_step: response.data.next_step
                 },
                 status: response.status,
                 message: response.data.message
@@ -36,50 +39,25 @@ export const authService = {
             throw parseApiError(error);
         }
     },
-
-    register: async (payload: RegisterPayload): Promise<ApiResponse<User>> => {
+    register: async (
+        payload: RegisterPayload
+    ): Promise<ApiResponse<RegisterResponse>> => {
         try {
-            const response = await apiClient.post("/auth/register", payload);
+            const response = await apiClient.post("/auth/register", {
+                name: payload.name,
+                email: payload.email,
+                password: payload.password,
+                password_confirmation: payload.passwordConfirmation
+            });
             console.log("authService: Register response:", response.data);
             return {
-                data: response.data,
-                status: response.status,
-                message: response.data.message
-            };
-        } catch (error: unknown) {
-            throw parseApiError(error);
-        }
-    },
-
-    refreshToken: async (
-        refreshToken: string
-    ): Promise<ApiResponse<LoginResponse>> => {
-        try {
-            const response = await apiClient.post("/auth/refresh", {
-                refreshToken
-            });
-            console.log("authService: Refresh token response:", response.data);
-            return {
-                data: response.data,
-                status: response.status,
-                message: response.data.message
-            };
-        } catch (error: unknown) {
-            throw parseApiError(error);
-        }
-    },
-
-    requestPasswordReset: async (
-        payload: PasswordResetPayload
-    ): Promise<ApiResponse<null>> => {
-        try {
-            const response = await apiClient.post(
-                "/auth/password-reset",
-                payload
-            );
-            console.log("authService: Password reset response:", response.data);
-            return {
-                data: null,
+                data: {
+                    success: response.data.success,
+                    message: response.data.message,
+                    user: response.data.user,
+                    verification_required: response.data.verification_required,
+                    errors: response.data.errors
+                },
                 status: response.status,
                 message: response.data.message
             };
@@ -90,12 +68,23 @@ export const authService = {
 
     verifyOTP: async (
         payload: OTPVerificationPayload
-    ): Promise<ApiResponse<null>> => {
+    ): Promise<ApiResponse<VerifyOTPResponse>> => {
         try {
-            const response = await apiClient.post("/auth/verify-otp", payload);
+            const response = await apiClient.post(
+                "/auth/verify-login-otp",
+                payload
+            );
             console.log("authService: Verify OTP response:", response.data);
             return {
-                data: null,
+                data: {
+                    success: response.data.success,
+                    message: response.data.message,
+                    access_token: response.data.access_token,
+                    refresh_token: response.data.refresh_token,
+                    token_type: response.data.token_type,
+                    expires_in: response.data.expires_in,
+                    user: response.data.user
+                },
                 status: response.status,
                 message: response.data.message
             };
@@ -106,12 +95,21 @@ export const authService = {
 
     resendOTP: async (
         payload: ResendOTPPayload
-    ): Promise<ApiResponse<null>> => {
+    ): Promise<ApiResponse<LoginResponse>> => {
         try {
-            const response = await apiClient.post("/auth/resend-otp", payload);
+            const response = await apiClient.post(
+                "/auth/resend-login-otp",
+                payload
+            );
             console.log("authService: Resend OTP response:", response.data);
             return {
-                data: null,
+                data: {
+                    success: response.data.success,
+                    message: response.data.message,
+                    login_session_id: response.data.login_session_id,
+                    otp_expires_at: response.data.otp_expires_at,
+                    next_step: response.data.next_step
+                },
                 status: response.status,
                 message: response.data.message
             };
@@ -120,14 +118,19 @@ export const authService = {
         }
     },
 
-    logout: async (): Promise<ApiResponse<null>> => {
+    logout: async (
+        payload: LogoutPayload
+    ): Promise<ApiResponse<LogoutResponse>> => {
         try {
-            const response = await apiClient.post("/auth/logout");
+            const response = await apiClient.post("/auth/logout", payload);
             console.log("authService: Logout response:", response.data);
             return {
-                data: null,
+                data: {
+                    success: response.data.success,
+                    message: response.data.message || "Logged out successfully"
+                },
                 status: response.status,
-                message: response.data.message
+                message: response.data.message || "Logged out successfully"
             };
         } catch (error: unknown) {
             throw parseApiError(error);
@@ -144,7 +147,79 @@ export const authService = {
             return {
                 data: response.data,
                 status: response.status,
+                message: "User fetched successfully"
+            };
+        } catch (error: unknown) {
+            throw parseApiError(error);
+        }
+    },
+
+    requestPasswordReset: async (
+        payload: PasswordResetPayload
+    ): Promise<ApiResponse<null>> => {
+        try {
+            const response = await apiClient.post(
+                "/auth/password/reset",
+                payload
+            );
+            console.log(
+                "authService: Request password reset response:",
+                response.data
+            );
+            return {
+                data: null,
+                status: response.status,
+                message: response.data.message || "Password reset link sent"
+            };
+        } catch (error: unknown) {
+            throw parseApiError(error);
+        }
+    },
+    verifyEmail: async (
+        payload: EmailVerificationPayload
+    ): Promise<ApiResponse<VerifyOTPResponse>> => {
+        try {
+            const response = await apiClient.post(
+                "/auth/email/verify",
+                payload
+            );
+            console.log("authService: Verify Email response:", response.data);
+            return {
+                data: {
+                    success: response.data.success,
+                    message: response.data.message,
+                    access_token: response.data.access_token,
+                    refresh_token: response.data.refresh_token,
+                    token_type: response.data.token_type,
+                    expires_in: response.data.expires_in,
+                    user: response.data.user
+                },
+                status: response.status,
                 message: response.data.message
+            };
+        } catch (error: unknown) {
+            throw parseApiError(error);
+        }
+    },
+
+    resendEmailVerification: async (
+        payload: ResendEmailVerificationPayload
+    ): Promise<ApiResponse<null>> => {
+        try {
+            const response = await apiClient.post(
+                "/auth/email/resend",
+                payload
+            );
+            console.log(
+                "authService: Resend Email Verification response:",
+                response.data
+            );
+            return {
+                data: null,
+                status: response.status,
+                message:
+                    response.data.message ||
+                    "Verification code resent successfully"
             };
         } catch (error: unknown) {
             throw parseApiError(error);

@@ -12,7 +12,6 @@ import Loading from "~/components/loading";
 import type { Route } from "./+types/root";
 import "./app.css";
 import "../i18n.js";
-import { useEffect } from "react";
 import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
@@ -46,19 +45,10 @@ export const links: Route.LinksFunction = () => [
 ];
 
 function AppContent() {
-    const { showLoading, hideLoading } = useLoading();
-
-    useEffect(() => {
-        // Show loading on initial render
-        showLoading();
-        // Simulate app initialization (replace with actual logic if needed)
-        const timer = setTimeout(() => hideLoading(), 1000); // 1-second delay
-        return () => clearTimeout(timer);
-    }, [showLoading, hideLoading]);
-
+    const { isLoading } = useLoading(); // Access isLoading for rendering
     return (
         <>
-            <Loading />
+            {isLoading && <Loading />}
             <Message />
             <Outlet />
         </>
