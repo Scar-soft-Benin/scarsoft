@@ -5,126 +5,152 @@ import {
     useCallback,
     useEffect
 } from "react";
-import { useMessage } from "./messageContext";
-
-interface User {
-    id: string;
-    email: string;
-    role: "admin" | "secretary";
-}
+import { useDispatch } from "react-redux";
+import { login, logout, fetchUser } from "../store/sagas/authSaga";
+import { type User } from "../services/types/auth.types";
+import { type ApiError } from "../services/types/common.types";
+import { addMessage } from "~/store/reducer/messageReducer";
 
 interface AuthContextType {
     user: User | null;
     token: string | null;
+    refreshToken: string | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
+    fetchUser: () => void;
     isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Storage keys
 const STORAGE_KEY = {
     USER: "auth_user",
-    TOKEN: "auth_token"
+    TOKEN: "auth_token",
+    REFRESH_TOKEN: "refresh_token"
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     children
 }) => {
-    const { addMessage } = useMessage();
+    const dispatch = useDispatch();
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
-    // Initialize auth state from localStorage on mount
+    // Initialize auth state from localStorage
     useEffect(() => {
         const initializeAuth = async () => {
             const storedUser = localStorage.getItem(STORAGE_KEY.USER);
             const storedToken = localStorage.getItem(STORAGE_KEY.TOKEN);
+            const storedRefreshToken = localStorage.getItem(
+                STORAGE_KEY.REFRESH_TOKEN
+            );
 
-            if (storedUser && storedToken) {
+            if (storedUser && storedToken && storedRefreshToken) {
                 try {
-                    // Parse stored user
                     const parsedUser = JSON.parse(storedUser) as User;
-
-                    // Optional: Validate token with backend
-                    // const isValid = await validateToken(storedToken);
-                    // if (!isValid) throw new Error("Invalid token");
-
                     setUser(parsedUser);
                     setToken(storedToken);
+                    setRefreshToken(storedRefreshToken);
+                    dispatch(fetchUser());
                 } catch (error) {
                     console.error("Auth initialization failed:", error);
                     localStorage.removeItem(STORAGE_KEY.USER);
                     localStorage.removeItem(STORAGE_KEY.TOKEN);
-                    addMessage(
-                        "Session expired. Please log in again.",
-                        "error"
+                    localStorage.removeItem(STORAGE_KEY.REFRESH_TOKEN);
+                    dispatch(
+                        addMessage(
+                            "Session expired. Please log in again.",
+                            "error"
+                        )
                     );
                 }
             }
         };
 
         initializeAuth();
-    }, [addMessage]);
+    }, [dispatch]);
 
-    const login = useCallback(
+    const loginAction = useCallback(
         async (email: string, password: string) => {
             try {
-                const response = await mockLogin(email, password);
-                setUser({
-                    id: response.id,
-                    email: response.email,
-                    role: response.role
+                await new Promise<void>((resolve, reject) => {
+                    dispatch(
+                        login({
+                            email,
+                            password
+                        })
+                    );
+                    // Since saga handles state updates, wait for localStorage to sync
+                    const checkAuth = () => {
+                        const storedUser = localStorage.getItem(
+                            STORAGE_KEY.USER
+                        );
+                        const storedToken = localStorage.getItem(
+                            STORAGE_KEY.TOKEN
+                        );
+                        if (storedUser && storedToken) {
+                            setUser(JSON.parse(storedUser) as User);
+                            setToken(storedToken);
+                            setRefreshToken(
+                                localStorage.getItem(STORAGE_KEY.REFRESH_TOKEN)
+                            );
+                            resolve();
+                        } else {
+                            reject(new Error("Login failed"));
+                        }
+                    };
+                    setTimeout(checkAuth, 100); // Small delay to allow saga to update localStorage
                 });
-                setToken(response.token);
-
-                // Persist to localStorage
-                localStorage.setItem(
-                    STORAGE_KEY.USER,
-                    JSON.stringify(response)
-                );
-                localStorage.setItem(STORAGE_KEY.TOKEN, response.token);
-            } catch (error) {
-                if (
-                    error instanceof Error &&
-                    error.message.includes("network")
-                ) {
-                    addMessage(
-                        "Network error. Please check your connection.",
-                        "error"
-                    );
-                } else if (
-                    error instanceof Error &&
-                    error.message.includes("database")
-                ) {
-                    addMessage(
-                        "Database error. Please try again later.",
-                        "error"
-                    );
-                } else {
-                    addMessage("Invalid credentials.", "error");
-                }
-                throw error;
+            } catch (error: unknown) {
+                const apiError = error as ApiError;
+                throw apiError;
             }
         },
-        [addMessage]
+        [dispatch]
     );
 
-    const logout = useCallback(() => {
+    const logoutAction = useCallback(() => {
+        dispatch(logout());
         setUser(null);
         setToken(null);
-        // Clear localStorage
-        localStorage.removeItem(STORAGE_KEY.USER);
-        localStorage.removeItem(STORAGE_KEY.TOKEN);
-        addMessage("Logged out successfully.", "success");
-    }, [addMessage]);
+        setRefreshToken(null);
+    }, [dispatch]);
+
+    const fetchUserAction = useCallback(() => {
+        dispatch(fetchUser());
+    }, [dispatch]);
+
+    useEffect(() => {
+        const handleStorageUpdate = () => {
+            const storedUser = localStorage.getItem(STORAGE_KEY.USER);
+            const storedToken = localStorage.getItem(STORAGE_KEY.TOKEN);
+            const storedRefreshToken = localStorage.getItem(
+                STORAGE_KEY.REFRESH_TOKEN
+            );
+
+            setUser(storedUser ? JSON.parse(storedUser) : null);
+            setToken(storedToken);
+            setRefreshToken(storedRefreshToken);
+        };
+
+        window.addEventListener("storage", handleStorageUpdate);
+        return () => window.removeEventListener("storage", handleStorageUpdate);
+    }, []);
 
     const isAuthenticated = !!user && !!token;
 
     return (
         <AuthContext.Provider
-            value={{ user, token, login, logout, isAuthenticated }}
+            value={{
+                user,
+                token,
+                refreshToken,
+                login: loginAction,
+                logout: logoutAction,
+                fetchUser: fetchUserAction,
+                isAuthenticated
+            }}
         >
             {children}
         </AuthContext.Provider>
@@ -137,22 +163,4 @@ export const useAuth = () => {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     return context;
-};
-
-// Mock login function (replace with API call later)
-const mockLogin = async (email: string, password: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    if (email === "admin@scarsoft.com" && password === "password123") {
-        return {
-            id: "1",
-            email,
-            role: "admin" as const,
-            token: "mock-jwt-token"
-        };
-    } else if (email === "network@scarsoft.com") {
-        throw new Error("Network error");
-    } else if (email === "db@scarsoft.com") {
-        throw new Error("Database error");
-    }
-    throw new Error("Invalid credentials");
 };

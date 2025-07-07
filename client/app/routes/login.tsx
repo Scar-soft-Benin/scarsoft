@@ -2,9 +2,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "~/context/authContext";
-import { useLoading } from "~/context/loadingContext";
 import { useNavigate } from "react-router";
-import { useMessage } from "~/context/messageContext";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "~/store/sagas/authSaga";
+import { useEffect } from "react";
+import type { RootState } from "~/store";
 
 const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -14,34 +16,49 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
-    const { login } = useAuth();
-    const { showLoading, hideLoading } = useLoading();
-    const { addMessage } = useMessage();
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const authError = useSelector((state: RootState) => state.auth.error);
+    const isLoading = useSelector(
+        (state: RootState) => state.loading.isLoading
+    );
+
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-        setError
+        setError,
+        reset
     } = useForm<LoginForm>({
-        resolver: zodResolver(loginSchema)
+        resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: "",
+            password: ""
+        }
     });
 
-    const onSubmit = async (data: LoginForm) => {
-        try {
-            showLoading();
-            await login(data.email, data.password);
-            addMessage("Login successful!", "success");
+    // Redirect if authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
             navigate("/dashboard");
-        } catch (error: unknown) {
-            addMessage("Invalid credentials. Please try again.", "error");
-            const message =
-                error instanceof Error ? error.message : "Invalid credentials";
-            setError("root", { message });
-            console.error("Login error:", error); // Log for debugging
-        } finally {
-            hideLoading();
         }
+    }, [isAuthenticated, navigate]);
+
+    // Handle auth errors and OTP redirect
+    useEffect(() => {
+        if (authError) {
+            if (authError.error_code === "OTP_GENERATION_FAILED") {
+                navigate("/verify-otp", { state: { email: "" } }); // Pass email if available
+            } else {
+                setError("root", { message: authError.message });
+                reset({ password: "" });
+            }
+        }
+    }, [authError, setError, reset, navigate]);
+
+    const onSubmit = async (data: LoginForm) => {
+        dispatch(login(data));
     };
 
     return (
@@ -60,10 +77,12 @@ export default function Login() {
                             id="email"
                             type="email"
                             {...register("email")}
-                            className="mt-1 w-full p-2 border rounded-md"
+                            className="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            placeholder="Enter your email"
+                            disabled={isSubmitting || isLoading}
                         />
                         {errors.email && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-red-500 text-sm mt-1">
                                 {errors.email.message}
                             </p>
                         )}
@@ -79,30 +98,43 @@ export default function Login() {
                             id="password"
                             type="password"
                             {...register("password")}
-                            className="mt-1 w-full p-2 border rounded-md"
+                            className="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            placeholder="Enter your password"
+                            disabled={isSubmitting || isLoading}
                         />
                         {errors.password && (
-                            <p className="text-red-500 text-sm">
+                            <p className="text-red-500 text-sm mt-1">
                                 {errors.password.message}
                             </p>
                         )}
                     </div>
                     {errors.root && (
-                        <p className="text-red-500 text-sm">
+                        <p className="text-red-500 text-sm mt-1">
                             {errors.root.message}
                         </p>
                     )}
+                    <div className="text-right">
+                        <a
+                            href="/forgot-password"
+                            className="text-sm text-blue-600 hover:underline"
+                        >
+                            Forgot Password?
+                        </a>
+                    </div>
                     <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="w-full p-2 bg-secondary text-dark rounded-md hover:bg-opacity-90"
+                        disabled={isSubmitting || isLoading}
+                        className="w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                        {isSubmitting ? "Logging in..." : "Login"}
+                        {isLoading ? "Logging in..." : "Login"}
                     </button>
                 </form>
-                <p className="mt-4 text-center">
+                <p className="mt-4 text-center text-sm">
                     Don't have an account?{" "}
-                    <a href="/register" className="text-secondary">
+                    <a
+                        href="/register"
+                        className="text-blue-600 hover:underline"
+                    >
                         Register
                     </a>
                 </p>

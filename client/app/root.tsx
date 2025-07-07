@@ -17,6 +17,8 @@ import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
 import { SidebarProvider } from "~/context/sidebarContext";
+import { Provider } from "react-redux";
+import { store } from "./store";
 
 // Extend ImportMeta to include 'env' for Vite or similar environments
 declare global {
@@ -86,6 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
     return (
+        <Provider store={store}>
             <ThemeProvider>
                 <MessageProvider>
                     <AuthProvider>
@@ -97,6 +100,7 @@ export default function App() {
                     </AuthProvider>
                 </MessageProvider>
             </ThemeProvider>
+        </Provider>
     );
 }
 

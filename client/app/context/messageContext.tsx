@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addMessage, removeMessage } from "~/store/reducer/messageReducer";
+import type { RootState } from "../store";
 
 export type MessageType = "success" | "error" | "warning" | "info";
 
@@ -19,24 +22,29 @@ const MessageContext = createContext<MessageContextType | undefined>(undefined);
 export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
     children
 }) => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const dispatch = useDispatch();
+    const messages = useSelector((state: RootState) => state.message.messages);
 
-    const addMessage = useCallback((text: string, type: MessageType) => {
-        const id = Math.random().toString(36).substr(2, 9); // Simple unique ID
-        setMessages((prev) => [...prev, { id, text, type }]);
+    const addMessageHandler = (text: string, type: MessageType) => {
+        const id = Math.random().toString(36).substr(2, 9); // Generate ID for auto-remove
+        dispatch(addMessage({ text, type }));
         // Auto-remove after 3 seconds
         setTimeout(() => {
-            setMessages((prev) => prev.filter((msg) => msg.id !== id));
+            dispatch(removeMessage({ id }));
         }, 3000);
-    }, []);
+    };
 
-    const removeMessage = useCallback((id: string) => {
-        setMessages((prev) => prev.filter((msg) => msg.id !== id));
-    }, []);
+    const removeMessageHandler = (id: string) => {
+        dispatch(removeMessage({ id }));
+    };
 
     return (
         <MessageContext.Provider
-            value={{ messages, addMessage, removeMessage }}
+            value={{
+                messages,
+                addMessage: addMessageHandler,
+                removeMessage: removeMessageHandler
+            }}
         >
             {children}
         </MessageContext.Provider>
