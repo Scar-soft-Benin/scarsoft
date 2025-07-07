@@ -14,11 +14,14 @@ export default [
         route("carrieres", "routes/carriere.tsx"), // ✅ Carrière Page
         route("carriere-candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page
         route("nos-projets", "routes/nos-projets.tsx"), // Project Page
-        route("faq", "routes/faq.tsx"), // ✅ FAQ Page
-
+        route("faq", "routes/faq.tsx") // ✅ FAQ Page
     ]),
-    route("login", "routes/login.tsx"), // Login Page
-    route("register", "routes/register.tsx"), // Register Page
+    layout("./layout/authLayout.tsx", [
+        route("login", "routes/auth/login.tsx"),
+        route("register", "routes/auth/register.tsx"),
+        route("verify-otp", "routes/auth/verifyOTP.tsx"),
+        // route("forgot-password", "routes/auth/forgotPassword.tsx")
+    ]),
     layout("./layout/protectedLayout.tsx", [
         route("dashboard", "./dashboard/dashboard.tsx", [
             index("./dashboard/dashboardOverview.tsx"), // Dashboard Overview
@@ -26,7 +29,7 @@ export default [
             route("recruitment", "./dashboard/recruitment/recruitment.tsx"), // Recruitment Submissions
             route("jobs", "./dashboard/job-management/jobRoute.tsx"),
             route("companies", "./dashboard/companies/companies.tsx"),
-            route("company/:id/jobs", "./dashboard/companies/companyJobs.tsx"), // Company Jobs
+            route("company/:id/jobs", "./dashboard/companies/companyJobs.tsx") // Company Jobs
             // route("company/:id", "./dashboard/companies/companyDetails.tsx"), // Company Details
             // route("users", "./dashboard/users/users.tsx"), // User Management
             // route("user/:id", "./dashboard/users/userDetails.tsx"), // User Details

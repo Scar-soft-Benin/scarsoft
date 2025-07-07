@@ -10,10 +10,14 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-    message: string;
-    user: User;
-    token: string;
-    refreshToken: string;
+  success: boolean;
+  message?: string;
+  login_session_id?: string;
+  otp_expires_at?: string;
+  next_step?: string;
+  user?: User;
+  token?: string;
+  refreshToken?: string;
 }
 
 export interface RegisterPayload {
@@ -29,7 +33,7 @@ export interface PasswordResetPayload {
 
 export interface OTPVerificationPayload {
     email: string;
-    otp: string;
+    code: string;
 }
 
 export interface ResendOTPPayload {

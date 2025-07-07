@@ -5,7 +5,8 @@ import type {
     LoginResponse,
     OTPVerificationPayload,
     ResendOTPPayload,
-    User
+    User,
+    PasswordResetPayload
 } from "../../services/types/auth.types";
 import {
     FETCH_USER_FAILURE,
@@ -17,10 +18,12 @@ import {
     OTP_VERIFICATION_FAILURE,
     OTP_VERIFICATION_SUCCESS,
     RESEND_OTP_FAILURE,
-    RESEND_OTP_SUCCESS
-} from "../reducer/authReducer";
-import { addMessage } from "../reducer/messageReducer";
-import { showLoading, hideLoading } from "../reducer/loadingReducer";
+    RESEND_OTP_SUCCESS,
+    REQUEST_PASSWORD_RESET_SUCCESS,
+    REQUEST_PASSWORD_RESET_FAILURE
+} from "~/store/reducer/authReducer";
+import { addMessage } from "~/store/reducer/messageReducer";
+import { showLoading, hideLoading } from "~/store/reducer/loadingReducer";
 import type { ApiResponse, ApiError } from "../../services/types/common.types";
 
 // Action Types
@@ -29,12 +32,22 @@ export const LOGOUT = "LOGOUT";
 export const FETCH_USER = "FETCH_USER";
 export const VERIFY_OTP = "VERIFY_OTP";
 export const RESEND_OTP = "RESEND_OTP";
+export const REQUEST_PASSWORD_RESET = "REQUEST_PASSWORD_RESET";
+export const NAVIGATE = "NAVIGATE";
 
 // Define Action Interfaces
 interface LoginAction {
     type: typeof LOGIN;
     payload: LoginPayload;
 }
+
+// interface LogoutAction {
+//     type: typeof LOGOUT;
+// }
+
+// interface FetchUserAction {
+//     type: typeof FETCH_USER;
+// }
 
 interface VerifyOTPAction {
     type: typeof VERIFY_OTP;
@@ -44,6 +57,11 @@ interface VerifyOTPAction {
 interface ResendOTPAction {
     type: typeof RESEND_OTP;
     payload: ResendOTPPayload;
+}
+
+interface RequestPasswordResetAction {
+    type: typeof REQUEST_PASSWORD_RESET;
+    payload: PasswordResetPayload;
 }
 
 // Action Creators
@@ -63,6 +81,11 @@ export const verifyOTP = (payload: OTPVerificationPayload) => ({
 
 export const resendOTP = (payload: ResendOTPPayload) => ({
     type: RESEND_OTP,
+    payload
+});
+
+export const requestPasswordReset = (payload: PasswordResetPayload) => ({
+    type: REQUEST_PASSWORD_RESET,
     payload
 });
 
@@ -128,15 +151,36 @@ export const resendOTPFailure = (error: {
     payload: error
 });
 
+export const requestPasswordResetSuccess = () => ({
+    type: REQUEST_PASSWORD_RESET_SUCCESS
+});
+
+export const requestPasswordResetFailure = (error: {
+    message: string;
+    error_code?: string;
+}) => ({
+    type: REQUEST_PASSWORD_RESET_FAILURE,
+    payload: error
+});
+
+export const navigateTo = (
+    path: string,
+    state?: Record<string, unknown> | undefined,
+    replace = true
+) => ({
+    type: NAVIGATE,
+    payload: { path, state, replace }
+});
+
 // Error Type Guard
 function isApiError(error: unknown): error is ApiError {
     return (
         typeof error === "object" &&
         error !== null &&
-        ("message" in error || "response" in error)
+        "message" in error &&
+        "status" in error
     );
 }
-
 // Sagas
 function* loginSaga(action: LoginAction) {
     try {
@@ -145,10 +189,29 @@ function* loginSaga(action: LoginAction) {
             authService.login,
             action.payload
         );
+        console.log("loginSaga: Login response:", response);
         yield put(loginSuccess(response.data));
-        localStorage.setItem("auth_token", response.data.token);
-        localStorage.setItem("refresh_token", response.data.refreshToken);
-        localStorage.setItem("auth_user", JSON.stringify(response.data.user));
+        if (response.data.next_step === "verify_login_otp") {
+            console.log("loginSaga: Navigating to /verify-otp");
+            yield put(
+                navigateTo("/verify-otp", {
+                    email: action.payload.email,
+                    login_session_id: response.data.login_session_id
+                })
+            );
+        } else if (response.data.token && response.data.user) {
+            localStorage.setItem("auth_token", response.data.token);
+            localStorage.setItem(
+                "refresh_token",
+                response.data.refreshToken || ""
+            );
+            localStorage.setItem(
+                "auth_user",
+                JSON.stringify(response.data.user)
+            );
+            console.log("loginSaga: Navigating to /dashboard");
+            yield put(navigateTo("/dashboard"));
+        }
         yield put(
             addMessage({
                 text: response.data.message || "Logged in successfully",
@@ -156,15 +219,13 @@ function* loginSaga(action: LoginAction) {
             })
         );
     } catch (error: unknown) {
+        console.error("loginSaga: Raw login error:", error);
         const apiError = isApiError(error)
-            ? {
-                  message: error.message || "Failed to login",
-                  error_code: error.error_code
-              }
+            ? { message: error.message, error_code: error.error_code }
             : { message: "Failed to login" };
+        console.log("loginSaga: Processed login error:", apiError);
         yield put(loginFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
-        throw apiError;
     } finally {
         yield put(hideLoading());
     }
@@ -182,9 +243,10 @@ function* logoutSaga() {
             addMessage({ text: "Logged out successfully", type: "success" })
         );
     } catch (error: unknown) {
+        console.error("Raw logout error:", error);
         const apiError = isApiError(error)
             ? {
-                  message: error.message || error.message || "Failed to logout",
+                  message: error.message,
                   error_code: error.error_code
               }
             : { message: "Failed to logout" };
@@ -203,10 +265,10 @@ function* fetchUserSaga() {
         );
         yield put(fetchUserSuccess(response.data));
     } catch (error: unknown) {
+        console.error("Raw fetch user error:", error);
         const apiError = isApiError(error)
             ? {
-                  message:
-                      error.message || error.message || "Failed to fetch user",
+                  message: error.message,
                   error_code: error.error_code
               }
             : { message: "Failed to fetch user" };
@@ -232,10 +294,10 @@ function* verifyOTPSaga(action: VerifyOTPAction) {
             })
         );
     } catch (error: unknown) {
+        console.error("Raw verify OTP error:", error);
         const apiError = isApiError(error)
             ? {
-                  message:
-                      error.message || error.message || "Failed to verify OTP",
+                  message: error.message,
                   error_code: error.error_code
               }
             : { message: "Failed to verify OTP" };
@@ -261,14 +323,43 @@ function* resendOTPSaga(action: ResendOTPAction) {
             })
         );
     } catch (error: unknown) {
+        console.error("Raw resend OTP error:", error);
         const apiError = isApiError(error)
             ? {
-                  message:
-                      error.message || error.message || "Failed to resend OTP",
+                  message: error.message,
                   error_code: error.error_code
               }
             : { message: "Failed to resend OTP" };
         yield put(resendOTPFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+    }
+}
+
+function* requestPasswordResetSaga(action: RequestPasswordResetAction) {
+    try {
+        yield put(showLoading());
+        const response: ApiResponse<null> = yield call(
+            authService.requestPasswordReset,
+            action.payload
+        );
+        yield put(requestPasswordResetSuccess());
+        yield put(
+            addMessage({
+                text: response.message || "Password reset link sent",
+                type: "success"
+            })
+        );
+    } catch (error: unknown) {
+        console.error("Raw password reset error:", error);
+        const apiError = isApiError(error)
+            ? {
+                  message: error.message,
+                  error_code: error.error_code
+              }
+            : { message: "Failed to request password reset" };
+        yield put(requestPasswordResetFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
         yield put(hideLoading());
@@ -281,4 +372,5 @@ export function* authSaga() {
     yield takeLatest(FETCH_USER, fetchUserSaga);
     yield takeLatest(VERIFY_OTP, verifyOTPSaga);
     yield takeLatest(RESEND_OTP, resendOTPSaga);
+    yield takeLatest(REQUEST_PASSWORD_RESET, requestPasswordResetSaga);
 }

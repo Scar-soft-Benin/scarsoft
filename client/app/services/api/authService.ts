@@ -1,5 +1,6 @@
 import { apiClient } from "../config/apiConfig";
-import { type ApiResponse, type ApiError } from "../types/common.types";
+import { parseApiError } from "../utils/errorParser";
+import { type ApiResponse } from "../types/common.types";
 import type {
     User,
     LoginPayload,
@@ -16,46 +17,37 @@ export const authService = {
     ): Promise<ApiResponse<LoginResponse>> => {
         try {
             const response = await apiClient.post("/auth/login", payload);
+            console.log("authService: Login response:", response.data);
             return {
-                data: response.data,
+                data: {
+                    success: response.data.success,
+                    message: response.data.message,
+                    login_session_id: response.data.login_session_id,
+                    otp_expires_at: response.data.otp_expires_at,
+                    next_step: response.data.next_step,
+                    user: response.data.user,
+                    token: response.data.token,
+                    refreshToken: response.data.refreshToken
+                },
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message: err.response?.data?.message || "Failed to login",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
     register: async (payload: RegisterPayload): Promise<ApiResponse<User>> => {
         try {
             const response = await apiClient.post("/auth/register", payload);
+            console.log("authService: Register response:", response.data);
             return {
                 data: response.data,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message: err.response?.data?.message || "Failed to register",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
@@ -66,24 +58,14 @@ export const authService = {
             const response = await apiClient.post("/auth/refresh", {
                 refreshToken
             });
+            console.log("authService: Refresh token response:", response.data);
             return {
                 data: response.data,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message:
-                    err.response?.data?.message || "Failed to refresh token",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
@@ -95,25 +77,14 @@ export const authService = {
                 "/auth/password-reset",
                 payload
             );
+            console.log("authService: Password reset response:", response.data);
             return {
                 data: null,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message:
-                    err.response?.data?.message ||
-                    "Failed to request password reset",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
@@ -122,23 +93,14 @@ export const authService = {
     ): Promise<ApiResponse<null>> => {
         try {
             const response = await apiClient.post("/auth/verify-otp", payload);
+            console.log("authService: Verify OTP response:", response.data);
             return {
                 data: null,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message: err.response?.data?.message || "Failed to verify OTP",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
@@ -147,71 +109,45 @@ export const authService = {
     ): Promise<ApiResponse<null>> => {
         try {
             const response = await apiClient.post("/auth/resend-otp", payload);
+            console.log("authService: Resend OTP response:", response.data);
             return {
                 data: null,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message: err.response?.data?.message || "Failed to resend OTP",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
     logout: async (): Promise<ApiResponse<null>> => {
         try {
             const response = await apiClient.post("/auth/logout");
+            console.log("authService: Logout response:", response.data);
             return {
                 data: null,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message: err.response?.data?.message || "Failed to logout",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     },
 
     getCurrentUser: async (): Promise<ApiResponse<User>> => {
         try {
             const response = await apiClient.get("/auth/me");
+            console.log(
+                "authService: Get current user response:",
+                response.data
+            );
             return {
                 data: response.data,
                 status: response.status,
                 message: response.data.message
             };
         } catch (error: unknown) {
-            const err = error as {
-                response?: {
-                    status?: number;
-                    data?: { message?: string; error_code?: string };
-                };
-            };
-            throw {
-                status: err.response?.status || 500,
-                message:
-                    err.response?.data?.message ||
-                    "Failed to fetch current user",
-                error_code: err.response?.data?.error_code
-            } as ApiError;
+            throw parseApiError(error);
         }
     }
 };
