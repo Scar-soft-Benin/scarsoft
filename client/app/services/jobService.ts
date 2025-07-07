@@ -20,6 +20,7 @@ export interface JobServiceUpdateRequest extends Partial<JobServiceCreateRequest
 
 // Interface étendue pour le service avec les nouveaux champs
 export interface ExtendedJobOffer extends JobOffer {
+  companyId?: string | undefined;
   status: 'active' | 'archived' | 'draft';
   createdAt: string;
   updatedAt: string;

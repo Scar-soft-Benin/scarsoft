@@ -9,6 +9,7 @@ interface AppButtonProps {
     type?: "primary" | "secondary" | "danger" | "warning" | "info";
     size?: "sm" | "md" | "lg";
     outlined?: boolean;
+    target?:"_blank" | "_self" | "_parent" | "_top";
     tooltip?: string;
     disabled?: boolean;
 }

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "name": "Scar-Soft",
+    "email": "contact@scar-soft.net",
+    "logo": "/images/scarsoft-logo.png",
+    "numberOfOffers": 4
+  },
+  {
+    "id": "2",
+    "name": "WebFlex",
+    "email": "jobs@webflex.io",
+    "logo": "/images/webflex.png",
+    "numberOfOffers": 2
+  },
+  {
+    "id": "3",
+    "name": "CodinoTech",
+    "email": "hr@codinotech.dev",
+    "numberOfOffers": 1
+  },
+  {
+    "id": "4",
+    "name": "GreenApps",
+    "email": "hello@greenapps.org",
+    "logo": "/images/greenapps.svg",
+    "numberOfOffers": 3
+  }
+]

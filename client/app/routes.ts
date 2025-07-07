@@ -25,6 +25,15 @@ export default [
             route("contacts", "./dashboard/contact/contact.tsx"), // Contact Emails
             route("recruitment", "./dashboard/recruitment/recruitment.tsx"), // Recruitment Submissions
             route("jobs", "./dashboard/job-management/jobRoute.tsx"),
+            route("companies", "./dashboard/companies/companies.tsx"),
+            route("company/:id/jobs", "./dashboard/companies/companyJobs.tsx"), // Company Jobs
+            // route("company/:id", "./dashboard/companies/companyDetails.tsx"), // Company Details
+            // route("users", "./dashboard/users/users.tsx"), // User Management
+            // route("user/:id", "./dashboard/users/userDetails.tsx"), // User Details
+            // route("settings", "./dashboard/settings/settings.tsx"), // Settings Page
+            // route("settings/profile", "./dashboard/settings/profile.tsx"), // Profile Settings
+            // route("settings/password", "./dashboard/settings/password.tsx"), // Password Settings
+            // route("settings/notifications", "./dashboard/settings/notifications.tsx"), // Notification Settings
         ])
     ]),
     route("maintenance", "routes/errors/maintenance.tsx"), // Under Construction Page
