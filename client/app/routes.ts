@@ -1,3 +1,4 @@
+// File: client/app/routes.ts
 import {
     type RouteConfig,
     route,

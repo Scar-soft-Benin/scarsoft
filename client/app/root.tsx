@@ -1,3 +1,5 @@
+// File: client/app/root.tsx
+
 import {
     isRouteErrorResponse,
     Links,
@@ -18,6 +20,7 @@ import { ThemeProvider } from "./context/themeContext";
 import { SidebarProvider } from "~/context/sidebarContext";
 import { Provider } from "react-redux";
 import { store } from "./store";
+import LanguageSelector from "./components/LanguageSelector";
 
 // Extend ImportMeta to include 'env' for Vite or similar environments
 declare global {
@@ -50,6 +53,9 @@ function AppContent() {
         <>
             {isLoading && <Loading />}
             <Message />
+            <div className="fixed top-4 right-4 z-50">
+                <LanguageSelector />
+            </div>
             <Outlet />
         </>
     );
