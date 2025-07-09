@@ -141,20 +141,7 @@ const NosProject = () => {
       {/* Compteur de projets */}
       <div className="text-center mb-6">
         <p className="text-gray-600">
-          {/* <Trans
-            i18nKey="projects.count"
-            values={{
-              count: filteredProjects.length,
-              category:
-                activeFilter !== "all"
-                  ? filterOptions.find(opt => opt.key === activeFilter)?.label.toLowerCase()
-                  : undefined
-            }}
-            components={{ bold: <strong /> }}
-          >
-            {{ count: filteredProjects.length }} project<strong>s</strong>
-            <span className="ml-1">in {{ category }}</span>
-          </Trans> */}
+          
           <Trans
             i18nKey="projects.count"
             values={{

@@ -21,7 +21,7 @@ export default [
         route("auth/login", "routes/auth/login.tsx"),
         route("auth/register", "routes/auth/register.tsx"),
         route("auth/verify-otp", "routes/auth/verifyOTP.tsx"),
-        route("verify-email", "routes/auth/verifyEmail.tsx")
+        route("auth/verify-email", "routes/auth/verifyEmail.tsx")
         // route("forgot-password", "routes/auth/forgotPassword.tsx")
     ]),
     layout("./layout/protectedLayout.tsx", [

@@ -84,7 +84,7 @@ const Navbar = () => {
           <div className="hidden md:block">
             <AppBaseButton
               text={t("navbar.contact")}
-              textColor="text-primary-dark"
+              textColor="text-blackk"
               bgColor="bg-secondary"
               type="first"
               href="/contactez-nous"
