@@ -75,10 +75,10 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex flex-col items-center mt-20"
                         ref={contentRef}
                     >
-                        <h2 className="font-bold text-2xl md:text-5xl max-w-lg md:max-w-4/5">
+                        <h2 className="font-bold text-4xl md:text-6xl leading-tight">
                             {title}
                         </h2>
-                        <p className="text-lg md:text-lg mt-4 max-w-lg md:max-w-1/2">
+                        <p className="text-lg md:text-lg mt-4">
                             {subtitle}
                         </p>
                         <div className="mt-12">
