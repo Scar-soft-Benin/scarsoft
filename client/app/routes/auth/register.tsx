@@ -6,6 +6,19 @@ import { useNavigate } from "react-router";
 import { useEffect, useRef } from "react";
 import { register } from "~/store/sagas/authSaga";
 import type { RootState } from "~/store";
+import type { Route } from "./+types/register";
+
+
+export function meta({}: Route.MetaArgs) {
+    return [
+        { title: "Register | Scar-Soft" },
+        {
+            name: "description",
+            content:
+                "Page d'inscription pour créer un compte Scar-Soft. Remplissez le formulaire pour vous inscrire et accéder à nos services. Si vous avez déjà un compte, vous pouvez vous connecter dès maintenant."
+        }
+    ];
+}
 
 const registerSchema = z
     .object({

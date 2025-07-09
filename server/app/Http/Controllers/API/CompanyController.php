@@ -20,7 +20,7 @@ class CompanyController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/api/companies",
+     *     path="/api/admin/companies",
      *     summary="Get all companies",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -88,7 +88,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/companies",
+     *     path="/api/admin/companies",
      *     summary="Create a new company",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -174,7 +174,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/companies/{id}",
+     *     path="/api/admin/companies/{id}",
      *     summary="Get company details",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -204,7 +204,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/companies/{id}",
+     *     path="/api/admin/companies/{id}",
      *     summary="Update company",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -277,7 +277,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/companies/{id}",
+     *     path="/api/admin/companies/{id}",
      *     summary="Delete company",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -322,7 +322,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/companies/{id}/statistics",
+     *     path="/api/admin/companies/{id}/statistics",
      *     summary="Get company statistics",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},

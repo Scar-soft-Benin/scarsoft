@@ -6,6 +6,19 @@ import { useNavigate, useLocation } from "react-router";
 import { useEffect, useRef } from "react";
 import { verifyOTP, resendOTP } from "~/store/sagas/authSaga";
 import type { RootState } from "~/store";
+import type { Route } from "./+types/verifyOTP";
+
+
+export function meta({}: Route.MetaArgs) {
+    return [
+        { title: "OTP Code | Scar-Soft" },
+        {
+            name: "description",
+            content:
+                "Please enter the 6-digit OTP code sent to your email to verify your account. If you haven't received the code, you can request a new one."
+        }
+    ];
+}
 
 const otpSchema = z.object({
     digits: z

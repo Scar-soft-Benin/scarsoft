@@ -3,6 +3,19 @@ import { useNavigate, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "~/store";
 import { resendEmailVerification, verifyEmail } from "~/store/sagas/authSaga";
+import type { Route } from "./+types/verifyEmail";
+
+
+export function meta({}: Route.MetaArgs) {
+    return [
+        { title: "Email verification | Scar-Soft" },
+        {
+            name: "description",
+            content:
+                "Please verify your email address to complete the registration process. Enter the 6-digit code sent to your email to activate your account."
+        }
+    ];
+}
 
 export default function VerifyEmail() {
     const navigate = useNavigate();

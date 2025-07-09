@@ -7,6 +7,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "~/store/sagas/authSaga";
 import { useEffect, useRef } from "react";
 import type { RootState } from "~/store";
+import type { Route } from "./+types/login";
+
+
+export function meta({}: Route.MetaArgs) {
+    return [
+        { title: "Login | Scar-Soft" },
+        {
+            name: "description",
+            content:
+                "Page de connexion pour accéder à votre compte Scar-Soft. Connectez-vous pour gérer vos projets, accéder à vos données et profiter de nos services personnalisés. Si vous n'avez pas encore de compte, vous pouvez vous inscrire dès maintenant."
+        }
+    ];
+}
 
 const loginSchema = z.object({
     email: z.string().email("Invalid email address"),

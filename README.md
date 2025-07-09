@@ -98,7 +98,7 @@ in the "Up" state.
 ## 🌐 Access the Application
 
 * **Frontend:** [http://localhost:5173](http://localhost:5173)
-* **Backend (Laravel API):** [http://localhost:8000](http://localhost:8000)
+* **Backend (Laravel API):** [http://localhost:8010](http://localhost:8010)
 * **MySQL:** `localhost:3310` (use MySQL Workbench or similar)
 
 ---
@@ -216,7 +216,7 @@ docker-compose.yml  # Main service orchestrator
 After installation, you should have:
 
 * React Vite app at [http://localhost:5173](http://localhost:5173)
-* Laravel backend at [http://localhost:8000](http://localhost:8000)
+* Laravel backend at [http://localhost:8010](http://localhost:8010)
 * MySQL DB running on `localhost:3310`
 * No need to install dependencies manually — Docker does it all.
 

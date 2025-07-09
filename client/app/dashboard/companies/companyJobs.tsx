@@ -1,4 +1,3 @@
-`use client`;
 
 // ~/dashboard/compo/Jobs.tsx
 import { useState, useEffect } from "react";
@@ -171,7 +170,6 @@ export default function OffresEntreprise() {
                 style={{ width: "80vw", maxWidth: "800px" }}
             >
                 <JobForm
-                    job={editingJob}
                     onSave={async () => {
                         setShowForm(false);
                         setEditingJob(null);

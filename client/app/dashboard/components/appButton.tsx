@@ -1,17 +1,17 @@
 // ~/components/AppButton.tsx
 import { type ReactNode } from "react";
 
-interface AppButtonProps {
+interface AppButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
     label?: string;
     icon?: ReactNode;
     className?: string;
-    onClick?: () => void;
+    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     type?: "primary" | "secondary" | "danger" | "warning" | "info";
     size?: "sm" | "md" | "lg";
     outlined?: boolean;
-    target?:"_blank" | "_self" | "_parent" | "_top";
     tooltip?: string;
     disabled?: boolean;
+    typeAttr?: "button" | "submit" | "reset"; // HTML button type
 }
 
 export default function AppButton({
@@ -23,7 +23,9 @@ export default function AppButton({
     size = "md",
     outlined = false,
     tooltip,
-    disabled = false
+    disabled = false,
+    typeAttr = "button", // Default to "button"
+    ...rest // Spread remaining HTML button attributes
 }: AppButtonProps) {
     const typeStyles = {
         primary: outlined
@@ -40,17 +42,18 @@ export default function AppButton({
             : "bg-warning text-neutral-dark-text hover:bg-warning/90",
         info: outlined
             ? "border-info text-info hover:bg-info hover:text-neutral-dark-text"
-            : "bg-info text-neutral-dark-text hover:bg-info/90"
+            : "bg-info text-neutral-dark-text hover:bg-info/90",
     };
 
     const sizeStyles = {
         sm: "px-2 py-1 text-sm",
         md: "px-4 py-2",
-        lg: "px-6 py-3 text-lg"
+        lg: "px-6 py-3 text-lg",
     };
 
     return (
         <button
+            type={typeAttr} // Use typeAttr for HTML button type
             className={`flex items-center gap-2 rounded-md font-medium ${
                 typeStyles[type]
             } ${sizeStyles[size]} ${outlined ? "bg-transparent" : ""} ${
@@ -60,6 +63,7 @@ export default function AppButton({
             title={tooltip}
             disabled={disabled}
             aria-label={tooltip || label}
+            {...rest} // Spread additional HTML attributes
         >
             {icon}
             {label}

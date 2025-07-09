@@ -1,52 +1,77 @@
-// pages/Entreprises.tsx
-import { useEffect, useState } from "react";
-import Table, { type Column } from "../components/Table";
+// ~/pages/Entreprises.tsx
+import { useEffect, useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import AppBaseButton from "~/components/appBaseButton";
+import { getAllCompanies, clearError } from "~/store/reducer/companyReducer";
+import type { Company } from "~/services/types/company.types";
+import type { RootState } from "~/store";
 import { FaBuilding } from "react-icons/fa";
-
-interface Company {
-    id: string;
-    name: string;
-    email: string;
-    logo?: string;
-    numberOfOffers: number;
-}
+import { useMessage } from "~/context/messageContext";
+import CompanyForm from "./companyForm";
+import AppButton from "../components/appButton";
+import AppToolbar from "../components/appToolBar";
+import Dialog from "../components/Dialog";
+import Table, { type Column } from "../components/Table";
 
 export default function Entreprises() {
     const navigate = useNavigate();
-    const [companies, setCompanies] = useState<Company[]>([]);
+    const dispatch = useDispatch();
+    const { addMessage } = useMessage();
+    const { companies, meta, error } = useSelector(
+        (state: RootState) => state.company
+    );
+    const [showForm, setShowForm] = useState(false);
+    const [search, setSearch] = useState<string>("");
+    const [status, setStatus] = useState<"active" | "inactive">("active"); // Default to active
+    const [page, setPage] = useState<number>(1);
+    const [perPage, setPerPage] = useState<number>(15);
+
+    // Memoize params to stabilize useEffect
+    const params = useMemo(
+        () => ({
+            search: search || undefined,
+            status,
+            page,
+            per_page: perPage
+        }),
+        [search, status, page, perPage]
+    );
 
     useEffect(() => {
-        // Données fictives pour test
-        setCompanies([
-            {
-                id: "1",
-                name: "Scar-Soft",
-                email: "contact@scar-soft.net",
-                logo: "/images/scarsoft-logo.png",
-                numberOfOffers: 5,
-            },
-            {
-                id: "2",
-                name: "WebFlex",
-                email: "jobs@webflex.io",
-                logo: "/images/webflex.png",
-                numberOfOffers: 2,
-            },
-            {
-                id: "3",
-                name: "CodinoTech",
-                email: "hr@codinotech.dev",
-                numberOfOffers: 1,
-            },
-        ]);
-    }, []);
+        console.log(
+            "Entreprises: Dispatching getAllCompanies with params:",
+            params
+        );
+        dispatch(getAllCompanies(params));
+    }, [dispatch, params]);
+
+    useEffect(() => {
+        console.log(
+            "Entreprises: Companies updated:",
+            companies,
+            "Meta:",
+            meta
+        );
+        if (error) {
+            console.log("Entreprises: Error detected:", error);
+            addMessage(error, "error");
+            dispatch(clearError()); // Clear error to prevent loop
+        }
+    }, [error, addMessage, dispatch, companies, meta]);
+
+    const onCompanySaved = () => {
+        console.log("Entreprises: onCompanySaved called");
+        setShowForm(false);
+        setPage(1); // Reset to first page after creating a company
+        dispatch(getAllCompanies({ ...params, page: 1 }));
+    };
 
     const columns: Column<Company>[] = [
         {
             header: "Nom",
             field: "name",
+            filterable: true,
+            sortable: true,
             render: (company) => (
                 <div className="flex items-center gap-3">
                     {company.logo ? (
@@ -60,46 +85,151 @@ export default function Entreprises() {
                             {company.name[0]}
                         </div>
                     )}
-                    <span className="font-medium text-gray-800">{company.name}</span>
+                    <span className="font-medium text-gray-800">
+                        {company.name}
+                    </span>
                 </div>
-            ),
+            )
         },
         {
             header: "Email",
             field: "email",
+            filterable: true
+        },
+        {
+            header: "Statut",
+            field: "status",
+            filterable: true
         },
         {
             header: "Offres publiées",
-            field: "numberOfOffers",
+            field: "job_offers_count",
+            sortable: true
+        },
+        {
+            header: "Offres actives",
+            field: "active_job_offers_count", // Added
+            sortable: true
+        },
+        {
+            header: "Créé par",
+            field: "creator_name", // Added
+            filterable: true
         },
         {
             header: "Action",
             field: "action",
             render: (row) => (
-                <AppBaseButton
-                    text="Voir les offres"
+                <AppButton
+                    label="Voir les offres"
                     icon={<FaBuilding />}
-                    type="first"
-                    bgColor="bg-transparent"
-                    textColor="text-green-600"
-                    className="p-1 text-sm"
-                    onClick={() => navigate(`/dashboard/company/${row.id}/jobs`)}
-                //   onClick={() => console.log("Voir les offres de", row.name)}
+                    type="info"
+                    size="sm"
+                    outlined
+                    onClick={() =>
+                        navigate(`/dashboard/company/${row.id}/jobs`)
+                    }
+                    className="text-green-600"
                 />
-            ),
-        },
+            )
+        }
     ];
 
+    const leftToolbarTemplate = () => (
+        <div className="flex flex-col sm:flex-row gap-4">
+            <AppButton
+                label="Nouvelle entreprise"
+                icon={<FaBuilding className="mr-2" />}
+                type="primary"
+                size="md"
+                onClick={() => {
+                    console.log("Entreprises: Opening company form");
+                    setShowForm(true);
+                }}
+                className="bg-teal-500 hover:bg-teal-600 text-white"
+            />
+            <input
+                type="search"
+                value={search}
+                onChange={(e) => {
+                    console.log(
+                        "Entreprises: Search filter changed:",
+                        e.target.value
+                    );
+                    setSearch(e.target.value);
+                    setPage(1); // Reset to first page on search change
+                }}
+                placeholder="Rechercher par nom, email, contact..."
+                className="p-2 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
+            />
+            <select
+                value={status}
+                onChange={(e) => {
+                    console.log(
+                        "Entreprises: Status filter changed:",
+                        e.target.value
+                    );
+                    setStatus(e.target.value as "active" | "inactive");
+                    setPage(1); // Reset to first page on status change
+                }}
+                className="p-2 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
+            >
+                <option value="active">Actif</option>
+                <option value="inactive">Inactif</option>
+            </select>
+        </div>
+    );
+
     return (
-        <div className=" ">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Liste des entreprises</h1>
+        <div className="p-6">
+            <div className="mb-4">
+                <h1 className="text-2xl font-bold text-neutral-light-text dark:text-neutral-dark-text mb-2">
+                    Gestion des Entreprises
+                </h1>
+                <p className="text-neutral-light-secondary dark:text-neutral-dark-secondary">
+                    Créez et consultez vos entreprises.
+                </p>
+            </div>
+
+            <AppToolbar left={leftToolbarTemplate()} />
 
             <Table
                 data={companies}
                 columns={columns}
                 title="Entreprises avec offres publiées"
-            // detailPath="/entreprises"
+                globalFilterFields={["name", "email", "contact_person", "creator_name"]}
+                meta={meta ?? undefined}
+                onPageChange={(newPage) => {
+                    console.log("Entreprises: Page changed to:", newPage);
+                    setPage(newPage);
+                }}
+                onPerPageChange={(newPerPage) => {
+                    console.log(
+                        "Entreprises: Per page changed to:",
+                        newPerPage
+                    );
+                    setPerPage(newPerPage);
+                    setPage(1); // Reset to first page on per_page change
+                }}
             />
+
+            <Dialog
+                visible={showForm}
+                header="Nouvelle entreprise"
+                onHide={() => {
+                    console.log("Entreprises: Closing company form");
+                    setShowForm(false);
+                }}
+                style={{ width: "80vw", maxWidth: "800px" }}
+            >
+                <CompanyForm
+                    onSave={onCompanySaved}
+                    onCancel={() => {
+                        console.log("Entreprises: Cancelled company form");
+                        setShowForm(false);
+                    }}
+                />
+            </Dialog>
         </div>
     );
 }

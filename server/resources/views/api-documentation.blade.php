@@ -173,7 +173,7 @@
         <div class="content">
             <div class="base-info">
                 <h3>🚀 Informations de base</h3>
-                <p><strong>URL de base :</strong> <code>http://localhost:8000</code></p>
+                <p><strong>URL de base :</strong> <code>http://localhost:8010</code></p>
                 <p><strong>Version :</strong> 1.0.0</p>
                 <p><strong>Type d'authentification :</strong> JWT Bearer Token</p>
                 <p><strong>Format des réponses :</strong> JSON</p>
@@ -341,16 +341,16 @@
                 <h3>🧪 Test avec cURL</h3>
                 <div class="code-block">
                     # Test de l'API
-                    curl http://localhost:8000/api/test
+                    curl http:/localhost:8010/api/test
 
                     # Inscription
-                    curl -X POST http://localhost:8000/api/auth/register
+                    curl -X POST http://localhost:8010/api/auth/register
                     -H "Content-Type: application/json"
                     -d '{"name":"Test
                     User","email":"test@example.com","password":"Password123!","password_confirmation":"Password123!"}'
 
                     # Connexion
-                    curl -X POST http://localhost:8000/api/auth/login
+                    curl -X POST http://localhost:8010/api/auth/login
                     -H "Content-Type: application/json"
                     -d '{"email":"test@example.com","password":"Password123!"}'
                 </div>

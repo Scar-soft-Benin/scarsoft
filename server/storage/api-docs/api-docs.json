@@ -15,7 +15,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8000",
+            "url": "http://localhost:8010",
             "description": "Serveur de développement SCARSOFT"
         }
     ],
@@ -485,13 +485,13 @@
                 ]
             }
         },
-        "/api/companies": {
+        "/api/admin/companies": {
             "get": {
                 "tags": [
                     "Company Management"
                 ],
                 "summary": "Get all companies",
-                "operationId": "80eb39cf3f8d7b480171fea2f33d6060",
+                "operationId": "1684a04ae0b4bfca0d6acfbdafc6057c",
                 "parameters": [
                     {
                         "name": "search",
@@ -592,7 +592,7 @@
                     "Company Management"
                 ],
                 "summary": "Create a new company",
-                "operationId": "cee123b1da67beec88470f8ceb3fcb95",
+                "operationId": "9e80af57156c307582de6a14642dae60",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -650,13 +650,13 @@
                 ]
             }
         },
-        "/api/companies/{id}": {
+        "/api/admin/companies/{id}": {
             "get": {
                 "tags": [
                     "Company Management"
                 ],
                 "summary": "Get company details",
-                "operationId": "fd3858af6b6071f4a94538a412bab106",
+                "operationId": "f7ed9d8d64594226b6076ea100f13c95",
                 "parameters": [
                     {
                         "name": "id",
@@ -683,7 +683,7 @@
                     "Company Management"
                 ],
                 "summary": "Update company",
-                "operationId": "c125e6ebfb9c7669666225b619092333",
+                "operationId": "98b01a5fc020e928d2b22a927d763a01",
                 "parameters": [
                     {
                         "name": "id",
@@ -751,7 +751,7 @@
                     "Company Management"
                 ],
                 "summary": "Delete company",
-                "operationId": "124aa61ff352c83ede5872644b0ac00d",
+                "operationId": "2429f18bf1795b9f170e60b55415cfd7",
                 "parameters": [
                     {
                         "name": "id",
@@ -774,13 +774,13 @@
                 ]
             }
         },
-        "/api/companies/{id}/statistics": {
+        "/api/admin/companies/{id}/statistics": {
             "get": {
                 "tags": [
                     "Company Management"
                 ],
                 "summary": "Get company statistics",
-                "operationId": "ac2c8aade1a516ca2fbdaa8e13ec19a1",
+                "operationId": "e6abc75156e814b7cb0ba76ac96bcab4",
                 "parameters": [
                     {
                         "name": "id",

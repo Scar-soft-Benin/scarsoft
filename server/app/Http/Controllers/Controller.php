@@ -20,7 +20,7 @@ use OpenApi\Annotations as OA;
  * )
  * 
  * @OA\Server(
- *     url="http://localhost:8000",
+ *     url="http://localhost:8010",
  *     description="Serveur de développement SCARSOFT"
  * )
  * 

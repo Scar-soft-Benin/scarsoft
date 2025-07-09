@@ -1,14 +1,15 @@
-// components/Table.tsx
+// ~/components/Table.tsx
 import { useEffect, useRef, useState, type JSX } from "react";
 import { gsap } from "gsap";
 import { useNavigate } from "react-router";
+import AppButton from "./appButton";
 
 export interface Column<T> {
     header: string;
     field: keyof T | string;
     render?: (row: T) => JSX.Element;
-    filterable?: boolean; // New: Enable filtering for this column
-    sortable?: boolean; // Optional: For future sorting support
+    filterable?: boolean;
+    sortable?: boolean;
 }
 
 interface TableProps<T> {
@@ -16,15 +17,21 @@ interface TableProps<T> {
     columns: Column<T>[];
     title: string;
     detailPath?: string;
-    globalFilterFields?: (keyof T)[]; // Fields for global filtering
+    globalFilterFields?: (keyof T)[];
+    meta?: { current_page: number; total: number; per_page: number; last_page: number };
+    onPageChange?: (page: number) => void;
+    onPerPageChange?: (perPage: number) => void;
 }
 
-export default function Table<T extends { id: string }>({
+export default function Table<T extends object>({
     data,
     columns,
     title,
     detailPath,
-    globalFilterFields
+    globalFilterFields,
+    meta,
+    onPageChange,
+    onPerPageChange,
 }: TableProps<T>) {
     const tableRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
@@ -43,7 +50,7 @@ export default function Table<T extends { id: string }>({
                         y: 0,
                         duration: 0.5,
                         stagger: 0.1,
-                        ease: "power3.out"
+                        ease: "power3.out",
                     }
                 );
             }
@@ -51,7 +58,11 @@ export default function Table<T extends { id: string }>({
     }, [data]);
 
     const handleRowClick = (row: T) => {
-        if (detailPath) {
+        if (
+            detailPath &&
+            "id" in row &&
+            (typeof row.id === "string" || typeof row.id === "number")
+        ) {
             navigate(`${detailPath}/${row.id}`);
         }
     };
@@ -60,14 +71,11 @@ export default function Table<T extends { id: string }>({
         setFilters((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleGlobalFilterChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setGlobalFilter(e.target.value);
     };
 
     const filteredData = data.filter((row) => {
-        // Apply global filter
         const matchesGlobal =
             !globalFilter || !globalFilterFields
                 ? true
@@ -77,15 +85,12 @@ export default function Table<T extends { id: string }>({
                           .includes(globalFilter.toLowerCase())
                   );
 
-        // Apply column filters
-        const matchesFilters = Object.entries(filters).every(
-            ([field, value]) => {
-                if (!value) return true;
-                return String(row[field as keyof T])
-                    .toLowerCase()
-                    .includes(value.toLowerCase());
-            }
-        );
+        const matchesFilters = Object.entries(filters).every(([field, value]) => {
+            if (!value) return true;
+            return String(row[field as keyof T])
+                .toLowerCase()
+                .includes(value.toLowerCase());
+        });
 
         return matchesGlobal && matchesFilters;
     });
@@ -95,7 +100,7 @@ export default function Table<T extends { id: string }>({
             <h2 className="text-xl font-bold text-neutral-light-text dark:text-neutral-dark-text mb-4">
                 {title}
             </h2>
-            <div className="mb-4">
+            <div className="mb-4 flex flex-col sm:flex-row gap-4">
                 <input
                     type="search"
                     value={globalFilter}
@@ -103,6 +108,24 @@ export default function Table<T extends { id: string }>({
                     placeholder="Rechercher..."
                     className="w-full sm:w-64 p-2 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
                 />
+                {meta && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-neutral-light-text dark:text-neutral-dark-text">
+                            Éléments par page:
+                        </span>
+                        <select
+                            value={meta.per_page}
+                            onChange={(e) => onPerPageChange?.(Number(e.target.value))}
+                            className="p-2 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
+                        >
+                            {[10, 15, 25, 50].map((size) => (
+                                <option key={size} value={size}>
+                                    {size}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
             <div
                 ref={tableRef}
@@ -129,16 +152,9 @@ export default function Table<T extends { id: string }>({
                                     {column.filterable ? (
                                         <input
                                             type="text"
-                                            value={
-                                                filters[
-                                                    column.field as string
-                                                ] || ""
-                                            }
+                                            value={filters[column.field as string] || ""}
                                             onChange={(e) =>
-                                                handleFilterChange(
-                                                    column.field as string,
-                                                    e.target.value
-                                                )
+                                                handleFilterChange(column.field as string, e.target.value)
                                             }
                                             placeholder={`Filtrer ${column.header}`}
                                             className="w-full p-1 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
@@ -159,9 +175,14 @@ export default function Table<T extends { id: string }>({
                                 </td>
                             </tr>
                         ) : (
-                            filteredData.map((row) => (
+                            filteredData.map((row, index) => (
                                 <tr
-                                    key={row.id}
+                                    key={
+                                        "id" in row &&
+                                        (typeof row.id === "string" || typeof row.id === "number")
+                                            ? String(row.id)
+                                            : index
+                                    }
                                     className="border-t border-neutral-light-border dark:border-neutral-dark-border hover:bg-neutral-light-bg dark:hover:bg-neutral-dark-bg cursor-pointer"
                                     onClick={() => handleRowClick(row)}
                                 >
@@ -172,9 +193,7 @@ export default function Table<T extends { id: string }>({
                                         >
                                             {column.render
                                                 ? column.render(row)
-                                                : (row[
-                                                      column.field as keyof T
-                                                  ] as React.ReactNode)}
+                                                : String(row[column.field as keyof T] ?? "")}
                                         </td>
                                     ))}
                                 </tr>
@@ -183,6 +202,34 @@ export default function Table<T extends { id: string }>({
                     </tbody>
                 </table>
             </div>
+            {meta && (
+                <div className="flex justify-between items-center mt-4">
+                    <div className="text-neutral-light-text dark:text-neutral-dark-text">
+                        Affichage de {filteredData.length} sur {meta.total} éléments
+                    </div>
+                    <div className="flex gap-2">
+                        <AppButton
+                            label="Précédent"
+                            type="secondary"
+                            size="sm"
+                            disabled={meta.current_page === 1}
+                            onClick={() => onPageChange?.(meta.current_page - 1)}
+                            className="bg-amber-100 dark:bg-amber-300 text-neutral-light-text dark:text-neutral-dark-text"
+                        />
+                        <span className="text-neutral-light-text dark:text-neutral-dark-text">
+                            Page {meta.current_page} sur {meta.last_page}
+                        </span>
+                        <AppButton
+                            label="Suivant"
+                            type="secondary"
+                            size="sm"
+                            disabled={meta.current_page === meta.last_page}
+                            onClick={() => onPageChange?.(meta.current_page + 1)}
+                            className="bg-amber-100 dark:bg-amber-300 text-neutral-light-text dark:text-neutral-dark-text"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
