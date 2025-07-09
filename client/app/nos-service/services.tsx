@@ -1,3 +1,4 @@
+// client/app/nos-service/services.tsx
 import webDevImg from "./web-dev.jpeg";
 import marketingImg from "./marketingImg.jpeg";
 import ServiceSection from "./serviceSection";

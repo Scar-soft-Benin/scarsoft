@@ -11,11 +11,15 @@ import AppBaseTitle from "~/components/appBaseTitle";
 import { useTranslation } from "react-i18next";
 
 const About = () => {
+  const { t, i18n } = useTranslation();
+console.log("Langue actuelle :", i18n.language);
+console.log("Traduction de about.title :", t("about.title"));
+
   const partnersRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const partnersTl = useRef<GSAPTimeline | null>(null);
   const contentTl = useRef<GSAPTimeline | null>(null);
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   const partners = [
     { logo: partner1, title: t("about.partners.1"), url: "https://partnerone.com" },
