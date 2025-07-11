@@ -3,11 +3,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useLayoutEffect } from "react";
 import { verifyOTP, resendOTP } from "~/store/sagas/authSaga";
 import type { RootState } from "~/store";
 import type { Route } from "./+types/verifyOTP";
-
+import gsap from "gsap";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -33,15 +33,14 @@ export default function VerifyOTP() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const authState = useSelector((state: RootState) => state.auth);
-    const isLoading = useSelector(
-        (state: RootState) => state.loading.isLoading
-    );
+    const isLoading = useSelector((state: RootState) => state.loading.isLoading);
     const isMounted = useRef(true);
 
     const email = location.state?.email as string | undefined;
-    const login_session_id = location.state?.login_session_id as
-        | string
-        | undefined;
+    const login_session_id = location.state?.login_session_id as string | undefined;
+
+    const inputRefs = useRef<HTMLInputElement[]>([]);
+    const inputContainerRef = useRef<HTMLDivElement>(null);
 
     const {
         register,
@@ -57,16 +56,30 @@ export default function VerifyOTP() {
 
     const digits = watch("digits");
 
-    useEffect(() => {
-        if (!isMounted.current) return;
-        if (!email || !login_session_id) {
-            console.log(
-                "VerifyOTP: Missing email or login_session_id, redirecting to /login"
+    // ✨ Animation des inputs à l’apparition
+    useLayoutEffect(() => {
+        if (inputContainerRef.current) {
+            gsap.fromTo(
+                inputContainerRef.current.children,
+                { opacity: 0, y: 20, scale: 0.8 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.5,
+                    stagger: 0.05,
+                    ease: "power2.out"
+                }
             );
+        }
+    }, []);
+
+    // 🔁 Redirection si infos manquantes
+    useEffect(() => {
+        if (!email || !login_session_id) {
             navigate("/auth/login", { replace: true });
         }
         if (authState.navigate) {
-            console.log("VerifyOTP: Navigating to", authState.navigate.path);
             navigate(authState.navigate.path, {
                 state: authState.navigate.state,
                 replace: authState.navigate.replace ?? true
@@ -74,47 +87,84 @@ export default function VerifyOTP() {
         }
     }, [authState.navigate, email, login_session_id, navigate]);
 
+    // ❌ Gestion erreur OTP
     useEffect(() => {
         if (authState.error && isMounted.current) {
-            console.log("VerifyOTP: Auth error:", authState.error);
             setError("root", {
                 message:
-                    authState.error.message ||
-                    "An error occurred during OTP verification"
+                    authState.error.message || "An error occurred during OTP verification"
             });
             setValue("digits", ["", "", "", "", "", ""]);
+
+            // 🌀 Shake animation
+            if (inputContainerRef.current) {
+                gsap.fromTo(
+                    inputContainerRef.current,
+                    { x: -10 },
+                    {
+                        x: 10,
+                        duration: 0.1,
+                        ease: "power1.inOut",
+                        repeat: 5,
+                        yoyo: true
+                    }
+                );
+            }
         }
         return () => {
             isMounted.current = false;
         };
     }, [authState.error, setError, setValue]);
 
+    // ✍️ Saisie OTP chiffre par chiffre
     const handleDigitChange = (index: number, value: string) => {
-        if (/^[0-9]?$/.test(value)) {
-            const newDigits = [...digits];
-            newDigits[index] = value;
-            setValue("digits", newDigits);
-            if (value && index < 5) {
-                document.getElementById(`digit-${index + 1}`)?.focus();
-            }
+        if (!/^[0-9]?$/.test(value)) return;
+
+        const newDigits = [...digits];
+        newDigits[index] = value;
+        setValue("digits", newDigits);
+
+        if (value && index < 5) {
+            inputRefs.current[index + 1]?.focus();
+        }
+
+        const completed = newDigits.every((d) => d.length === 1);
+        if (completed) {
+            handleSubmit(onSubmit)();
         }
     };
 
+    // ⌨️ Retour arrière
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (e.key === "Backspace" && digits[index] === "" && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    // 📋 Gestion du collage d’un code complet
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        const paste = e.clipboardData.getData("text").trim();
+        if (/^\d{6}$/.test(paste)) {
+            const newDigits = paste.split("");
+            setValue("digits", newDigits);
+            newDigits.forEach((digit, i) => {
+                if (inputRefs.current[i]) inputRefs.current[i].value = digit;
+            });
+            handleSubmit(onSubmit)();
+            e.preventDefault();
+        }
+    };
+
+    // 🚀 Soumission
     const onSubmit: SubmitHandler<OTPForm> = (data, event) => {
         event?.preventDefault();
         if (!email || !login_session_id) return;
         const otp = data.digits.join("");
-        console.log("VerifyOTP: Submitting OTP with data:", {
-            code: otp,
-            email,
-            login_session_id
-        });
         dispatch(verifyOTP({ code: otp, email, login_session_id }));
     };
 
     const handleResendOTP = () => {
         if (!email || !login_session_id) return;
-        console.log("VerifyOTP: Resending OTP for email:", email);
         dispatch(resendOTP({ email, login_session_id }));
         setValue("digits", ["", "", "", "", "", ""]);
     };
@@ -130,27 +180,35 @@ export default function VerifyOTP() {
                 A verification code has been sent to {email}.
             </p>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="flex justify-center gap-2">
+                <div
+                    ref={inputContainerRef}
+                    className="flex justify-center gap-2"
+                >
                     {digits.map((_, index) => (
                         <input
                             key={index}
                             id={`digit-${index}`}
                             type="text"
+                            inputMode="numeric"
+                            pattern="\d*"
                             maxLength={1}
                             {...register(`digits.${index}`)}
+                            ref={(el) => {
+                                if (el) inputRefs.current[index] = el;
+                            }}
                             value={digits[index]}
-                            onChange={(e) =>
-                                handleDigitChange(index, e.target.value)
-                            }
-                            className="w-12 h-12 text-center border rounded-md focus:ring focus:ring-blue-300 disabled:bg-gray-100"
+                            onChange={(e) => handleDigitChange(index, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, index)}
+                            onPaste={handlePaste}
+                            className="w-12 h-12 text-center text-lg border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-gray-100 transition-all duration-150"
                             disabled={isSubmitting || isLoading}
                         />
                     ))}
                 </div>
+
                 {errors.digits && (
                     <p className="text-red-500 text-sm text-center">
-                        {errors.digits.message ||
-                            "Please enter a valid 6-digit OTP"}
+                        {errors.digits.message || "Please enter a valid 6-digit OTP"}
                     </p>
                 )}
                 {errors.root && (
@@ -158,11 +216,15 @@ export default function VerifyOTP() {
                         {errors.root.message}
                     </p>
                 )}
+
                 <button
                     type="submit"
                     disabled={isSubmitting || isLoading}
-                    className="w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
+                    {isLoading && (
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    )}
                     {isLoading ? "Verifying..." : "Verify OTP"}
                 </button>
             </form>

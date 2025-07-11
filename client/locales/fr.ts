@@ -135,7 +135,7 @@ export default {
         count: "{{count}} projet{{count > 1 ? 's' : ''}}{{category ? '' : ''}}<span>dans {{category}}</span>",
         empty: "Aucun projet trouvé dans cette catégorie."
     },
-    
+
     contact: {
         title: "Contact",
         subtitle: "Besoin d’une solution digitale sur mesure ? Contactez-nous !",
@@ -258,7 +258,39 @@ export default {
             message: "Écrivez votre message...",
             send: "Envoyer"
         }
+    },
+
+    career: {
+        unavailable: "Cette offre d'emploi n'est plus disponible.",
+        not_found: "Offre non trouvée",
+        load_error: "Impossible de charger l'offre d'emploi.",
+        not_found_description: "L'offre d'emploi que vous recherchez n'existe pas ou a été supprimée.",
+        back: "Retour aux carrières",
+        loading: "Chargement de l'offre...",
+        form_error: "Veuillez remplir tous les champs requis (Nom, Email, Téléphone, CV)",
+        submitted: "Candidature envoyée avec succès !"
+    },
+    careerApplication: {
+        unavailable: "Cette offre d'emploi n'est plus disponible.",
+        not_found: "Offre non trouvée",
+        load_error: "Impossible de charger l'offre d'emploi.",
+        not_found_description: "L'offre d'emploi que vous recherchez n'existe pas ou a été supprimée.",
+        loading: "Chargement de l'offre...",
+        back: "Retour aux carrières",
+        mission: "Mission",
+        skills: "Compétences et aptitudes exigées",
+        skills_intro: "Vous êtes à l’aise sur différentes technologies parmi :",
+        profile: "Profil",
+        location: "Lieu de travail",
+        application: "Candidature",
+        join_us: "Rejoignez Scar-Soft en nous envoyant votre CV + lettre de motivation et références à l’adresse :",
+        emailApply: "Postuler par email",
+        directApply: "Postuler directement",
+        responseDelay: "Nous vous répondrons dans les plus brefs délais.",
+        form_error: "Veuillez remplir tous les champs requis (Nom, Email, Téléphone, CV)",
+        submitted: "Votre candidature a été envoyée avec succès !"
     }
+
 
 
 };

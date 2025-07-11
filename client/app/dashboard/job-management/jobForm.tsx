@@ -5,133 +5,138 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
 import { useMessage } from "~/context/messageContext";
-import type { CreateJobPayload } from "~/services/types/job.types";
+import type { CreateJobPayload, Job } from "~/services/types/job.types";
 import TagInput from "../components/tagInput";
 import AppButton from "../components/appButton";
-import { createJob } from "~/store/sagas/jobSaga";
+import { createJob, updateJob } from "~/store/sagas/jobSaga";
 import type { RootState } from "~/store";
-import { getAllCompanies } from "~/store/reducer/companyReducer";
+import { getAllCompanies } from "~/store/sagas/companySaga"; // Changé pour utiliser le saga
 import type { Company } from "~/services/types/company.types";
 
 const jobSchema = z.object({
     title: z.string().min(5, "Le titre doit contenir au moins 5 caractères"),
     type: z.enum(["Recrutement", "Stage", "Freelance"], {
-        errorMap: () => ({ message: "Veuillez sélectionner un type" })
+        errorMap: () => ({ message: "Veuillez sélectionner un type" }),
     }),
     contract: z.string().optional(),
     location: z.string().min(2, "Le lieu doit contenir au moins 2 caractères"),
     salary: z.string().optional(),
-    mission: z
-        .string()
-        .min(50, "La mission doit contenir au moins 50 caractères"),
+    mission: z.string().min(50, "La mission doit contenir au moins 50 caractères"),
     skills: z.array(z.string()).min(1, "Au moins une compétence est requise"),
-    requirements: z
-        .array(z.string())
-        .min(1, "Au moins un prérequis est requis"),
+    requirements: z.array(z.string()).min(1, "Au moins un prérequis est requis"),
     company_id: z.number().min(1, "L'ID de l'entreprise est requis"),
     company_contact_email: z.string().email("Adresse email invalide"),
-    is_internal: z.boolean()
+    is_internal: z.boolean(),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
 
 interface JobFormProps {
+    job?: Job | null;
     onSave: () => void;
     onCancel: () => void;
 }
 
-export default function JobForm({ onSave, onCancel }: JobFormProps) {
+export default function JobForm({ job, onSave, onCancel }: JobFormProps) {
     const dispatch = useDispatch();
     const { addMessage } = useMessage();
-    const { companies, loading, error } = useSelector(
+    const { companies, loading: companyLoading, error: companyError } = useSelector(
         (state: RootState) => state.company
     );
-    const [companyFetchError, setCompanyFetchError] = useState<string | null>(
-        null
-    );
+    const [companyFetchError, setCompanyFetchError] = useState<string | null>(null);
 
     const {
         control,
         handleSubmit,
         formState: { errors, isSubmitting },
         reset,
-        setValue
+        setValue,
     } = useForm<JobFormData>({
         resolver: zodResolver(jobSchema),
-        defaultValues: {
-            title: "",
-            type: "Recrutement",
-            contract: "",
-            location: "Cotonou, Bénin",
-            salary: "",
-            mission: "",
-            skills: [],
-            requirements: [],
-            company_id: 1, // Default value, adjust based on auth context
-            company_contact_email: "",
-            is_internal: false
-        }
+        defaultValues: job
+            ? {
+                title: job.title,
+                type: job.type as "Recrutement" | "Stage" | "Freelance",
+                contract: job.contract || "",
+                location: job.location,
+                salary: job.salary || "",
+                mission: job.mission,
+                skills: job.skills,
+                requirements: job.requirements,
+                company_id: job.company_id,
+                company_contact_email: job.company_contact_email,
+                is_internal: job.is_internal,
+            }
+            : {
+                title: "",
+                type: "Recrutement",
+                contract: "",
+                location: "Cotonou, Bénin",
+                salary: "",
+                mission: "",
+                skills: [],
+                requirements: [],
+                company_id: 0, // Will be set dynamically
+                company_contact_email: "",
+                is_internal: false,
+            },
     });
-
-    useEffect(() => {
-        reset({
-            title: "",
-            type: "Recrutement",
-            contract: "",
-            location: "Cotonou, Bénin",
-            salary: "",
-            mission: "",
-            skills: [],
-            requirements: [],
-            company_id: 1, // Adjust based on auth context
-            company_contact_email: "",
-            is_internal: false
-        });
-    }, [reset]);
 
     // Fetch companies on mount
     useEffect(() => {
         console.log("JobForm: Dispatching getAllCompanies");
-        dispatch(getAllCompanies({ status: "active" })); // Required status
+        dispatch(getAllCompanies({ status: "active" }));
     }, [dispatch]);
+
+    // Set default company_id when companies are loaded
+    useEffect(() => {
+        if (companies.length > 0 && !job) {
+            console.log("JobForm: Setting default company_id:", companies[0].id);
+            setValue("company_id", companies[0].id);
+        }
+    }, [companies, setValue, job]);
 
     // Handle company fetch errors
     useEffect(() => {
-        if (error) {
-            console.log("JobForm: Company fetch error:", error);
-            setCompanyFetchError(error);
-            addMessage(error, "error");
+        if (companyError) {
+            console.log("JobForm: Company fetch error:", companyError);
+            setCompanyFetchError(
+                typeof companyError === "string"
+                    ? companyError
+                    : companyError.message || "Erreur inconnue lors du chargement des entreprises"
+            );
+            addMessage(
+                typeof companyError === "string" ? companyError : companyError.message,
+                "error"
+            );
         } else {
             setCompanyFetchError(null);
         }
-    }, [error, addMessage]);
-
-    // Set default company_id if companies are loaded
-    useEffect(() => {
-        if (companies.length > 0 && !errors.company_id) {
-            console.log(
-                "JobForm: Setting default company_id:",
-                companies[0].id
-            );
-            setValue("company_id", companies[0].id);
-        }
-    }, [companies, setValue]);
+    }, [companyError, addMessage]);
 
     const onSubmit = async (data: JobFormData) => {
         console.log("JobForm: onSubmit called with data:", data);
         try {
-            dispatch(createJob(data as CreateJobPayload));
+            if (job) {
+                // Mode édition : dispatcher updateJob
+                dispatch(updateJob({ ...data, id: job.id } as Job));
+                addMessage("Offre mise à jour avec succès", "success");
+            } else {
+                // Mode création : dispatcher createJob
+                dispatch(createJob(data as CreateJobPayload));
+                addMessage("Offre créée avec succès", "success");
+            }
             onSave();
         } catch (error) {
             console.error("JobForm: Error in onSubmit:", error);
-            addMessage("Impossible de créer l'offre", "error");
+            addMessage("Erreur lors de la sauvegarde de l'offre", "error");
         }
     };
 
     const typeOptions = [
         { label: "Recrutement", value: "Recrutement" },
         { label: "Stage", value: "Stage" },
-        { label: "Freelance", value: "Freelance" }
+        { label: "Freelance", value: "Freelance" },
     ];
 
     const contractOptions = [
@@ -140,7 +145,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
         { label: "CDD", value: "CDD" },
         { label: "Stage", value: "Stage" },
         { label: "Freelance", value: "Freelance" },
-        { label: "Temps partiel", value: "Temps partiel" }
+        { label: "Temps partiel", value: "Temps partiel" },
     ];
 
     return (
@@ -160,19 +165,16 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                             <input
                                 id="title"
                                 {...field}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.title
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.title
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                                 placeholder="Ex: Développeur Full Stack React/Node.js"
                             />
                         )}
                     />
                     {errors.title && (
-                        <small className="text-danger">
-                            {errors.title.message}
-                        </small>
+                        <small className="text-danger">{errors.title.message}</small>
                     )}
                 </div>
 
@@ -190,17 +192,13 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                             <select
                                 id="type"
                                 {...field}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.type
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.type
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                             >
                                 {typeOptions.map((option) => (
-                                    <option
-                                        key={option.value}
-                                        value={option.value}
-                                    >
+                                    <option key={option.value} value={option.value}>
                                         {option.label}
                                     </option>
                                 ))}
@@ -208,9 +206,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                         )}
                     />
                     {errors.type && (
-                        <small className="text-danger">
-                            {errors.type.message}
-                        </small>
+                        <small className="text-danger">{errors.type.message}</small>
                     )}
                 </div>
 
@@ -228,17 +224,13 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                             <select
                                 id="contract"
                                 {...field}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.contract
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.contract
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                             >
                                 {contractOptions.map((option) => (
-                                    <option
-                                        key={option.value}
-                                        value={option.value}
-                                    >
+                                    <option key={option.value} value={option.value}>
                                         {option.label}
                                     </option>
                                 ))}
@@ -246,9 +238,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                         )}
                     />
                     {errors.contract && (
-                        <small className="text-danger">
-                            {errors.contract.message}
-                        </small>
+                        <small className="text-danger">{errors.contract.message}</small>
                     )}
                 </div>
 
@@ -266,19 +256,16 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                             <input
                                 id="location"
                                 {...field}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.location
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.location
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                                 placeholder="Ex: Cotonou, Bénin"
                             />
                         )}
                     />
                     {errors.location && (
-                        <small className="text-danger">
-                            {errors.location.message}
-                        </small>
+                        <small className="text-danger">{errors.location.message}</small>
                     )}
                 </div>
 
@@ -296,11 +283,10 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                             <input
                                 id="company_contact_email"
                                 {...field}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.company_contact_email
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.company_contact_email
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                                 placeholder="Ex: user@example.com"
                             />
                         )}
@@ -326,19 +312,16 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                             <input
                                 id="salary"
                                 {...field}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.salary
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.salary
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                                 placeholder="Ex: 800 000 - 1 200 000 FCFA"
                             />
                         )}
                     />
                     {errors.salary && (
-                        <small className="text-danger">
-                            {errors.salary.message}
-                        </small>
+                        <small className="text-danger">{errors.salary.message}</small>
                     )}
                 </div>
 
@@ -357,19 +340,16 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                                 id="mission"
                                 {...field}
                                 rows={6}
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.mission
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.mission
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
                                 placeholder="Décrivez en détail la mission et les responsabilités du poste..."
                             />
                         )}
                     />
                     {errors.mission && (
-                        <small className="text-danger">
-                            {errors.mission.message}
-                        </small>
+                        <small className="text-danger">{errors.mission.message}</small>
                     )}
                 </div>
 
@@ -394,8 +374,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                         )}
                     />
                     <small className="text-neutral-light-secondary dark:text-neutral-dark-secondary mt-1">
-                        Appuyez sur Entrée après chaque compétence pour
-                        l'ajouter à la liste
+                        Appuyez sur Entrée après chaque compétence pour l'ajouter à la liste
                     </small>
                 </div>
 
@@ -420,8 +399,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                         )}
                     />
                     <small className="text-neutral-light-secondary dark:text-neutral-dark-secondary mt-1">
-                        Appuyez sur Entrée après chaque prérequis pour l'ajouter
-                        à la liste
+                        Appuyez sur Entrée après chaque prérequis pour l'ajouter à la liste
                     </small>
                 </div>
 
@@ -440,35 +418,34 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                                 id="company_id"
                                 {...field}
                                 value={field.value || ""}
-                                onChange={(e) =>
-                                    field.onChange(parseInt(e.target.value))
-                                }
-                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                                    errors.company_id
-                                        ? "border-danger"
-                                        : "border-neutral-light-border dark:border-neutral-dark-border"
-                                } focus:ring-primary focus:border-primary`}
-                                disabled={loading || !!companyFetchError}
+                                onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${errors.company_id
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                                    } focus:ring-primary focus:border-primary`}
+                                disabled={companyLoading || !!companyFetchError}
                             >
                                 <option value="" disabled>
-                                    {loading
+                                    {companyLoading
                                         ? "Chargement..."
                                         : companyFetchError
-                                        ? "Erreur de chargement"
-                                        : "Sélectionner une entreprise"}
+                                            ? "Erreur de chargement"
+                                            : !companies
+                                                ? "Aucune entreprise disponible"
+                                                : "Sélectionner une entreprise"}
                                 </option>
-                                {companies.map((company: Company) => (
-                                    <option key={company.id} value={company.id}>
-                                        {company.name}
-                                    </option>
-                                ))}
+                                {companies && companies.length > 0 ? (
+                                    companies.map((company: Company) => (
+                                        <option key={company.id} value={company.id}>
+                                            {company.name}
+                                        </option>
+                                    ))
+                                ) : null}
                             </select>
                         )}
                     />
                     {errors.company_id && (
-                        <small className="text-danger">
-                            {errors.company_id.message}
-                        </small>
+                        <small className="text-danger">{errors.company_id.message}</small>
                     )}
                 </div>
 
@@ -482,9 +459,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                     <Controller
                         name="is_internal"
                         control={control}
-                        render={({
-                            field: { onChange, value, ref, name, onBlur }
-                        }) => (
+                        render={({ field: { onChange, value, ref, name, onBlur } }) => (
                             <input
                                 id="is_internal"
                                 type="checkbox"
@@ -498,9 +473,7 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                         )}
                     />
                     {errors.is_internal && (
-                        <small className="text-danger">
-                            {errors.is_internal.message}
-                        </small>
+                        <small className="text-danger">{errors.is_internal.message}</small>
                     )}
                 </div>
             </div>
@@ -516,10 +489,10 @@ export default function JobForm({ onSave, onCancel }: JobFormProps) {
                     className="bg-amber-100 dark:bg-amber-300 text-neutral-light-text dark:text-neutral-dark-text border-amber-500 dark:border-amber-700 hover:bg-amber-200 dark:hover:bg-amber-400"
                 />
                 <AppButton
-                    label="Créer"
+                    label={job ? "Modifier" : "Créer"}
                     type="primary"
                     size="md"
-                    typeAttr="submit" // Use type="submit" for form submission
+                    typeAttr="submit"
                     disabled={isSubmitting}
                     className="bg-teal-800 dark:bg-teal-400 text-white dark:text-neutral-dark-text"
                 />

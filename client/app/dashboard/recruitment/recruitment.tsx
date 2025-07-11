@@ -1,45 +1,16 @@
 // pages/Recruitment.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table, { type Column } from "../components/Table";
 import { FiTrash2, FiDownload, FiMail } from "react-icons/fi";
 import AppButton from "../components/appButton";
 import Dialog from "../components/Dialog";
+import type { JobApplication } from "~/services/types/jobApply.types";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteJobApplication, getAllJobApplications } from "~/store/sagas/jobApplySaga";
+import type { RootState } from "~/store";
 
-interface Recruitment {
-  id: string;
-  name: string;
-  email: string;
-  position: string;
-  resume: string;
-  date: string;
-}
 
-const mockRecruitments: Recruitment[] = [
-  {
-    id: "1",
-    name: "Alice Brown",
-    email: "alice@example.com",
-    position: "Frontend Developer",
-    resume: "alice_cv.pdf",
-    date: "2025-06-01",
-  },
-  {
-    id: "2",
-    name: "Bob White",
-    email: "bob@example.com",
-    position: "Backend Developer",
-    resume: "bob_cv.pdf",
-    date: "2025-06-02",
-  },
-  {
-    id: "3",
-    name: "John White",
-    email: "white@example.com",
-    position: "Backend Developer",
-    resume: "john_cv.pdf",
-    date: "2025-06-02",
-  },
-];
+type Recruitment = JobApplication
 
 export default function Recruitment() {
   const [mailType, setMailType] = useState<"candidat" | "entreprise" | null>(null);
@@ -51,6 +22,16 @@ export default function Recruitment() {
   const [candidateToDelete, setCandidateToDelete] = useState<Recruitment | null>(null);
   const [showTypeDialog, setShowTypeDialog] = useState(false);
 
+
+  const dispatch = useDispatch();
+  const jobApplications = useSelector((state: RootState) => state.jobApply.jobApplications);
+
+
+  useEffect(() => {
+    dispatch(getAllJobApplications());
+  }, [dispatch]);
+
+
   const handleDownloadCV = (resumeFileName: string) => {
     const url = `/uploads/cvs/${resumeFileName}`;
     const link = document.createElement("a");
@@ -61,7 +42,7 @@ export default function Recruitment() {
     document.body.removeChild(link);
   };
 
-  const handleSendEmail = (rowData: Recruitment) => {
+  const handleSendEmail = (rowData: JobApplication) => {
     setSelectedCandidate(rowData);
     setShowTypeDialog(true);
   };
@@ -69,7 +50,7 @@ export default function Recruitment() {
   const confirmMailType = (type: "candidat" | "entreprise") => {
     if (!selectedCandidate) return;
     setMailType(type);
-    setRecipientEmail(type === "candidat" ? selectedCandidate.email : "");
+    setRecipientEmail(type === "candidat" ? selectedCandidate.applicant_email : "");
     setShowTypeDialog(false);
     setShowMailForm(true);
   };
@@ -117,7 +98,8 @@ export default function Recruitment() {
 
   const deleteCandidate = () => {
     if (!candidateToDelete) return;
-    alert(`Suppression de ${candidateToDelete.name}`);
+    // alert(`Suppression de ${candidateToDelete.applicant_name}`);
+    dispatch(deleteJobApplication(candidateToDelete.id));
     setShowDeleteDialog(false);
     setCandidateToDelete(null);
   };
@@ -130,7 +112,7 @@ export default function Recruitment() {
         size="sm"
         outlined
         tooltip="Télécharger CV"
-        onClick={() => handleDownloadCV(rowData.resume)}
+        onClick={() => handleDownloadCV(rowData.cv)}
       />
       <AppButton
         icon={<FiMail />}
@@ -162,7 +144,7 @@ export default function Recruitment() {
   return (
     <>
       <Table
-        data={mockRecruitments}
+        data={jobApplications}
         columns={columns}
         title="Candidatures"
       />
@@ -222,7 +204,7 @@ export default function Recruitment() {
         }
       >
         <p className="text-neutral-light-text dark:text-neutral-dark-text">
-          Êtes-vous sûr de vouloir supprimer la candidature de <strong>{candidateToDelete?.name}</strong> ?
+          Êtes-vous sûr de vouloir supprimer la candidature de <strong>{candidateToDelete?.applicant_name}</strong> ?
         </p>
       </Dialog>
     </>

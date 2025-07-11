@@ -1,24 +1,30 @@
 import { useForm, Controller } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import AppBaseButton from "~/components/appBaseButton";
 import Dialog from "~/dashboard/components/Dialog";
-
+import type { CreateJobApplicationPayload } from "~/services/types/jobApply.types";
+import { createJobApplication } from "~/store/sagas/jobApplySaga";
+// import { createJobApplicationRequest } from "../store/jobApply/jobApplyActions";
+// import type { CreateJobApplicationPayload } from "../types/jobApply.types"; // adapte selon ton projet
 
 interface CareerFormProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit?: (data: FormDataFields) => void;
+  jobId: number;
 }
 
 interface FormDataFields {
   fullname: string;
   email: string;
   phone: string;
-  cvFile: FileList;
+  cvFile: String;
   motivationLetter: string;
-  motivationFile: FileList;
+  motivationFile: string;
 }
 
-export default function CareerForm({ visible, onClose, onSubmit }: CareerFormProps) {
+export default function CareerForm({ visible, onClose, jobId }: CareerFormProps) {
+  const dispatch = useDispatch();
+
   const {
     control,
     handleSubmit,
@@ -40,7 +46,19 @@ export default function CareerForm({ visible, onClose, onSubmit }: CareerFormPro
       alert("Le CV est requis.");
       return;
     }
-    onSubmit?.(data);
+
+    const payload: CreateJobApplicationPayload = {
+      jobOfferId: jobId,
+      applicant_name: data.fullname,
+      applicant_email: data.email,
+      applicant_phone: data.phone,
+      cv: data.cvFile[0],
+      cover_letter_type: data.motivationFile?.length > 0 ? "file" : "text",
+      cover_letter_content: data.motivationLetter || undefined,
+      cover_letter_file: data.motivationFile?.[0],
+    };
+
+    // dispatch(createJobApplication(payload));
     reset();
     onClose();
   };

@@ -256,7 +256,38 @@ export default {
             message: "Write your message...",
             send: "Send"
         }
+    },
+    career: {
+        unavailable: "Cette offre d'emploi n'est plus disponible.",
+        not_found: "Offre non trouvée",
+        load_error: "Impossible de charger l'offre d'emploi.",
+        not_found_description: "L'offre d'emploi que vous recherchez n'existe pas ou a été supprimée.",
+        back: "Retour aux carrières",
+        loading: "Chargement de l'offre...",
+        form_error: "Veuillez remplir tous les champs requis (Nom, Email, Téléphone, CV)",
+        submitted: "Candidature envoyée avec succès !"
+    },
+    careerApplication: {
+        unavailable: "This job offer is no longer available.",
+        not_found: "Job offer not found",
+        load_error: "Failed to load the job offer.",
+        not_found_description: "The job offer you are looking for does not exist or has been removed.",
+        loading: "Loading job offer...",
+        back: "Back to careers",
+        mission: "Mission",
+        skills: "Required skills and competencies",
+        skills_intro: "You are comfortable with various technologies, including:",
+        profile: "Profile",
+        location: "Workplace",
+        application: "Application",
+        join_us: "Join Scar-Soft by sending your CV + cover letter and references to:",
+        emailApply: "Apply by email",
+        directApply: "Apply directly",
+        responseDelay: "We will get back to you as soon as possible.",
+        form_error: "Please fill in all required fields (Name, Email, Phone, CV)",
+        submitted: "Your application has been successfully submitted!"
     }
+
 
 };
 

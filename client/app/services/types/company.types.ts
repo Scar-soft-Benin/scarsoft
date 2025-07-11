@@ -49,6 +49,63 @@ export interface CreateCompanyResponse {
     data: Company;
 }
 
+export interface GetAllCompaniesResponse {
+    success: boolean;
+    message: string;
+    data: Company[];
+    meta?: {
+        current_page: number;
+        total: number;
+        per_page: number;
+        last_page: number;
+    };
+}
+
+
+export interface GetCompanyByIdResponse {
+    success: boolean;
+    message: string;
+    data: Company;
+}
+
+export interface UpdateCompanyPayload {
+    id: number;
+    payload: CreateCompanyPayload;
+}
+
+export interface UpdateCompanyPayload {
+  name?: string;
+  description?: string;
+  logo?: string;
+  website?: string;
+  address?: string;
+  contact_email?: string;
+  status?: "active" | "inactive" | "pending";
+}
+
+
+export interface UpdateCompanyResponse {
+    success: boolean;
+    message: string;
+    data: Company;
+}
+
+export interface DeleteCompanyPayload {
+    id: number;
+}
+
+export interface DeleteCompanyResponse {
+    success: boolean;
+    message: string;
+}
+
+export interface GetCompanyJobsResponse {
+    success: boolean;
+    message: string;
+    data: Job[];
+}
+
+
 export interface Meta {
     current_page: number;
     total: number;
@@ -77,4 +134,10 @@ export interface CompanyAction {
         | { companies: Company[]; meta: Meta }
         | { message: string }
         | Company;
+}
+
+export interface ApiError {
+    message: string;
+    status: number;
+    error_code?: string;
 }
