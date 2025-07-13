@@ -289,7 +289,30 @@ export default {
         responseDelay: "Nous vous répondrons dans les plus brefs délais.",
         form_error: "Veuillez remplir tous les champs requis (Nom, Email, Téléphone, CV)",
         submitted: "Votre candidature a été envoyée avec succès !"
+    },
+    careerForm: {
+        applyNow: "Postuler maintenant",
+        requiredFields: "Tous les champs marqués * sont obligatoires",
+        cancel: "Annuler",
+        submit: "Envoyer",
+        fullname: "Nom complet",
+        fullnameRequired: "Le nom complet est requis",
+        email: "Email",
+        emailRequired: "L'email est requis",
+        emailInvalid: "L'email doit être valide",
+        phone: "Téléphone",
+        phoneRequired: "Le numéro de téléphone est requis",
+        phoneInvalid: "Le numéro de téléphone doit être valide",
+        cv: "CV",
+        cvRequired: "Le CV est requis",
+        cvInvalid: "Le CV doit être un fichier PDF, DOC ou DOCX (max 5MB)",
+        motivationLetter: "Lettre de motivation",
+        optional: "facultatif",
+        motivationLetterPlaceholder: "Taper votre lettre de motivation...",
+        motivationFile: "Lettre de motivation (fichier)",
+        motivationFileInvalid: "La lettre de motivation doit être un fichier PDF, DOC, DOCX ou TXT (max 5MB)"
     }
+
 
 
 

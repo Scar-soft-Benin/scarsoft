@@ -1,4 +1,3 @@
-// ~/store/sagas/companySaga.ts
 import { call, put, takeLatest } from "redux-saga/effects";
 import { companyService } from "~/services/api/companyService";
 import type {
@@ -6,14 +5,12 @@ import type {
     CreateCompanyResponse,
     Company,
     GetAllCompaniesPayload,
-    ApiResponse,
-    ApiError,
     GetAllCompaniesResponse,
     UpdateCompanyPayload,
-    DeleteCompanyResponse,
-    UpdateCompanyResponse,
-    GetCompanyJobsResponse,
+    ApiError,
+    ApiResponse,
 } from "~/services/types/company.types";
+import type { Job } from "~/services/types/job.types";
 import { addMessage } from "../reducer/messageReducer";
 import { showLoading, hideLoading } from "../reducer/loadingReducer";
 
@@ -33,37 +30,36 @@ export const DELETE_COMPANY_FAILURE = "DELETE_COMPANY_FAILURE";
 export const GET_COMPANY_JOBS = "GET_COMPANY_JOBS";
 export const GET_COMPANY_JOBS_SUCCESS = "GET_COMPANY_JOBS_SUCCESS";
 export const GET_COMPANY_JOBS_FAILURE = "GET_COMPANY_JOBS_FAILURE";
-
+export const CLEAR_ERROR = "CLEAR_ERROR";
 
 // Action Interfaces
 interface CreateCompanyAction {
-  type: typeof CREATE_COMPANY;
-  payload: CreateCompanyPayload;
+    type: typeof CREATE_COMPANY;
+    payload: CreateCompanyPayload;
 }
 
 interface GetAllCompaniesAction {
-  type: typeof GET_ALL_COMPANIES;
-  payload: GetAllCompaniesPayload;
+    type: typeof GET_ALL_COMPANIES;
+    payload: GetAllCompaniesPayload;
 }
 
 interface UpdateCompanyAction {
-  type: typeof UPDATE_COMPANY;
-  payload: { id: string; data: UpdateCompanyPayload };
+    type: typeof UPDATE_COMPANY;
+    payload: { id: string; data: UpdateCompanyPayload };
 }
 
 interface DeleteCompanyAction {
-  type: typeof DELETE_COMPANY;
-  payload: string;
+    type: typeof DELETE_COMPANY;
+    payload: string;
 }
 
 interface GetCompanyJobsAction {
-  type: typeof GET_COMPANY_JOBS;
-  payload: string;
+    type: typeof GET_COMPANY_JOBS;
+    payload: string;
 }
 
-
 // Action Creators
-export const createCompany = (payload: CreateCompanyPayload): CreateCompanyAction => ({
+export const createCompany = (payload: CreateCompanyPayload) => ({
     type: CREATE_COMPANY,
     payload,
 });
@@ -78,9 +74,9 @@ export const createCompanyFailure = (error: { message: string; error_code?: stri
     payload: error,
 });
 
-export const getAllCompanies = (p0: { status: string; }) => ({
+export const getAllCompanies = (payload: GetAllCompaniesPayload) => ({
     type: GET_ALL_COMPANIES,
-    // payload,
+    payload,
 });
 
 export const getAllCompaniesSuccess = (response: GetAllCompaniesResponse) => ({
@@ -93,48 +89,54 @@ export const getAllCompaniesFailure = (error: { message: string; error_code?: st
     payload: error,
 });
 
-
 export const updateCompany = (id: string, data: UpdateCompanyPayload): UpdateCompanyAction => ({
-  type: UPDATE_COMPANY,
-  payload: { id, data },
+    type: UPDATE_COMPANY,
+    payload: { id, data },
 });
 
-export const updateCompanySuccess = (response: UpdateCompanyResponse) => ({
-  type: UPDATE_COMPANY_SUCCESS,
-  payload: response,
+export const updateCompanySuccess = (company: Company) => ({
+    type: UPDATE_COMPANY_SUCCESS,
+    payload: company,
 });
 
 export const updateCompanyFailure = (error: { message: string; error_code?: string }) => ({
-  type: UPDATE_COMPANY_FAILURE,
-  payload: error,
+    type: UPDATE_COMPANY_FAILURE,
+    payload: error,
 });
 
-
 export const deleteCompany = (id: string): DeleteCompanyAction => ({
-  type: DELETE_COMPANY,
-  payload: id,
+    type: DELETE_COMPANY,
+    payload: id,
 });
 
 export const deleteCompanySuccess = (id: string) => ({
-  type: DELETE_COMPANY_SUCCESS,
-  payload: id,
+    type: DELETE_COMPANY_SUCCESS,
+    payload: id,
 });
 
 export const deleteCompanyFailure = (error: { message: string; error_code?: string }) => ({
-  type: DELETE_COMPANY_FAILURE,
-  payload: error,
+    type: DELETE_COMPANY_FAILURE,
+    payload: error,
 });
 
-export const getCompanyJobsSuccess = (response: GetCompanyJobsResponse) => ({
-  type: GET_COMPANY_JOBS_SUCCESS,
-  payload: response,
+export const getCompanyJobs = (companyId: string): GetCompanyJobsAction => ({
+    type: GET_COMPANY_JOBS,
+    payload: companyId,
+});
+
+export const getCompanyJobsSuccess = (payload: { companyId: string; jobs: Job[] }) => ({
+    type: GET_COMPANY_JOBS_SUCCESS,
+    payload,
 });
 
 export const getCompanyJobsFailure = (error: { message: string; error_code?: string }) => ({
-  type: GET_COMPANY_JOBS_FAILURE,
-  payload: error,
+    type: GET_COMPANY_JOBS_FAILURE,
+    payload: error,
 });
 
+export const clearError = () => ({
+    type: CLEAR_ERROR,
+});
 
 // Error Type Guard
 function isApiError(error: unknown): error is ApiError {
@@ -180,17 +182,22 @@ function* getAllCompaniesSaga(action: GetAllCompaniesAction) {
     try {
         yield put(showLoading());
         console.log("getAllCompaniesSaga: Calling companyService.getAllCompanies with params:", action.payload);
-        const response: ApiResponse<GetAllCompaniesResponse> = yield call(
+        const response: ApiResponse<Company[]> = yield call(
             companyService.getAllCompanies,
             action.payload
         );
         console.log("getAllCompaniesSaga: Get all companies response:", response);
         yield put(
-            getAllCompaniesSuccess(response.data)
+            getAllCompaniesSuccess({
+                success: true,
+                message: response.message || "Entreprises chargées avec succès",
+                data: response.data,
+                meta: response.meta,
+            })
         );
         yield put(
             addMessage({
-                text: response.data.message || "Entreprises chargées avec succès",
+                text: response.message || "Entreprises chargées avec succès",
                 type: "success",
             })
         );
@@ -211,7 +218,7 @@ function* updateCompanySaga(action: UpdateCompanyAction) {
     try {
         yield put(showLoading());
         console.log("updateCompanySaga: Calling companyService.updateCompany with id:", action.payload.id, "and payload:", action.payload.data);
-        const response: ApiResponse<UpdateCompanyResponse> = yield call(
+        const response: ApiResponse<Company> = yield call(
             companyService.updateCompany,
             action.payload.id,
             action.payload.data
@@ -220,7 +227,7 @@ function* updateCompanySaga(action: UpdateCompanyAction) {
         yield put(updateCompanySuccess(response.data));
         yield put(
             addMessage({
-                text: response.data.message || "Entreprise mise à jour avec succès",
+                text: response.message || "Entreprise mise à jour avec succès",
                 type: "success",
             })
         );
@@ -241,12 +248,12 @@ function* deleteCompanySaga(action: DeleteCompanyAction) {
     try {
         yield put(showLoading());
         console.log("deleteCompanySaga: Calling companyService.deleteCompany with id:", action.payload);
-        const response: ApiResponse<DeleteCompanyResponse> = yield call(companyService.deleteCompany, action.payload);
+        const response: ApiResponse<void> = yield call(companyService.deleteCompany, action.payload);
         console.log("deleteCompanySaga: Delete company response:", response);
         yield put(deleteCompanySuccess(action.payload));
         yield put(
             addMessage({
-                text: response.data.message || "Entreprise supprimée avec succès",
+                text: response.message || "Entreprise supprimée avec succès",
                 type: "success",
             })
         );
@@ -267,16 +274,17 @@ function* getCompanyJobsSaga(action: GetCompanyJobsAction) {
     try {
         yield put(showLoading());
         console.log("getCompanyJobsSaga: Calling companyService.getCompanyJobs with companyId:", action.payload);
-        const response: ApiResponse<GetCompanyJobsResponse> = yield call(companyService.getCompanyJobs, action.payload);
+        const response: ApiResponse<Job[]> = yield call(companyService.getCompanyJobs, action.payload);
         console.log("getCompanyJobsSaga: Get company jobs response:", response);
         yield put(
-            getCompanyJobsSuccess(
-                 response.data,
-            )
+            getCompanyJobsSuccess({
+                companyId: action.payload,
+                jobs: response.data,
+            })
         );
         yield put(
             addMessage({
-                text: response.data.message || "Offres de l'entreprise chargées avec succès",
+                text: response.message || "Offres de l'entreprise chargées avec succès",
                 type: "success",
             })
         );
@@ -292,8 +300,6 @@ function* getCompanyJobsSaga(action: GetCompanyJobsAction) {
         console.log("getCompanyJobsSaga: Saga completed.");
     }
 }
-
-
 
 export function* companySaga() {
     console.log("companySaga: Initializing saga listeners");

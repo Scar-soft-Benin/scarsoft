@@ -147,7 +147,7 @@ export const jobService = {
         payload: CreateJobPayload
     ): Promise<ApiResponse<CreateJobResponse>> => {
         try {
-            const response = await apiClient.put(`/job-offers/${id}`, payload);
+            const response = await apiClient.put(`/admin/job-offers/${id}`, payload);
             console.log("jobService: Update job response:", response.data);
             return {
                 data: {
@@ -170,7 +170,7 @@ export const jobService = {
      */
     deleteJob: async (id: string): Promise<ApiResponse<{ success: boolean; message: string }>> => {
         try {
-            const response = await apiClient.delete(`/job-offers/${id}`);
+            const response = await apiClient.delete(`/admin/job-offers/${id}`);
             console.log("jobService: Delete job response:", response.data);
             return {
                 data: {

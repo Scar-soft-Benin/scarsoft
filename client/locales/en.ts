@@ -286,7 +286,52 @@ export default {
         responseDelay: "We will get back to you as soon as possible.",
         form_error: "Please fill in all required fields (Name, Email, Phone, CV)",
         submitted: "Your application has been successfully submitted!"
-    }
+    },
+    careerForm: {
+        applyNow: "Apply Now",
+        requiredFields: "All fields marked with * are required",
+        cancel: "Cancel",
+        submit: "Submit",
+        fullname: "Full Name",
+        fullnameRequired: "Full name is required",
+        email: "Email",
+        emailRequired: "Email is required",
+        emailInvalid: "Email must be valid",
+        phone: "Phone",
+        phoneRequired: "Phone number is required",
+        phoneInvalid: "Phone number must be valid",
+        cv: "CV",
+        cvRequired: "CV is required",
+        cvInvalid: "CV must be a PDF, DOC, or DOCX file (max 5MB)",
+        motivationLetter: "Motivation Letter",
+        optional: "optional",
+        motivationLetterPlaceholder: "Type your motivation letter...",
+        motivationFile: "Motivation Letter (file)",
+        motivationFileInvalid: "Motivation letter must be a PDF, DOC, DOCX, or TXT file (max 5MB)"
+    },
+    common: {
+        read_more: "Read more",
+        learn_more: "Learn more",
+        view_details: "View details",
+        apply_now: "Apply now",
+        send_message: "Send message",
+        contact_us: "Contact us",
+        get_quote: "Get a quote",
+        join_us: "Join us",
+        back_to_home: "Back to home"
+    },
+    error: {
+        not_found: "Page not found",
+        not_found_description: "The page you are looking for does not exist or has been moved.",
+        server_error: "Server error",
+        server_error_description: "An unexpected error occurred. Please try again later."
+    },
+    success: {
+        form_submitted: "Your message has been successfully sent!",
+        application_submitted: "Your application has been successfully submitted!"
+    },
+    loading: "Loading...",
+    back_to_top: "Back to top"
 
 
 };

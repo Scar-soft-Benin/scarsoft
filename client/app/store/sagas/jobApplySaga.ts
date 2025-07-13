@@ -1,17 +1,15 @@
-
 import { call, put, takeLatest } from "redux-saga/effects";
 import type {
-    CreateJobApplicationPayload,
-    CreateJobApplicationResponse,
-    GetAllJobApplicationsResponse,
-    UpdateJobApplicationStatusPayload,
-    UpdateJobApplicationStatusResponse
+  CreateJobApplicationPayload,
+  CreateJobApplicationResponse,
+  GetAllJobApplicationsResponse,
+  UpdateJobApplicationStatusPayload,
+  UpdateJobApplicationStatusResponse,
 } from "~/services/types/jobApply.types";
 import { addMessage } from "../reducer/messageReducer";
 import { showLoading, hideLoading } from "../reducer/loadingReducer";
 import type { ApiError, ApiResponse } from "~/services/types/common.types";
 import { jobApplyServices } from "~/services/api/jobApplyServices";
-
 
 export const CREATE_JOBAPPLICATION = "CREATE_JOBAPPLICATION";
 export const GET_ALL_JOBAPPLICATIONS = "GET_ALL_JOBAPPLICATIONS";
@@ -19,53 +17,53 @@ export const GET_JOBAPPLICATION = "GET_JOBAPPLICATION";
 export const UPDATE_JOBAPPLICATION_STATUS = "UPDATE_JOBAPPLICATION_STATUS";
 export const DELETE_JOBAPPLICATION = "DELETE_JOBAPPLICATION";
 
-
 interface CreateJobApplicationAction {
-    type: typeof CREATE_JOBAPPLICATION;
-    payload: CreateJobApplicationPayload;
+  type: typeof CREATE_JOBAPPLICATION;
+  payload: CreateJobApplicationPayload;
 }
 
-export const createJobApplication = (
-    payload: CreateJobApplicationPayload
-): CreateJobApplicationAction => ({
-    type: CREATE_JOBAPPLICATION,
-    payload
+export const createJobApplication = (payload: CreateJobApplicationPayload) => ({
+  type: CREATE_JOBAPPLICATION,
+  payload,
 });
 
 export const getAllJobApplications = () => ({
-    type: GET_ALL_JOBAPPLICATIONS
+  type: GET_ALL_JOBAPPLICATIONS,
 });
 
 export const getJobApplication = (id: number) => ({
-    type: GET_JOBAPPLICATION,
-    payload: id
+  type: GET_JOBAPPLICATION,
+  payload: id,
 });
 
 export const updateJobApplicationStatus = (
-    id: number,
-    payload: { status: string; notes?: string }
+  id: number,
+  payload: { status: string; notes?: string }
 ) => ({
-    type: UPDATE_JOBAPPLICATION_STATUS,
-    payload: { id, ...payload }
+  type: UPDATE_JOBAPPLICATION_STATUS,
+  payload: { id, ...payload },
 });
 
 export const deleteJobApplication = (id: number) => ({
-    type: DELETE_JOBAPPLICATION,
-    payload: id
+  type: DELETE_JOBAPPLICATION,
+  payload: id,
 });
 
 export const createJobApplicationSuccess = (response: CreateJobApplicationResponse) => ({
-    type: `${CREATE_JOBAPPLICATION}_SUCCESS`,
-    payload: response
+  type: `${CREATE_JOBAPPLICATION}_SUCCESS`,
+  payload: response,
 });
 
 export const createJobApplicationFailure = (error: {
-    message: string;
-    error_code?: string;
+  message: string;
+  error_code?: string;
+  errors?: Record<string, string[]>;
 }) => ({
-    type: `${CREATE_JOBAPPLICATION}_FAILURE`,
-    payload: error
+  type: `${CREATE_JOBAPPLICATION}_FAILURE`,
+  payload: error,
 });
+
+
 
 export const getAllJobApplicationsSuccess = (response: GetAllJobApplicationsResponse) => ({
     type: `${GET_ALL_JOBAPPLICATIONS}_SUCCESS`,
@@ -118,53 +116,63 @@ export const deleteJobApplicationFailure = (error: {
 
 
 function isApiError(error: unknown): error is ApiError {
-    return (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof (error as any).message === "string"
-    );
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as any).message === "string"
+  );
 }
-
-
-// Saga to handle job application actions
 
 function* createJobApplicationSaga(action: CreateJobApplicationAction) {
-    try {
-        yield put(showLoading());
-        const response: ApiResponse<CreateJobApplicationResponse> = yield call(
-            jobApplyServices.createJobApply,
-            action.payload
-        );
-        console.log("createJobApplicationSaga: Create job application response:", response);
-        yield put(createJobApplicationSuccess(response.data));
-        yield put(
-            addMessage({
-                type: "success",
-                text: response.data.message || "Job application created successfully"
-            })
-        );
-
-    } catch (error: unknown) {
-        console.error("createJobApplicationSaga: Error creating job application:", error);
-        const apiError = isApiError(error)
-            ? { message: error.message, status: error.status }
-            : { message: "impossible de postuler", status: 500 };
-        console.error("createJobApplicationSaga: Parsed API error:", apiError);
-        yield put(createJobApplicationFailure(apiError));
-        yield put(
-            addMessage({
-                type: "error",
-                text: apiError.message || "Erreur lors de la création de la candidature"
-            })
-        );
-
-        console.error("createJobApplicationSaga: Error creating job application:", error);
-    } finally {
-        yield put(hideLoading());
-        console.log("createJobApplicationSaga: Saga completed.");
+  try {
+    yield put(showLoading());
+    const response: ApiResponse<CreateJobApplicationResponse> = yield call(
+      jobApplyServices.createJobApply,
+      action.payload
+    );
+    console.log("createJobApplicationSaga: Create job application response:", response);
+    yield put(createJobApplicationSuccess(response.data));
+    yield put(
+      addMessage({
+        type: "success",
+        text: response.data.message || "Candidature soumise avec succès",
+      })
+    );
+  } catch (error: unknown) {
+    console.error("createJobApplicationSaga: Error creating job application:", error);
+    const apiError = isApiError(error)
+      ? {
+          message: error.message,
+          status: error.status,
+          error_code: error.error_code,
+          errors: error.errors,
+        }
+      : { message: "Impossible de postuler", status: 500 };
+    console.error("createJobApplicationSaga: Parsed API error:", apiError);
+    let errorMessage = apiError.errors
+      ? Object.values(apiError.errors).flat().join(", ")
+      : apiError.message;
+    if (apiError.error_code === "ALREADY_APPLIED") {
+      errorMessage = "Vous avez déjà postulé pour cette offre.";
+    } else if (apiError.error_code === "RATE_LIMIT_EXCEEDED") {
+      errorMessage = "Trop de tentatives. Veuillez réessayer plus tard.";
+    } else if (apiError.error_code === "JOB_OFFER_NOT_FOUND") {
+      errorMessage = "Offre d'emploi non trouvée ou non disponible.";
     }
+    yield put(createJobApplicationFailure(apiError));
+    yield put(
+      addMessage({
+        type: "error",
+        text: errorMessage,
+      })
+    );
+  } finally {
+    yield put(hideLoading());
+    console.log("createJobApplicationSaga: Saga completed.");
+  }
 }
+
 
 function* getJobApplicationSaga(action: { type: typeof GET_JOBAPPLICATION; payload: string }) {
     try {
@@ -295,9 +303,9 @@ function* deleteJobApplicationSaga(action: {
 }
 
 export function* jobApplySaga() {
-    yield takeLatest(CREATE_JOBAPPLICATION, createJobApplicationSaga);
-    yield takeLatest(GET_JOBAPPLICATION, getJobApplicationSaga);
-    yield takeLatest(UPDATE_JOBAPPLICATION_STATUS, updateJobApplicationStatusSaga);
-    yield takeLatest(DELETE_JOBAPPLICATION, deleteJobApplicationSaga);
-    yield takeLatest(GET_ALL_JOBAPPLICATIONS, getAllJobApplicationsSaga);
-};
+  yield takeLatest(CREATE_JOBAPPLICATION, createJobApplicationSaga);
+  yield takeLatest(GET_JOBAPPLICATION, getJobApplicationSaga);
+  yield takeLatest(UPDATE_JOBAPPLICATION_STATUS, updateJobApplicationStatusSaga);
+  yield takeLatest(DELETE_JOBAPPLICATION, deleteJobApplicationSaga);
+  yield takeLatest(GET_ALL_JOBAPPLICATIONS, getAllJobApplicationsSaga);
+}

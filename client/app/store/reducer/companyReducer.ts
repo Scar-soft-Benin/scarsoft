@@ -1,5 +1,6 @@
 import type { Company, Meta } from "~/services/types/company.types";
 import type { Job } from "~/services/types/job.types";
+import type { GetAllCompaniesResponse } from "~/services/types/company.types";
 import {
   CREATE_COMPANY,
   CREATE_COMPANY_SUCCESS,
@@ -16,6 +17,7 @@ import {
   GET_COMPANY_JOBS,
   GET_COMPANY_JOBS_SUCCESS,
   GET_COMPANY_JOBS_FAILURE,
+  CLEAR_ERROR,
 } from "../sagas/companySaga";
 
 interface CompanyState {
@@ -39,7 +41,7 @@ type CompanyAction =
   | { type: typeof CREATE_COMPANY_SUCCESS; payload: Company }
   | { type: typeof CREATE_COMPANY_FAILURE; payload: { message: string; error_code?: string } }
   | { type: typeof GET_ALL_COMPANIES }
-  | { type: typeof GET_ALL_COMPANIES_SUCCESS; payload: { companies: Company[]; meta: Meta } }
+  | { type: typeof GET_ALL_COMPANIES_SUCCESS; payload: GetAllCompaniesResponse }
   | { type: typeof GET_ALL_COMPANIES_FAILURE; payload: { message: string; error_code?: string } }
   | { type: typeof UPDATE_COMPANY }
   | { type: typeof UPDATE_COMPANY_SUCCESS; payload: Company }
@@ -49,7 +51,8 @@ type CompanyAction =
   | { type: typeof DELETE_COMPANY_FAILURE; payload: { message: string; error_code?: string } }
   | { type: typeof GET_COMPANY_JOBS }
   | { type: typeof GET_COMPANY_JOBS_SUCCESS; payload: { companyId: string; jobs: Job[] } }
-  | { type: typeof GET_COMPANY_JOBS_FAILURE; payload: { message: string; error_code?: string } };
+  | { type: typeof GET_COMPANY_JOBS_FAILURE; payload: { message: string; error_code?: string } }
+  | { type: typeof CLEAR_ERROR };
 
 const companyReducer = (state = initialState, action: CompanyAction): CompanyState => {
   switch (action.type) {
@@ -83,7 +86,7 @@ const companyReducer = (state = initialState, action: CompanyAction): CompanySta
       console.log("companyReducer: GET_ALL_COMPANIES_SUCCESS with payload:", action.payload);
       return {
         ...state,
-        companies: action.payload.companies || [],
+        companies: action.payload.data || [],
         meta: action.payload.meta || null,
         loading: false,
         error: null,
@@ -147,6 +150,9 @@ const companyReducer = (state = initialState, action: CompanyAction): CompanySta
         loading: false,
         error: action.payload,
       };
+    case CLEAR_ERROR:
+      console.log("companyReducer: Clearing error");
+      return { ...state, error: null };
     default:
       return state;
   }

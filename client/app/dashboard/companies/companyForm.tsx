@@ -6,8 +6,8 @@ import { z } from "zod";
 import { useDispatch } from "react-redux";
 import { useMessage } from "~/context/messageContext";
 import type { CreateCompanyPayload } from "~/services/types/company.types";
-import { createCompany } from "~/store/reducer/companyReducer";
 import AppButton from "../components/appButton";
+import { createCompany } from "~/store/sagas/companySaga";
 
 const companySchema = z.object({
     name: z.string().min(3, "Le nom doit contenir au moins 3 caractères"),

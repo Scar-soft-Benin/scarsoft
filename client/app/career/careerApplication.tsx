@@ -53,10 +53,10 @@ const CareerApplication = () => {
       if (jobData?.data?.data) {
         dispatch(setSingleJob(jobData.data.data));
       } else {
-        setError(t("career.notAvailable"));
+        setError(t("careerApplication.notAvailable"));
       }
     } catch (err) {
-      setError(t("career.loadError"));
+      setError(t("careerApplication.loadError"));
     } finally {
       setLoading(false);
     }
@@ -83,8 +83,8 @@ const CareerApplication = () => {
 
   const handleEmailApplication = () => {
     if (job) {
-      const subject = `${t("career.application")} - ${job.title}`;
-      const body = `${t("career.emailBody", { title: job.title })}`;
+      const subject = `${t("careerApplication.application")} - ${job.title}`;
+      const body = `${t("careerApplication.emailBody", { title: job.title })}`;
       window.open(`mailto:rh@scar-soft.net?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
     }
   };
@@ -103,7 +103,7 @@ const CareerApplication = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <FaSpinner className="text-green-500 text-3xl mb-4 animate-spin" />
-          <p className="text-gray-600">{t("career.loading")}</p>
+          <p className="text-gray-600">{t("careerApplication.loading")}</p>
         </div>
       </div>
     );
@@ -114,10 +114,10 @@ const CareerApplication = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <FiAlertTriangle className="text-yellow-500 text-4xl mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">{error || t("career.notFound")}</h2>
-          <p className="text-gray-600 mb-6">{t("career.notFoundText")}</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{error || t("careerApplication.notFound")}</h2>
+          <p className="text-gray-600 mb-6">{t("careerApplication.notFoundText")}</p>
           <AppBaseButton
-            text={t("career.back")}
+            text={t("careerApplication.back")}
             type="first"
             bgColor="bg-green-500"
             textColor="text-white"
@@ -137,7 +137,7 @@ const CareerApplication = () => {
         <div className="bg-white shadow-sm border-b">
           <div className="container mx-auto px-6 py-4">
             <AppBaseButton
-              text={t("career.back")}
+              text={t("careerApplication.back")}
               type="first"
               bgColor="bg-transparent"
               textColor="text-[#10b981]"
@@ -174,7 +174,7 @@ const CareerApplication = () => {
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaBullseye className="text-green-500" />
-                {t("career.mission")}
+                {t("careerApplication.mission")}
               </h2>
               <p className="text-gray-700 leading-relaxed text-justify">{job.mission}</p>
             </div>
@@ -184,7 +184,7 @@ const CareerApplication = () => {
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaCogs className="text-green-500" />
-                {t("career.skills")}
+                {t("careerApplication.skills")}
               </h2>
               <ul className="space-y-2">
                 {job.skills.map((skill, index) => (
@@ -201,7 +201,7 @@ const CareerApplication = () => {
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaUser className="text-green-500" />
-                {t("career.profile")}
+                {t("careerApplication.profile")}
               </h2>
               <ul className="space-y-2">
                 {job.requirements.map((req, i) => (
@@ -218,7 +218,7 @@ const CareerApplication = () => {
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaMapMarkerAlt className="text-green-500" />
-                {t("career.location")}
+                {t("careerApplication.location")}
               </h2>
               <div className="flex items-center gap-2 text-gray-700">
                 <FaBuilding className="text-gray-500" />
@@ -231,11 +231,11 @@ const CareerApplication = () => {
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaEnvelope className="text-green-500" />
-                {t("career.application")}
+                {t("careerApplication.application")}
               </h2>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                 <p className="text-gray-700 leading-relaxed">
-                  <Trans i18nKey="career.instruction">
+                  <Trans i18nKey="careerApplication.instruction">
                     <strong>Rejoignez Scar-Soft</strong> en nous envoyant votre CV + lettre de motivation à
                     <a href="mailto:rh@scar-soft.net">rh@scar-soft.net</a>.
                   </Trans>
@@ -243,7 +243,7 @@ const CareerApplication = () => {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <AppBaseButton
-                  text={t("career.emailApply")}
+                  text={t("careerApplication.emailApply")}
                   type="first"
                   bgColor="bg-green-500"
                   textColor="text-white"
@@ -253,7 +253,7 @@ const CareerApplication = () => {
                   className="flex-1"
                 />
                 <AppBaseButton
-                  text={t("career.directApply")}
+                  text={t("careerApplication.directApply")}
                   type="second"
                   bgColor="bg-transparent"
                   textColor="text-green-500"
@@ -266,7 +266,7 @@ const CareerApplication = () => {
               <div className="mt-4 text-sm text-gray-500">
                 <p className="flex items-center gap-2">
                   <FaInfoCircle className="text-gray-500" />
-                  {t("career.responseInfo")}
+                  {t("careerApplication.responseInfo")}
                 </p>
               </div>
             </div>
