@@ -4,46 +4,12 @@ import type { CreateJobApplicationPayload, CreateJobApplicationResponse, DeleteJ
 import { parseApiError } from "../utils/errorParser";
 
 export const jobApplyServices = {
-    // createJobApply:  async (
-    //     // jobOfferId: string,
-    //     payload: CreateJobApplicationPayload
-    // ): Promise<ApiResponse<CreateJobApplicationResponse>> => {
-    //     try {
-    //         console.log("recruitmentServices: Initiating createJobApply request with payload:", payload);
-    //         const response = await apiClient.post(`/job-offers/${payload.jobOfferId}/apply`, payload);
-    //         console.log("recruitmentServices: Create job application response:", response.data);
-    //         return {
-    //             data: {
-    //                 success: response.data.success,
-    //                 message: response.data.message || "Job application created successfully",
-    //                 data: response.data.data
-    //             },
-    //             status: response.status,
-    //             message: response.data.message || "Job application created successfully"
-    //         };
-    //     } catch (error: unknown) {
-    //         throw parseApiError(error);
-    //     }
-    // },
+
     createJobApply: async (
         payload: CreateJobApplicationPayload
     ): Promise<ApiResponse<CreateJobApplicationResponse>> => {
         try {
             console.log("recruitmentServices: Initiating createJobApply request with payload:", payload);
-            const formData = new FormData();
-            formData.append("jobOfferId", payload.jobOfferId.toString());
-            formData.append("applicant_name", payload.applicant_name);
-            formData.append("applicant_email", payload.applicant_email);
-            formData.append("applicant_phone", payload.applicant_phone);
-            formData.append("cv", payload.cv);
-            formData.append("cover_letter_type", payload.cover_letter_type || "text");
-            if (payload.cover_letter_content) {
-                formData.append("cover_letter_content", payload.cover_letter_content);
-            }
-            if (payload.cover_letter_file) {
-                formData.append("cover_letter_file", payload.cover_letter_file);
-            }
-            console.log("recruitmentServices: FormData prepared for job application:", formData);
             const response = await apiClient.post(`/job-offers/${payload.jobOfferId}/apply`, payload, {
                 headers: {
                     "Content-Type": "multipart/form-data",
