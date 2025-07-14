@@ -4,6 +4,7 @@ import Footer from "~/footer/footer";
 import Header from "~/header/header";
 import { getHeaderConfig } from "../header/headerConfig";
 import { useTranslation } from "react-i18next";
+import LanguageSelector from "~/components/LanguageSelector";
 
 export default function MainLayout() {
   const { t } = useTranslation();
@@ -29,6 +30,9 @@ export default function MainLayout() {
         btnText={btnText}
       />
       <main>
+        <div className="fixed bottom-4 right-4 z-50">
+          <LanguageSelector />
+        </div>
         <Outlet />
       </main>
       <Footer />

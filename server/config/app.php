@@ -126,7 +126,7 @@ return [
     // Configuration JWT - Cast des valeurs numériques et booléennes
     'jwt_secret' => env('JWT_SECRET'),
     'jwt_algorithm' => env('JWT_ALGORITHM', 'HS256'),
-    'jwt_access_token_expiration' => (int) env('JWT_ACCESS_TOKEN_EXPIRATION', 15),
+    'jwt_access_token_expiration' => (int) env('JWT_ACCESS_TOKEN_EXPIRATION', 120),
     'jwt_refresh_token_expiration' => (int) env('JWT_REFRESH_TOKEN_EXPIRATION', 10080),
     'jwt_refresh_token_rotation' => (bool) env('JWT_REFRESH_TOKEN_ROTATION', true),
 

@@ -145,7 +145,7 @@ export default function OffresEntreprise() {
                 <AppBaseButton
                     text="Retour aux entreprises"
                     icon={<FaArrowLeft />}
-                    onClick={() => navigate("/dashboard/company")}
+                    onClick={() => navigate("/dashboard/companies")}
                     type="second"
                     bgColor="bg-transparent"
                     textColor="text-green-600"

@@ -21,7 +21,7 @@ class JWTService
     {
         $this->secret = config('app.jwt_secret') ?? env('JWT_SECRET');
         $this->algorithm = config('app.jwt_algorithm', 'HS256');
-        $this->accessTokenExpiration = (int) config('app.jwt_access_token_expiration', 15);
+        $this->accessTokenExpiration = (int) config('app.jwt_access_token_expiration', 120);
         $this->refreshTokenExpiration = (int) config('app.jwt_refresh_token_expiration', 10080);
 
         if (empty($this->secret)) {
@@ -47,7 +47,7 @@ class JWTService
     public function generateRefreshToken(User $user, array $deviceInfo = []): RefreshToken
     {
         $token = Str::random(128);
-        
+
         return RefreshToken::create([
             'user_id' => $user->id,
             'token' => hash('sha256', $token),
@@ -63,7 +63,7 @@ class JWTService
     {
         try {
             $decoded = JWT::decode($token, new Key($this->secret, $this->algorithm));
-            
+
             if ($decoded->type !== 'access') {
                 throw new \InvalidArgumentException('Invalid token type');
             }
@@ -97,7 +97,7 @@ class JWTService
     public function refreshAccessToken(string $refreshToken): array
     {
         $hashedToken = hash('sha256', $refreshToken);
-        
+
         $tokenModel = RefreshToken::valid()
             ->where('token', $hashedToken)
             ->with('user')
@@ -128,7 +128,7 @@ class JWTService
                     'user_agent' => $tokenModel->user_agent,
                 ]
             );
-            
+
             // Révoquer l'ancien refresh token
             $tokenModel->revoke();
         }
@@ -145,7 +145,7 @@ class JWTService
     public function revokeRefreshToken(string $refreshToken): bool
     {
         $hashedToken = hash('sha256', $refreshToken);
-        
+
         $tokenModel = RefreshToken::valid()
             ->where('token', $hashedToken)
             ->first();
@@ -176,13 +176,13 @@ class JWTService
     public function getTokenInfo(string $token): ?array
     {
         $validation = $this->validateAccessToken($token);
-        
+
         if (!$validation['valid']) {
             return null;
         }
 
         $payload = $validation['payload'];
-        
+
         return [
             'user_id' => $payload['sub'],
             'issued_at' => Carbon::createFromTimestamp($payload['iat']),

@@ -256,7 +256,83 @@ export default {
             message: "Write your message...",
             send: "Send"
         }
-    }
+    },
+    career: {
+        unavailable: "Cette offre d'emploi n'est plus disponible.",
+        not_found: "Offre non trouvée",
+        load_error: "Impossible de charger l'offre d'emploi.",
+        not_found_description: "L'offre d'emploi que vous recherchez n'existe pas ou a été supprimée.",
+        back: "Retour aux carrières",
+        loading: "Chargement de l'offre...",
+        form_error: "Veuillez remplir tous les champs requis (Nom, Email, Téléphone, CV)",
+        submitted: "Candidature envoyée avec succès !"
+    },
+    careerApplication: {
+        unavailable: "This job offer is no longer available.",
+        not_found: "Job offer not found",
+        load_error: "Failed to load the job offer.",
+        not_found_description: "The job offer you are looking for does not exist or has been removed.",
+        loading: "Loading job offer...",
+        back: "Back to careers",
+        mission: "Mission",
+        skills: "Required skills and competencies",
+        skills_intro: "You are comfortable with various technologies, including:",
+        profile: "Profile",
+        location: "Workplace",
+        application: "Application",
+        join_us: "Join Scar-Soft by sending your CV + cover letter and references to:",
+        emailApply: "Apply by email",
+        directApply: "Apply directly",
+        responseDelay: "We will get back to you as soon as possible.",
+        form_error: "Please fill in all required fields (Name, Email, Phone, CV)",
+        submitted: "Your application has been successfully submitted!"
+    },
+    careerForm: {
+        applyNow: "Apply Now",
+        requiredFields: "All fields marked with * are required",
+        cancel: "Cancel",
+        submit: "Submit",
+        fullname: "Full Name",
+        fullnameRequired: "Full name is required",
+        email: "Email",
+        emailRequired: "Email is required",
+        emailInvalid: "Email must be valid",
+        phone: "Phone",
+        phoneRequired: "Phone number is required",
+        phoneInvalid: "Phone number must be valid",
+        cv: "CV",
+        cvRequired: "CV is required",
+        cvInvalid: "CV must be a PDF, DOC, or DOCX file (max 5MB)",
+        motivationLetter: "Motivation Letter",
+        optional: "optional",
+        motivationLetterPlaceholder: "Type your motivation letter...",
+        motivationFile: "Motivation Letter (file)",
+        motivationFileInvalid: "Motivation letter must be a PDF, DOC, DOCX, or TXT file (max 5MB)"
+    },
+    common: {
+        read_more: "Read more",
+        learn_more: "Learn more",
+        view_details: "View details",
+        apply_now: "Apply now",
+        send_message: "Send message",
+        contact_us: "Contact us",
+        get_quote: "Get a quote",
+        join_us: "Join us",
+        back_to_home: "Back to home"
+    },
+    error: {
+        not_found: "Page not found",
+        not_found_description: "The page you are looking for does not exist or has been moved.",
+        server_error: "Server error",
+        server_error_description: "An unexpected error occurred. Please try again later."
+    },
+    success: {
+        form_submitted: "Your message has been successfully sent!",
+        application_submitted: "Your application has been successfully submitted!"
+    },
+    loading: "Loading...",
+    back_to_top: "Back to top"
+
 
 };
 
