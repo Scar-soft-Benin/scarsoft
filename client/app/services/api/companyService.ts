@@ -10,6 +10,7 @@ import type { Job } from "~/services/types/job.types";
 import { apiClient } from "../config/apiConfig";
 import { parseApiError } from "../utils/errorParser";
 
+
 export const companyService = {
     getAllCompanies: async (
         params: GetAllCompaniesPayload
@@ -116,6 +117,27 @@ export const companyService = {
                 data: response.data.data,
                 status: response.status,
                 message: response.data.message || "Company jobs fetched successfully",
+            };
+        } catch (error: unknown) {
+            throw parseApiError(error);
+        }
+    },
+
+    getCompanyDetails: async (companyId: string): Promise<ApiResponse<Company>> => {
+        try {
+            console.log(
+                "companyService: Initiating getCompanyDetails request with companyId:",
+                companyId
+            );
+            console.log("companyService: apiClient config:", {
+                baseURL: apiClient.defaults.baseURL,
+            });
+            const response = await apiClient.get(`/admin/companies/${companyId}`);
+            console.log("companyService: Get company details response:", response);
+            return {
+                data: response.data.data,
+                status: response.status,
+                message: response.data.message || "Company details fetched successfully",
             };
         } catch (error: unknown) {
             throw parseApiError(error);
