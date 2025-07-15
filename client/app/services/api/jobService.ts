@@ -130,12 +130,11 @@ export const jobService = {
             return {
                 data: {
                     success: response.data.success,
-                    message:
-                        response.data.message || "Job fetched successfully",
+                    message: response.data.message,
                     data: response.data.data
                 },
                 status: response.status,
-                message: response.data.message || "Job fetched successfully"
+                message: response.data.message
             };
         } catch (error: unknown) {
             throw parseApiError(error);

@@ -371,12 +371,6 @@ function* setSingleJobSaga(action: {
         yield put(showLoading());
         const job: Job = action.payload;
         yield put(setSingleJobSuccess(job));
-        yield put(
-            addMessage({
-                text: "Offre mise à jour avec succès",
-                type: "success"
-            })
-        );
     } catch (error: unknown) {
         const apiError = isApiError(error)
             ? {

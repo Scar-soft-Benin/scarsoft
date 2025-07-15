@@ -55,7 +55,7 @@ const CareerApplication = () => {
       } else {
         setError(t("careerApplication.notAvailable"));
       }
-    } catch (err) {
+    } catch {
       setError(t("careerApplication.loadError"));
     } finally {
       setLoading(false);
@@ -266,7 +266,7 @@ const CareerApplication = () => {
               <div className="mt-4 text-sm text-gray-500">
                 <p className="flex items-center gap-2">
                   <FaInfoCircle className="text-gray-500" />
-                  {t("careerApplication.responseInfo")}
+                  {/* {t("careerApplication.responseInfo")} */}
                 </p>
               </div>
             </div>
