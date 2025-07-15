@@ -1,3 +1,5 @@
+// ~/services/types/jobApply.types.ts
+
 export interface JobApplication {
   id: number;
   job_offer_id: string;
@@ -27,6 +29,20 @@ export interface CreateJobApplicationPayload {
 export interface UpdateJobApplicationStatusPayload {
   status: "pending" | "reviewed" | "accepted" | "rejected";
   notes?: string;
+}
+
+// Type pour les statistiques des candidatures
+export interface JobApplicationStatistics {
+  total: number;
+  pending: number;
+  under_review: number;
+  shortlisted: number;
+  rejected: number;
+  accepted: number;
+  recent: number;
+  today: number;
+  this_week: number;
+  this_month: number;
 }
 
 export interface CreateJobApplicationResponse {
@@ -64,10 +80,23 @@ export interface GetAllJobApplicationsResponse {
   data: JobApplication[];
 }
 
+
+export interface GetJobApplicationStatisticsResponse {
+  success: boolean;
+  message: string;
+  data: JobApplicationStatistics;
+}
+
 export interface ApiResponse<T> {
   data: T;
   status: number;
   message: string;
+  meta?: {
+    current_page?: number;
+    total?: number;
+    per_page?: number;
+    last_page?: number;
+  };
 }
 
 export interface ApiError {
