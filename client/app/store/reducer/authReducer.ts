@@ -165,8 +165,9 @@ const authReducer = (state = initialState, action: AuthAction): AuthState => {
             );
             return {
                 ...state,
-                error: action.payload,
-                isAuthenticated: false
+                user: null,
+                isAuthenticated: false, // Ensure isAuthenticated is reset
+                error: action.payload
             };
         case OTP_VERIFICATION_SUCCESS:
             console.log(

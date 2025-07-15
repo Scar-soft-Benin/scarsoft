@@ -190,7 +190,7 @@ function* getAllCompaniesSaga(action: GetAllCompaniesAction) {
         yield put(
             getAllCompaniesSuccess({
                 success: true,
-                message: response.message || "Entreprises chargées avec succès",
+                message: response.message,
                 data: response.data,
                 meta: response.meta,
             })

@@ -3,10 +3,13 @@
 import { apiClient } from "../config/apiConfig";
 import { parseApiError } from "../utils/errorParser";
 import type { ApiResponse } from "../types/common.types";
-import type { CreateJobPayload, CreateJobResponse, GetAllJobsResponse } from "../types/job.types";
+import type {
+    CreateJobPayload,
+    CreateJobResponse,
+    GetAllJobsResponse
+} from "../types/job.types";
 
 export const jobService = {
-
     /**
      * Create a new job.
      * @param payload - The job data to create.
@@ -16,10 +19,7 @@ export const jobService = {
         payload: CreateJobPayload
     ): Promise<ApiResponse<CreateJobResponse>> => {
         try {
-            const response = await apiClient.post(
-                "/admin/job-offers",
-                payload
-            );
+            const response = await apiClient.post("/admin/job-offers", payload);
             console.log("jobService: Create job response:", response.data);
             return {
                 data: {
@@ -36,7 +36,7 @@ export const jobService = {
         }
     },
 
-     /**
+    /**
      * Get all jobs.
      * @returns A promise that resolves to the jobs data.
      */
@@ -47,12 +47,11 @@ export const jobService = {
             return {
                 data: {
                     success: response.data.success,
-                    message:
-                        response.data.message || "Jobs fetched successfully",
+                    message: response.data.message,
                     data: response.data.data
                 },
                 status: response.status,
-                message: response.data.message || "Jobs fetched successfully"
+                message: response.data.message
             };
         } catch (error: unknown) {
             throw parseApiError(error);
@@ -66,34 +65,10 @@ export const jobService = {
     getAllJobForAdmin: async (): Promise<ApiResponse<GetAllJobsResponse>> => {
         try {
             const response = await apiClient.get("/admin/job-offers");
-            console.log("jobService: Get all jobs for admin response:", response.data);
-            return {
-                data: { 
-                    success: response.data.success,
-                    message:
-                        response.data.message || "Jobs fetched successfully",
-                    data: response.data.data
-                },
-                status: response.status,
-                message: response.data.message || "Jobs fetched successfully"
-            };
-        } catch (error: unknown) {
-            throw parseApiError(error); 
-        }
-    },
-
-    /**
-     * Fetch jobs by company ID.
-     * @param companyId - The ID of the company to fetch jobs for.
-     * @returns A promise that resolves to the jobs data.
-     */
-
-    getAllJobsByCompanyId: async (
-        companyId: string,
-    ): Promise<ApiResponse<GetAllJobsResponse>> => {
-        try {
-            const response = await apiClient.get(`/job-offers/company/${companyId}`);
-            console.log("jobService: Get jobs by company ID response:", response.data);
+            console.log(
+                "jobService: Get all jobs for admin response:",
+                response.data
+            );
             return {
                 data: {
                     success: response.data.success,
@@ -109,6 +84,37 @@ export const jobService = {
         }
     },
 
+    /**
+     * Fetch jobs by company ID.
+     * @param companyId - The ID of the company to fetch jobs for.
+     * @returns A promise that resolves to the jobs data.
+     */
+
+    getAllJobsByCompanyId: async (
+        companyId: string
+    ): Promise<ApiResponse<GetAllJobsResponse>> => {
+        try {
+            const response = await apiClient.get(
+                `/job-offers/company/${companyId}`
+            );
+            console.log(
+                "jobService: Get jobs by company ID response:",
+                response.data
+            );
+            return {
+                data: {
+                    success: response.data.success,
+                    message:
+                        response.data.message || "Jobs fetched successfully",
+                    data: response.data.data
+                },
+                status: response.status,
+                message: response.data.message || "Jobs fetched successfully"
+            };
+        } catch (error: unknown) {
+            throw parseApiError(error);
+        }
+    },
 
     /**
      * Fetch a job by its ID.
@@ -143,11 +149,14 @@ export const jobService = {
      * @returns A promise that resolves to the updated job data.
      */
     updateJob: async (
-        id: string, 
+        id: string,
         payload: CreateJobPayload
     ): Promise<ApiResponse<CreateJobResponse>> => {
         try {
-            const response = await apiClient.put(`/admin/job-offers/${id}`, payload);
+            const response = await apiClient.put(
+                `/admin/job-offers/${id}`,
+                payload
+            );
             console.log("jobService: Update job response:", response.data);
             return {
                 data: {
@@ -168,15 +177,16 @@ export const jobService = {
      * @param id - The ID of the job to delete.
      * @returns A promise that resolves to the deletion response.
      */
-    deleteJob: async (id: string): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+    deleteJob: async (
+        id: string
+    ): Promise<ApiResponse<{ success: boolean; message: string }>> => {
         try {
             const response = await apiClient.delete(`/admin/job-offers/${id}`);
             console.log("jobService: Delete job response:", response.data);
             return {
                 data: {
                     success: response.data.success,
-                    message:
-                        response.data.message || "Job deleted successfully"
+                    message: response.data.message || "Job deleted successfully"
                 },
                 status: response.status,
                 message: response.data.message || "Job deleted successfully"
@@ -185,5 +195,4 @@ export const jobService = {
             throw parseApiError(error);
         }
     }
-    
 };

@@ -6,12 +6,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import {
     FaSpinner,
-    FaExclamationTriangle,
     FaMapMarkerAlt,
     FaEuroSign,
     FaArrowRight,
     FaBriefcase,
-    FaSyncAlt
 } from "react-icons/fa";
 import AppBaseTitle from "~/components/appBaseTitle";
 import AppBaseCard from "~/components/appBaseCard";

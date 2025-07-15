@@ -13,7 +13,7 @@ export interface Column<T> {
 }
 
 interface TableProps<T> {
-    data: T[];
+    data: T[] | undefined | null;
     columns: Column<T>[];
     title: string;
     detailPath?: string;
@@ -74,8 +74,10 @@ export default function Table<T extends object>({
     const handleGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setGlobalFilter(e.target.value);
     };
+    // Ensure data is an array, fallback to empty array if undefined or null
+    const validData = Array.isArray(data) ? data : [];
 
-    const filteredData = data.filter((row) => {
+    const filteredData = validData.filter((row) => {
         const matchesGlobal =
             !globalFilter || !globalFilterFields
                 ? true

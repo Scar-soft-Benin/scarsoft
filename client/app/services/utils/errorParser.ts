@@ -14,12 +14,10 @@ export function parseApiError(error: unknown): ApiError {
     };
     return {
         status: err.response?.status || 500,
-        message:
-            err.response?.data?.details?.message ||
-            err.response?.data?.message ||
-            "Unknown error",
+        message: err.response?.data?.details?.message,
         error_code:
             err.response?.data?.details?.error_code ||
-            err.response?.data?.error_code
+            err.response?.data?.error_code,
+        errors: undefined
     };
 }

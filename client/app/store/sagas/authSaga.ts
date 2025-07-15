@@ -298,11 +298,19 @@ function* loginSaga(action: LoginAction) {
     } catch (error: unknown) {
         console.error("loginSaga: Raw login error:", error);
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to login" };
+            ? {
+                  message: error.message || "Failed to login",
+                  error_code: error.error_code
+              }
+            : { message: "Failed to login", error_code: undefined };
         console.log("loginSaga: Processed login error:", apiError);
         yield put(loginFailure(apiError));
-        yield put(addMessage({ text: apiError.message, type: "error" }));
+        yield put(
+            addMessage({
+                text: apiError.message ?? "An error occurred",
+                type: "error"
+            })
+        );
     } finally {
         yield put(hideLoading());
     }
@@ -327,10 +335,10 @@ function* registerSaga(action: RegisterAction) {
         console.error("registerSaga: Raw register error:", error);
         const apiError = isApiError(error)
             ? {
-                  message: error.message,
+                  message: error.message || "Failed to register",
                   error_code: error.error_code
               }
-            : { message: "Failed to register" };
+            : { message: "Failed to register", error_code: undefined };
         console.log("registerSaga: Processed register error:", apiError);
         yield put(registerFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
@@ -367,8 +375,11 @@ function* verifyOTPSaga(action: VerifyOTPAction) {
     } catch (error: unknown) {
         console.error("verifyOTPSaga: Raw verify OTP error:", error);
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to verify OTP" };
+            ? {
+                  message: error.message || "Failed to verify OTP",
+                  error_code: error.error_code
+              }
+            : { message: "Failed to verify OTP", error_code: undefined };
         console.log("verifyOTPSaga: Processed verify OTP error:", apiError);
         yield put(otpVerificationFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
@@ -398,8 +409,11 @@ function* logoutSaga(action: LogoutAction) {
     } catch (error: unknown) {
         console.error("logoutSaga: Raw logout error:", error);
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to logout" };
+            ? {
+                  message: error.message || "Failed to logout",
+                  error_code: error.error_code
+              }
+            : { message: "Failed to logout", error_code: undefined };
         yield put(logoutFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
@@ -415,10 +429,16 @@ function* fetchUserSaga() {
         );
         yield put(fetchUserSuccess(response.data));
     } catch (error: unknown) {
-        console.error("fetchUserSaga: Raw fetch user error:", error);
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to fetch user" };
+            ? {
+                  message: error.message || "Raw fetch user error",
+                  error_code: error.error_code
+              }
+            : {
+                  message: "Failed to fetch user",
+                  error_code: undefined
+              };
+        console.error("fetchUserSaga: Raw fetch user error:", error);
         yield put(fetchUserFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
@@ -441,10 +461,16 @@ function* resendOTPSaga(action: ResendOTPAction) {
             })
         );
     } catch (error: unknown) {
-        console.error("resendOTPSaga: Raw resend OTP error:", error);
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to resend OTP" };
+            ? {
+                  message: error.message || "Raw resend OTP error",
+                  error_code: error.error_code
+              }
+            : {
+                  message: "Failed to resend OTP",
+                  error_code: undefined
+              };
+        console.error("resendOTPSaga: Raw resend OTP error:", error);
         yield put(resendOTPFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
@@ -467,13 +493,19 @@ function* requestPasswordResetSaga(action: RequestPasswordResetAction) {
             })
         );
     } catch (error: unknown) {
+        const apiError = isApiError(error)
+            ? {
+                  message: error.message || "Raw password reset error",
+                  error_code: error.error_code
+              }
+            : {
+                  message: "Failed to request password reset",
+                  error_code: undefined
+              };
         console.error(
             "requestPasswordResetSaga: Raw password reset error:",
             error
         );
-        const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to request password reset" };
         yield put(requestPasswordResetFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
@@ -501,11 +533,16 @@ function* verifyEmailSaga(action: VerifyEmailAction) {
             })
         );
     } catch (error: unknown) {
-        console.error("verifyEmailSaga: Raw verify email error:", error);
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to verify email" };
-        console.log("verifyEmailSaga: Processed verify email error:", apiError);
+            ? {
+                  message: error.message || "Raw verify email error",
+                  error_code: error.error_code
+              }
+            : {
+                  message: "Failed to verify email",
+                  error_code: undefined
+              };
+        console.error("verifyEmailSaga: Raw verify email error:", error);
         yield put(emailVerificationFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
@@ -529,13 +566,15 @@ function* resendEmailVerificationSaga(action: ResendEmailVerificationAction) {
             })
         );
     } catch (error: unknown) {
-        console.error(
-            "resendEmailVerificationSaga: Raw resend email error:",
-            error
-        );
         const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : { message: "Failed to resend verification code" };
+            ? {
+                  message: error.message || "Raw fetch user error",
+                  error_code: error.error_code
+              }
+            : {
+                  message: "Failed to resend verification code",
+                  error_code: undefined
+              };
         yield put(resendEmailVerificationFailure(apiError));
         yield put(addMessage({ text: apiError.message, type: "error" }));
     } finally {
