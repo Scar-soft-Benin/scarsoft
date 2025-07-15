@@ -312,8 +312,4 @@ export default {
         motivationFile: "Lettre de motivation (fichier)",
         motivationFileInvalid: "La lettre de motivation doit être un fichier PDF, DOC, DOCX ou TXT (max 5MB)"
     }
-
-
-
-
 };

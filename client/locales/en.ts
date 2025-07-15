@@ -332,7 +332,5 @@ export default {
     },
     loading: "Loading...",
     back_to_top: "Back to top"
-
-
 };
 
