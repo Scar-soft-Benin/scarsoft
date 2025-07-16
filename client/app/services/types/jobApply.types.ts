@@ -10,7 +10,7 @@ export interface JobApplication {
   cover_letter_type?: "text" | "file";
   cover_letter_content?: string;
   cover_letter_file?: string; // Chemin du fichier stocké par le backend
-  status?: "pending" | "reviewed" | "accepted" | "rejected";
+  status?: "pending" | "under_review" | "shortlisted" | "accepted" | "rejected"; // Ajout de under_review et shortlisted
   created_at: string;
   updated_at: string;
 }
@@ -27,7 +27,7 @@ export interface CreateJobApplicationPayload {
 }
 
 export interface UpdateJobApplicationStatusPayload {
-  status: "pending" | "reviewed" | "accepted" | "rejected";
+  status: "pending" | "under_review" | "shortlisted" | "accepted" | "rejected"; // Ajout de under_review et shortlisted
   notes?: string;
 }
 
@@ -71,15 +71,20 @@ export interface DeleteJobApplicationResponse {
 export interface GetAllJobApplicationsPayload {
   page?: number;
   perPage?: number;
-  status?: "pending" | "reviewed" | "accepted" | "rejected";
+  status?: "pending" | "under_review" | "shortlisted" | "accepted" | "rejected"; // Mise à jour des statuts
 }
 
 export interface GetAllJobApplicationsResponse {
   success: boolean;
   message: string;
   data: JobApplication[];
+  meta?: {
+    current_page?: number;
+    total?: number;
+    per_page?: number;
+    last_page?: number;
+  };
 }
-
 
 export interface GetJobApplicationStatisticsResponse {
   success: boolean;
