@@ -137,10 +137,10 @@ export default {
     contact: {
         title: "Contact",
         subtitle: "Need a custom digital solution? Contact us!",
-        intro: "By email, phone, or through our form, discover how Scar-Soft can meet your technology needs.",
+        intro: "Discover how Scar-Soft can meet your technology needs.",
         support: {
             title: "Customer Support",
-            text: "By email, phone, or through our form, discover how Scar-Soft can meet your technology needs."
+            text: "Discover how Scar-Soft can meet your technology needs."
         },
         feedback: {
             title: "Feedback & Suggestions",

@@ -1,29 +1,18 @@
-// ~/dashboard/components/Sidebar.tsx
 import { NavLink, Link } from "react-router";
 import { useAuth } from "~/context/authContext";
 import { FiBriefcase, FiMail, FiUsers } from "react-icons/fi";
-import Logo from "~/header/SS-Vert.svg"; 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
 import { FaBuilding } from "react-icons/fa";
+import Logo from "~/header/SS-Vert.svg";
+import { motion } from "motion/react";
 
 export default function Sidebar() {
     const { user } = useAuth();
-    const sidebarRef = useRef<HTMLElement>(null);
-
-    useEffect(() => {
-        if (sidebarRef.current) {
-            gsap.fromTo(
-                sidebarRef.current,
-                { opacity: 0, x: -50 },
-                { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }
-            );
-        }
-    }, []);
 
     return (
-        <aside
-            ref={sidebarRef}
+        <motion.aside
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="w-64 bg-neutral-light-surface dark:bg-neutral-dark-surface shadow-md h-screen"
         >
             <div className="p-4">
@@ -101,6 +90,6 @@ export default function Sidebar() {
                     <FaBuilding className="mr-2" /> Entreprises
                 </NavLink>
             </nav>
-        </aside>
+        </motion.aside>
     );
 }

@@ -139,10 +139,10 @@ export default {
     contact: {
         title: "Contact",
         subtitle: "Besoin d’une solution digitale sur mesure ? Contactez-nous !",
-        intro: "Par e-mail, téléphone ou via notre formulaire, découvrez comment Scar-Soft peut répondre à vos besoins technologiques.",
+        intro: "Découvrez comment Scar-Soft peut répondre à vos besoins technologiques.",
         support: {
             title: "Support Client",
-            text: "Par e-mail, téléphone ou via notre formulaire, découvrez comment Scar-Soft peut répondre à vos besoins technologiques."
+            text: "Découvrez comment Scar-Soft peut répondre à vos besoins technologiques."
         },
         feedback: {
             title: "Suggestions et Retours",

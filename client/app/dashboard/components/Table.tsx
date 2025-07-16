@@ -1,6 +1,6 @@
 // ~/components/Table.tsx
 import { useEffect, useRef, useState, type JSX } from "react";
-import { gsap } from "gsap";
+import { motion, useAnimate } from "motion/react";
 import { useNavigate } from "react-router";
 import AppButton from "./appButton";
 
@@ -18,7 +18,12 @@ interface TableProps<T> {
     title: string;
     detailPath?: string;
     globalFilterFields?: (keyof T)[];
-    meta?: { current_page: number; total: number; per_page: number; last_page: number };
+    meta?: {
+        current_page: number;
+        total: number;
+        per_page: number;
+        last_page: number;
+    };
     onPageChange?: (page: number) => void;
     onPerPageChange?: (perPage: number) => void;
 }
@@ -31,31 +36,28 @@ export default function Table<T extends object>({
     globalFilterFields,
     meta,
     onPageChange,
-    onPerPageChange,
+    onPerPageChange
 }: TableProps<T>) {
-    const tableRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate();
+    const [scope, animate] = useAnimate();
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [globalFilter, setGlobalFilter] = useState<string>("");
 
     useEffect(() => {
-        if (tableRef.current) {
-            const rows = tableRef.current.querySelectorAll("tr");
-            if (rows.length > 0) {
-                gsap.fromTo(
-                    rows,
-                    { opacity: 0, y: 20 },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.5,
-                        stagger: 0.1,
-                        ease: "power3.out",
-                    }
+        if (containerRef.current) {
+            const rows = Array.from(
+                containerRef.current.querySelectorAll("tbody tr")
+            );
+            rows.forEach((row, i) => {
+                animate(
+                    row,
+                    { opacity: [0, 1], y: [20, 0] },
+                    { duration: 0.5, delay: i * 0.1, ease: "easeOut" }
                 );
-            }
+            });
         }
-    }, [data]);
+    }, [data, animate]);
 
     const handleRowClick = (row: T) => {
         if (
@@ -71,7 +73,9 @@ export default function Table<T extends object>({
         setFilters((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleGlobalFilterChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
         setGlobalFilter(e.target.value);
     };
     // Ensure data is an array, fallback to empty array if undefined or null
@@ -87,12 +91,14 @@ export default function Table<T extends object>({
                           .includes(globalFilter.toLowerCase())
                   );
 
-        const matchesFilters = Object.entries(filters).every(([field, value]) => {
-            if (!value) return true;
-            return String(row[field as keyof T])
-                .toLowerCase()
-                .includes(value.toLowerCase());
-        });
+        const matchesFilters = Object.entries(filters).every(
+            ([field, value]) => {
+                if (!value) return true;
+                return String(row[field as keyof T])
+                    .toLowerCase()
+                    .includes(value.toLowerCase());
+            }
+        );
 
         return matchesGlobal && matchesFilters;
     });
@@ -117,7 +123,9 @@ export default function Table<T extends object>({
                         </span>
                         <select
                             value={meta.per_page}
-                            onChange={(e) => onPerPageChange?.(Number(e.target.value))}
+                            onChange={(e) =>
+                                onPerPageChange?.(Number(e.target.value))
+                            }
                             className="p-2 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
                         >
                             {[10, 15, 25, 50].map((size) => (
@@ -130,10 +138,10 @@ export default function Table<T extends object>({
                 )}
             </div>
             <div
-                ref={tableRef}
+                ref={containerRef}
                 className="bg-neutral-light-surface dark:bg-neutral-dark-surface rounded-lg shadow-md"
             >
-                <table className="w-full">
+                <motion.table className="w-full" ref={scope}>
                     <thead>
                         <tr className="bg-neutral-light-bg dark:bg-neutral-dark-bg">
                             {columns.map((column) => (
@@ -154,9 +162,16 @@ export default function Table<T extends object>({
                                     {column.filterable ? (
                                         <input
                                             type="text"
-                                            value={filters[column.field as string] || ""}
+                                            value={
+                                                filters[
+                                                    column.field as string
+                                                ] || ""
+                                            }
                                             onChange={(e) =>
-                                                handleFilterChange(column.field as string, e.target.value)
+                                                handleFilterChange(
+                                                    column.field as string,
+                                                    e.target.value
+                                                )
                                             }
                                             placeholder={`Filtrer ${column.header}`}
                                             className="w-full p-1 border border-neutral-light-border dark:border-neutral-dark-border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface focus:ring-primary focus:border-primary"
@@ -181,7 +196,8 @@ export default function Table<T extends object>({
                                 <tr
                                     key={
                                         "id" in row &&
-                                        (typeof row.id === "string" || typeof row.id === "number")
+                                        (typeof row.id === "string" ||
+                                            typeof row.id === "number")
                                             ? String(row.id)
                                             : index
                                     }
@@ -195,19 +211,24 @@ export default function Table<T extends object>({
                                         >
                                             {column.render
                                                 ? column.render(row)
-                                                : String(row[column.field as keyof T] ?? "")}
+                                                : String(
+                                                      row[
+                                                          column.field as keyof T
+                                                      ] ?? ""
+                                                  )}
                                         </td>
                                     ))}
                                 </tr>
                             ))
                         )}
                     </tbody>
-                </table>
+                </motion.table>
             </div>
             {meta && (
                 <div className="flex justify-between items-center mt-4">
                     <div className="text-neutral-light-text dark:text-neutral-dark-text">
-                        Affichage de {filteredData.length} sur {meta.total} éléments
+                        Affichage de {filteredData.length} sur {meta.total}{" "}
+                        éléments
                     </div>
                     <div className="flex gap-2">
                         <AppButton
@@ -215,7 +236,9 @@ export default function Table<T extends object>({
                             type="secondary"
                             size="sm"
                             disabled={meta.current_page === 1}
-                            onClick={() => onPageChange?.(meta.current_page - 1)}
+                            onClick={() =>
+                                onPageChange?.(meta.current_page - 1)
+                            }
                             className="bg-amber-100 dark:bg-amber-300 text-neutral-light-text dark:text-neutral-dark-text"
                         />
                         <span className="text-neutral-light-text dark:text-neutral-dark-text">
@@ -226,7 +249,9 @@ export default function Table<T extends object>({
                             type="secondary"
                             size="sm"
                             disabled={meta.current_page === meta.last_page}
-                            onClick={() => onPageChange?.(meta.current_page + 1)}
+                            onClick={() =>
+                                onPageChange?.(meta.current_page + 1)
+                            }
                             className="bg-amber-100 dark:bg-amber-300 text-neutral-light-text dark:text-neutral-dark-text"
                         />
                     </div>

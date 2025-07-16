@@ -1,64 +1,10 @@
-import { useEffect, useRef } from "react";
+"use client";
+
+import { motion } from "motion/react";
 import AppBaseButton from "~/components/appBaseButton";
 import AppBaseTitle from "~/components/appBaseTitle";
-import { gsap, ScrollTrigger } from "~/utils/gsap";
 
 const Faq = () => {
-    const contentRef = useRef<HTMLDivElement>(null);
-    const formRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        // Animate content section
-        if (contentRef.current) {
-            gsap.fromTo(
-                contentRef.current,
-                { opacity: 0, y: 50 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: "power3.out",
-                    scrollTrigger: {
-                        trigger: contentRef.current,
-                        start: "top 80%",
-                        end: "bottom 20%",
-                        toggleActions: "play none none reverse"
-                    }
-                }
-            );
-        }
-
-        // Animate form fields with stagger
-        if (formRef.current) {
-            const formFields =
-                formRef.current.querySelectorAll("input, textarea");
-            if (formFields.length > 0) {
-                gsap.fromTo(
-                    formFields,
-                    { opacity: 0, x: -20 },
-                    {
-                        opacity: 1,
-                        x: 0,
-                        duration: 0.6,
-                        stagger: 0.2,
-                        ease: "power3.out",
-                        scrollTrigger: {
-                            trigger: formRef.current,
-                            start: "top 80%",
-                            end: "bottom 20%",
-                            toggleActions: "play none none reverse"
-                        }
-                    }
-                );
-            }
-        }
-
-        // Cleanup ScrollTrigger on unmount
-        return () => {
-            ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-        };
-    }, []);
-
     return (
         <>
             <AppBaseTitle
@@ -66,8 +12,11 @@ const Faq = () => {
                 subtitle="Besoin d’une solution digitale sur mesure ? Contactez-nous !"
             />
             <div className="flex flex-col sm:flex-row items-center justify-around p-8 md:px-24">
-                <div
-                    ref={contentRef}
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1, ease: "easeOut" }}
                     className="flex flex-col items-start w-full sm:w-xl"
                 >
                     <p className="mb-6 sm:mb-8 text-lg sm:text-2xl text-justify">
@@ -110,10 +59,9 @@ const Faq = () => {
                             </p>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 <div
-                    ref={formRef}
                     className="flex flex-col w-full sm:w-xl p-6 rounded-lg shadow-lg"
                     style={{
                         background: "#04FF0003",
@@ -124,31 +72,71 @@ const Faq = () => {
                         Envoyez-nous un message
                     </h2>
                     <form className="flex flex-col space-y-4">
-                        <input
+                        <motion.input
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0
+                            }}
                             type="text"
                             placeholder="Nom complet"
                             className="p-2 border border-gray-300 rounded-md"
                         />
-                        <input
+                        <motion.input
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.2
+                            }}
                             type="email"
                             placeholder="Email"
                             className="p-2 border border-gray-300 rounded-md"
                         />
-                        <input
+                        <motion.input
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.4
+                            }}
                             type="tel"
                             placeholder="Téléphone"
                             className="p-2 border border-gray-300 rounded-md"
                         />
-                        <input
+                        <motion.input
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.6
+                            }}
                             type="text"
                             placeholder="Objet"
                             className="p-2 border border-gray-300 rounded-md"
                         />
-                        <textarea
+                        <motion.textarea
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.8
+                            }}
                             placeholder="Votre message"
-                            className="p-2 border border-gray-300 rounded-md"
                             rows={8}
-                        ></textarea>
+                            className="p-2 border border-gray-300 rounded-md"
+                        />
                         <AppBaseButton
                             type="first"
                             bgColor="bg-secondary"

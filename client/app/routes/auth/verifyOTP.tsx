@@ -7,7 +7,7 @@ import { useEffect, useRef, useLayoutEffect } from "react";
 import { verifyOTP, resendOTP } from "~/store/sagas/authSaga";
 import type { RootState } from "~/store";
 import type { Route } from "./+types/verifyOTP";
-import gsap from "gsap";
+import { motion, useAnimate } from "motion/react";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -33,13 +33,17 @@ export default function VerifyOTP() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const authState = useSelector((state: RootState) => state.auth);
-    const isLoading = useSelector((state: RootState) => state.loading.isLoading);
-    const isMounted = useRef(true);
+    const isLoading = useSelector(
+        (state: RootState) => state.loading.isLoading
+    );
 
     const email = location.state?.email as string | undefined;
-    const login_session_id = location.state?.login_session_id as string | undefined;
+    const login_session_id = location.state?.login_session_id as
+        | string
+        | undefined;
 
     const inputRefs = useRef<HTMLInputElement[]>([]);
+    const [scope, animate] = useAnimate();
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
     const {
@@ -59,20 +63,20 @@ export default function VerifyOTP() {
     // ✨ Animation des inputs à l’apparition
     useLayoutEffect(() => {
         if (inputContainerRef.current) {
-            gsap.fromTo(
-                inputContainerRef.current.children,
-                { opacity: 0, y: 20, scale: 0.8 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.5,
-                    stagger: 0.05,
-                    ease: "power2.out"
-                }
-            );
+            const els = inputContainerRef.current.children;
+            Array.from(els).forEach((el, i) => {
+                animate(
+                    el,
+                    { opacity: [0, 1], y: [20, 0], scale: [0.8, 1] },
+                    {
+                        duration: 0.5,
+                        delay: i * 0.05,
+                        ease: "easeOut"
+                    }
+                );
+            });
         }
-    }, []);
+    }, [animate]);
 
     // 🔁 Redirection si infos manquantes
     useEffect(() => {
@@ -89,32 +93,18 @@ export default function VerifyOTP() {
 
     // ❌ Gestion erreur OTP
     useEffect(() => {
-        if (authState.error && isMounted.current) {
-            setError("root", {
-                message:
-                    authState.error.message || "An error occurred during OTP verification"
-            });
-            setValue("digits", ["", "", "", "", "", ""]);
-
-            // 🌀 Shake animation
-            if (inputContainerRef.current) {
-                gsap.fromTo(
-                    inputContainerRef.current,
-                    { x: -10 },
-                    {
-                        x: 10,
-                        duration: 0.1,
-                        ease: "power1.inOut",
-                        repeat: 5,
-                        yoyo: true
-                    }
-                );
-            }
+        if (authState.error && inputContainerRef.current) {
+            animate(
+                inputContainerRef.current,
+                { x: [-10, 10] },
+                {
+                    duration: 0.1,
+                    repeat: 5,
+                    ease: "easeInOut"
+                }
+            );
         }
-        return () => {
-            isMounted.current = false;
-        };
-    }, [authState.error, setError, setValue]);
+    }, [authState.error, animate]);
 
     // ✍️ Saisie OTP chiffre par chiffre
     const handleDigitChange = (index: number, value: string) => {
@@ -135,7 +125,10 @@ export default function VerifyOTP() {
     };
 
     // ⌨️ Retour arrière
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    const handleKeyDown = (
+        e: React.KeyboardEvent<HTMLInputElement>,
+        index: number
+    ) => {
         if (e.key === "Backspace" && digits[index] === "" && index > 0) {
             inputRefs.current[index - 1]?.focus();
         }
@@ -180,10 +173,7 @@ export default function VerifyOTP() {
                 A verification code has been sent to {email}.
             </p>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div
-                    ref={inputContainerRef}
-                    className="flex justify-center gap-2"
-                >
+                <motion.div ref={scope} className="flex justify-center gap-2">
                     {digits.map((_, index) => (
                         <input
                             key={index}
@@ -197,18 +187,21 @@ export default function VerifyOTP() {
                                 if (el) inputRefs.current[index] = el;
                             }}
                             value={digits[index]}
-                            onChange={(e) => handleDigitChange(index, e.target.value)}
+                            onChange={(e) =>
+                                handleDigitChange(index, e.target.value)
+                            }
                             onKeyDown={(e) => handleKeyDown(e, index)}
                             onPaste={handlePaste}
                             className="w-12 h-12 text-center text-lg border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-gray-100 transition-all duration-150"
                             disabled={isSubmitting || isLoading}
                         />
                     ))}
-                </div>
+                </motion.div>
 
                 {errors.digits && (
                     <p className="text-red-500 text-sm text-center">
-                        {errors.digits.message || "Please enter a valid 6-digit OTP"}
+                        {errors.digits.message ||
+                            "Please enter a valid 6-digit OTP"}
                     </p>
                 )}
                 {errors.root && (

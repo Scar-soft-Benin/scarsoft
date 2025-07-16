@@ -12,8 +12,8 @@ const Services = () => {
         title={t("services.web.title")}
         description={t("services.web.description")}
         details={
-          <p className="text-sm sm:text-2xl text-left my-4 sm:my-8">
-            <Trans i18nKey="services.web.details" components={{ br: <br />, strong: <strong /> }} />
+          <p className="text-sm sm:text-lg text-justify my-2 sm:my-4">
+            <Trans i18nKey="services.web.details" components={{ strong: <strong /> }} />
           </p>
         }
         buttonText={t("services.web.cta")}
@@ -24,8 +24,8 @@ const Services = () => {
         title={t("services.marketing.title")}
         description={t("services.marketing.description")}
         details={
-          <p className="text-sm sm:text-2xl text-left my-4 sm:my-8">
-            <Trans i18nKey="services.marketing.details" components={{ br: <br />, strong: <strong /> }} />
+          <p className="text-sm sm:text-lg text-justify my-2 sm:my-4">
+            <Trans i18nKey="services.marketing.details" components={{ strong: <strong /> }} />
           </p>
         }
         buttonText={t("services.marketing.cta")}
@@ -37,8 +37,8 @@ const Services = () => {
         title={t("services.recruitment.title")}
         description={t("services.recruitment.description")}
         details={
-          <p className="text-sm sm:text-2xl text-left my-4 sm:my-8">
-            <Trans i18nKey="services.recruitment.details" components={{ br: <br />, strong: <strong /> }} />
+          <p className="text-sm sm:text-lg text-justify my-2 sm:my-4">
+            <Trans i18nKey="services.recruitment.details" components={{ strong: <strong /> }} />
           </p>
         }
         buttonText={t("services.recruitment.cta")}

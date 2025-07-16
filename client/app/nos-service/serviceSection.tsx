@@ -24,13 +24,12 @@ const ServiceSection: React.FC<ServiceSectionProps> = ({
             <div
                 className={`flex flex-col sm:flex-row ${
                     reverse ? "sm:flex-row-reverse" : ""
-                } items-center justify-center px-4 sm:px-16`}
+                } items-center justify-around px-4 sm:px-16`}
             >
-                <div className="w-full my-8 sm:w-1/2 mx-8">
-                    <p className="text-sm sm:text-2xl text-left">
+                <div className="w-full my-12 sm:w-1/2 mx-8 text-lg">
+                    <p className="text-lg sm:text-xl text-justify">
                         {description}
                     </p>
-                    <br />
                     {details}
                     <AppBaseButton
                         text={buttonText}
@@ -41,7 +40,7 @@ const ServiceSection: React.FC<ServiceSectionProps> = ({
                         className="w-full sm:w-2/3"
                     />
                 </div>
-                <img src={image} alt={title} className="w-full sm:w-1/2 my-4" />
+                <img src={image} alt={title} className="w-full sm:w-1/3 my-4 rounded-xl shadow-lg" />
             </div>
         </div>
     );

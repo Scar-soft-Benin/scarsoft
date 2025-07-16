@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { gsap } from "gsap";
+import { useState } from "react";
+import { motion } from "motion/react";
 import Navbar from "./navbar";
 import AppBaseButton from "~/components/appBaseButton";
 
@@ -17,28 +17,6 @@ const Header: React.FC<HeaderProps> = ({
     btnText
 }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
-    const contentRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (imageLoaded && contentRef.current) {
-            // Animate title, subtitle, and button
-            gsap.fromTo(
-                contentRef.current.querySelectorAll("h2, p, div"),
-                {
-                    opacity: 0,
-                    y: 50
-                },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    stagger: 0.3,
-                    ease: "power3.out",
-                    delay: 0.2
-                }
-            );
-        }
-    }, [imageLoaded]);
 
     return (
         <div className="p-2">
@@ -71,17 +49,53 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="absolute left-0 top-0">
                         <Navbar />
                     </div>
-                    <div
-                        className="flex flex-col items-center mt-20"
-                        ref={contentRef}
-                    >
-                        <h2 className="font-bold text-4xl md:text-6xl leading-tight">
+                    <div className="flex flex-col items-center mt-20">
+                        <motion.h2
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={
+                                imageLoaded
+                                    ? { opacity: 1, y: 0 }
+                                    : { opacity: 0, y: 50 }
+                            }
+                            transition={{
+                                duration: 1,
+                                ease: "easeOut",
+                                delay: 0.2
+                            }}
+                            className="font-bold text-4xl md:text-6xl leading-tight"
+                        >
                             {title}
-                        </h2>
-                        <p className="text-lg md:text-lg mt-4">
+                        </motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={
+                                imageLoaded
+                                    ? { opacity: 1, y: 0 }
+                                    : { opacity: 0, y: 50 }
+                            }
+                            transition={{
+                                duration: 1,
+                                ease: "easeOut",
+                                delay: 0.5
+                            }}
+                            className="text-lg md:text-lg mt-4"
+                        >
                             {subtitle}
-                        </p>
-                        <div className="mt-12">
+                        </motion.p>
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={
+                                imageLoaded
+                                    ? { opacity: 1, y: 0 }
+                                    : { opacity: 0, y: 50 }
+                            }
+                            transition={{
+                                duration: 1,
+                                ease: "easeOut",
+                                delay: 0.8
+                            }}
+                            className="mt-12"
+                        >
                             <AppBaseButton
                                 text={btnText}
                                 textColor="text-white"
@@ -89,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
                                 type="second"
                                 href={undefined}
                             />
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
