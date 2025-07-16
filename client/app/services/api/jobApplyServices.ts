@@ -1,6 +1,6 @@
 import { apiClient } from "../config/apiConfig";
 import type { ApiResponse } from "../types/common.types";
-import type { CreateJobApplicationPayload, CreateJobApplicationResponse, DeleteJobApplicationResponse, GetAllJobApplicationsResponse, UpdateJobApplicationStatusPayload, UpdateJobApplicationStatusResponse } from "../types/jobApply.types";
+import type { CreateJobApplicationPayload, CreateJobApplicationResponse, DeleteJobApplicationResponse, GetAllJobApplicationsResponse, UpdateJobApplicationStatusPayload, UpdateJobApplicationStatusResponse, GetJobApplicationStatisticsResponse } from "../types/jobApply.types";
 import { parseApiError } from "../utils/errorParser";
 
 export const jobApplyServices = {
@@ -104,7 +104,65 @@ export const jobApplyServices = {
         } catch (error: unknown) {
             throw parseApiError(error);
         }
-    }
+    },
 
+    
+    // Récupérer les statistiques des candidatures
+    getJobApplicationStatistics: async (): Promise<
+        ApiResponse<GetJobApplicationStatisticsResponse>> => {
+        try {
+        console.log(
+            "jobApplyServices: Initiating getJobApplicationStatistics request"
+        );
+        console.log("jobApplyServices: apiClient config:", {
+            baseURL: apiClient.defaults.baseURL,
+        });
+        const response = await apiClient.get("/api/admin/job-applications/statistics");
+        console.log(
+            "jobApplyServices: Get job application statistics response:",
+            response.data
+        );
+        return {
+            data: {
+            success: response.data.success,
+            message:
+                response.data.message ||
+                "Job applications statistics retrieved successfully",
+            data: response.data.data,
+            },
+            status: response.status,
+            message:
+            response.data.message ||
+            "Job applications statistics retrieved successfully",
+        };
+        } catch (error: unknown) {
+        throw parseApiError(error);
+        }
+    },
 
-}
+    // Télécharger un fichier de candidature (CV ou lettre de motivation)
+    downloadJobApplicationFile: async (
+        id: string,
+        type: "cv" | "cover-letter"
+    ): Promise<Blob> => {
+        try {
+        console.log(
+            `jobApplyServices: Initiating downloadJobApplicationFile request for ID: ${id} and type: ${type}`
+        );
+        console.log("jobApplyServices: apiClient config:", {
+            baseURL: apiClient.defaults.baseURL,
+        });
+        const response = await apiClient.get(
+            `/api/admin/job-applications/${id}/download/${type}`,
+            {
+            responseType: "blob", // Indique que la réponse est un fichier binaire
+            }
+        );
+        console.log("jobApplyServices: Download file response:", response);
+        return response.data; // Retourne le Blob pour le téléchargement
+        } catch (error: unknown) {
+        throw parseApiError(error);
+        }
+    },
+
+};
