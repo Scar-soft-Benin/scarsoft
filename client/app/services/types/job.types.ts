@@ -85,15 +85,3 @@ export interface DeleteJobResponse {
     message: string;
     data: { jobId: number };
 }
-
-export interface ApiResponse<T> {
-    data: T;
-    status: number;
-    message: string;
-}
-
-export interface ApiError {
-    message: string;
-    status: number;
-    error_code?: string;
-}

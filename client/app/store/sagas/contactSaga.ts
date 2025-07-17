@@ -209,7 +209,7 @@ function* getAllContactsSaga() {
             contactService.getAllContacts
         );
         console.log("getAllContactsSaga: Get all contacts response:", response);
-        yield put(getAllContactsSuccess(response.data));
+        yield put(getAllContactsSuccess(response.data)); // Pass { data: Contact[], status: number, message: string }
         yield put(
             addMessage({
                 text:
@@ -307,7 +307,10 @@ function* deleteContactSaga(action: {
     }
 }
 
-function* updateContactStatusSaga(action: {type: typeof UPDATE_CONTACT_STATUS; payload: Contact }) {
+function* updateContactStatusSaga(action: {
+    type: typeof UPDATE_CONTACT_STATUS;
+    payload: Contact;
+}) {
     try {
         yield put(showLoading());
         const contact: Contact = action.payload;

@@ -3,8 +3,8 @@ import type {
     CreateCompanyPayload,
     CreateCompanyResponse,
     Company,
-    GetAllCompaniesPayload,
     UpdateCompanyPayload,
+    GetAllCompaniesResponse,
 } from "~/services/types/company.types";
 import type { Job } from "~/services/types/job.types";
 import { apiClient } from "../config/apiConfig";
@@ -12,28 +12,22 @@ import { parseApiError } from "../utils/errorParser";
 
 
 export const companyService = {
-    getAllCompanies: async (
-        params: GetAllCompaniesPayload
-    ): Promise<ApiResponse<Company[]>> => {
+getAllCompanies: async (): Promise<ApiResponse<GetAllCompaniesResponse>> => {
         try {
-            console.log(
-                "companyService: Initiating getAllCompanies request with params:",
-                params
-            );
-            console.log("companyService: apiClient config:", {
-                baseURL: apiClient.defaults.baseURL,
-            });
-            const response = await apiClient.get("/admin/companies", { params });
+            const response = await apiClient.get("/admin/companies");
             console.log("companyService: Get all companies response:", response);
             const transformedData = response.data.data.map((company: Company) => ({
                 ...company,
                 creator_name: company.creator?.name || "Inconnu",
             }));
             return {
-                data: transformedData || [],
+                data: {
+                    success: response.data.success,
+                    message: response.data.message || "Companies fetched successfully",
+                    data: transformedData || [],
+                },
                 status: response.status,
                 message: response.data.message || "Companies fetched successfully",
-                meta: response.data.meta,
             };
         } catch (error: unknown) {
             throw parseApiError(error);

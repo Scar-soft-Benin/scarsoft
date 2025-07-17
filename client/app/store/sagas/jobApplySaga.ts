@@ -150,21 +150,20 @@ function* createJobApplicationSaga(action: CreateJobApplicationAction) {
     yield put(
       addMessage({
         type: "success",
-        text: response.data.message || "Candidature soumise avec succès",
+        text: response.data.message,
       })
     );
   } catch (error: unknown) {
 
-    console.error("createJobApplicationSaga: Error creating job application:", error);
     const apiError = isApiError(error)
-      ? { message: error.message, status: error.status }
+      ? { message: error.message || "Erreur lors de la création de la candidature", status: error.status }
       : { message: "impossible de postuler", status: 500 };
     console.error("createJobApplicationSaga: Parsed API error:", apiError);
     // yield put(createJobApplicationFailure(apiError));
     yield put(
       addMessage({
         type: "error",
-        text: apiError.message || "Erreur lors de la création de la candidature"
+        text: apiError.message
       })
     );
 
@@ -188,7 +187,7 @@ function* getJobApplicationByIdSaga(action: { type: typeof GET_JOBAPPLICATION_BY
   } catch (error: unknown) {
     console.error("getJobApplicationSaga: Error fetching job application:", error);
     const apiError = isApiError(error)
-      ? { message: error.message, status: error.status }
+      ? { message: error.message || "", status: error.status }
       : { message: "Erreur lors de la récupération de la candidature", status: 500 };
     console.error("getJobApplicationSaga: Parsed API error:", apiError);
     yield put(getJobApplicationByIdFailure(apiError));
@@ -255,7 +254,7 @@ function* updateJobApplicationStatusSaga(action: {
   } catch (error: unknown) {
     console.error("updateJobApplicationStatusSaga: Error updating job application status:", error);
     const apiError = isApiError(error)
-      ? { message: error.message, status: error.status }
+      ? { message: error.message || "", status: error.status }
       : { message: "Erreur lors de la mise à jour du statut de la candidature", status: 500 };
     yield put(updateJobApplicationStatusFailure(apiError));
     yield put(
@@ -290,7 +289,7 @@ function* deleteJobApplicationSaga(action: {
   } catch (error: unknown) {
     console.error("deleteJobApplicationSaga: Error deleting job application:", error);
     const apiError = isApiError(error)
-      ? { message: error.message, status: error.status }
+      ? { message: error.message || "", status: error.status }
       : { message: "Erreur lors de la suppression de la candidature", status: 500 };
     yield put(deleteJobApplicationFailure(apiError));
     yield put(

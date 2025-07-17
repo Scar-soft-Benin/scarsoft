@@ -10,11 +10,17 @@ export default function Contacts() {
     const { addMessage } = useMessage();
     const dispatch = useDispatch();
     const contacts = useSelector((state: RootState) => state.contact.contacts);
+    const contact = useSelector((state: RootState) => state.contact);
     const { error, loading } = useSelector((state: RootState) => state.contact);
 
     // Fetch contacts only when params change
     useEffect(() => {
         dispatch(getAllContacts());
+    }, [dispatch]);
+
+    useEffect(() => {
+        console.log("Contacts:", contacts);
+        console.log("Contact reducer:", contact);
     }, [dispatch]);
 
     // Handle errors separately
@@ -23,7 +29,7 @@ export default function Contacts() {
             addMessage(error.message, "error");
         }
     }, [error, addMessage, dispatch]);
-    console.log("Contacts:", contacts);
+    
 
     const columns: Column<Contact>[] = [
         { header: "Nom", field: "name" },

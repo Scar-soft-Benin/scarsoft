@@ -53,12 +53,6 @@ export interface GetAllCompaniesResponse {
     success: boolean;
     message: string;
     data: Company[];
-    meta?: {
-        current_page: number;
-        total: number;
-        per_page: number;
-        last_page: number;
-    };
 }
 
 

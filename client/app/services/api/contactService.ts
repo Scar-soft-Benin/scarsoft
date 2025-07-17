@@ -19,13 +19,6 @@ export const contactService = {
         payload: CreateContactPayload
     ): Promise<ApiResponse<CreateContactResponse>> => {
         try {
-            console.log(
-                "contactService: Initiating createContact request with payload:",
-                payload
-            );
-            console.log("contactService: apiClient config:", {
-                baseURL: apiClient.defaults.baseURL
-            });
             const response = await apiClient.post("/contacts", payload);
             console.log("contactService: Create contact response:", response);
             return {
@@ -47,17 +40,17 @@ export const contactService = {
     },
 
     // Récupérer tous les messages de contact (admin)
-    getAllContacts: async (): Promise<
-        ApiResponse<GetAllContactsResponse[]>
-    > => {
+    getAllContacts: async (): Promise<ApiResponse<GetAllContactsResponse>> => {
         try {
-            console.log("contactService: apiClient config:", {
-                baseURL: apiClient.defaults.baseURL
-            });
             const response = await apiClient.get("/admin/contacts");
             console.log("contactService: Get all contacts response:", response);
             return {
-                data: response.data.data,
+                data: {
+                    data: response.data.data, // Contact[]
+                    status: response.status,
+                    message:
+                        response.data.message || "Contacts fetched successfully"
+                },
                 status: response.status,
                 message:
                     response.data.message || "Contacts fetched successfully"
@@ -121,7 +114,6 @@ export const contactService = {
             throw parseApiError(error);
         }
     },
-
 
     // Mettre à jour le statut d'un message de contact (admin)
     updateContactStatus: async (

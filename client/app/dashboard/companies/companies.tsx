@@ -102,7 +102,7 @@ export default function Entreprises() {
         },
         {
             header: "Email",
-            field: "contact_email",
+            field: "email",
             filterable: true
         },
         {

@@ -26,11 +26,11 @@ const Jobs = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const jobs = useSelector((state: RootState) => state.job.jobs);
-  const loading = useSelector((state: RootState) => state.job.loading);
   const error = useSelector((state: RootState) => state.job.error);
 
   useEffect(() => {
     dispatch(getAllJobsForAdmin());
+    console.log("Jobs:", jobs);
   }, [dispatch]);
 
   useEffect(() => {
