@@ -3,6 +3,8 @@ import { getAuthToken } from "../utils/httpClient";
 
 const API_BASE_URL =
     import.meta.env.VITE_API_BASE_URL || "http://localhost:8010/api";
+export const STORAGE_BASE_URL =
+    import.meta.env.VITE_STORAGE_BASE_URL || "http://localhost:8010";
 const TOKEN_REFRESH_URL = `${API_BASE_URL}/auth/refresh`;
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 

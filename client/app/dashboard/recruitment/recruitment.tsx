@@ -15,6 +15,7 @@ import {
 } from "~/store/sagas/jobApplySaga";
 import { getAllJobsForAdmin } from "~/store/sagas/jobSaga";
 import type { RootState } from "~/store";
+import { apiClient } from "~/services/config/apiConfig";
 
 type Recruitment = JobApplication;
 
@@ -52,31 +53,26 @@ export default function Recruitment() {
   const handleDownloadCV = async (candidateId: number, fileType: string = "cv") => {
     console.log("handleDownloadCV: candidateId =", candidateId, "fileType =", fileType);
     try {
-      const response = await fetch(`/api/admin/job-applications/${candidateId}/download/${fileType}`, {
+      const response = await apiClient(`/admin/job-applications/${candidateId}/download/${fileType}`, {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Accept": "application/json",
         },
       });
-      if (!response.ok) throw new Error(`Échec du téléchargement du CV: ${response.statusText}`);
+      if (!response.status) throw new Error(`Échec du téléchargement du CV: ${response.statusText}`);
 
-      const contentDisposition = response.headers.get("Content-Disposition");
-      let fileName = `cv_${candidateId}.pdf`; // Nom par défaut
-      if (contentDisposition) {
-        const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (fileNameMatch && fileNameMatch[1]) {
-          fileName = fileNameMatch[1];
-        }
-      }
+      const data = await response.data();
+      if (!data.success) throw new Error(data.message || "Erreur lors de la récupération du fichier");
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const fileUrl = data.download_url;
+      const fileName = data.file_name || `cv_${candidateId}.pdf`;
+
       const link = document.createElement("a");
-      link.href = url;
+      link.href = `${fileUrl}`;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
       addMessage("CV téléchargé avec succès", "success");
     } catch (err) {
       console.error("handleDownloadCV: Error =", err);
