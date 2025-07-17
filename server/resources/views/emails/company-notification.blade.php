@@ -151,7 +151,7 @@
 
     <div class="footer">
         <p><strong>ScarSoft</strong> - Votre partenaire recrutement et technologie</p>
-        <p>📧 contact@scar-soft.com | 📱 +229 68 505 786</p>
+        <p>📧 contact@scarsoft.net | 📱 +229 68 505 786</p>
         <p>🌐 <a href="https://scar-soft.com">www.scar-soft.com</a></p>
         <p><small>Email envoyé le {{ $sent_at->format('d/m/Y à H:i') }}</small></p>
     </div>

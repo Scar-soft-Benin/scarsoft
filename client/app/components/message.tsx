@@ -30,7 +30,7 @@ export default function Message() {
     const { messages, removeMessage } = useMessage();
 
     return (
-        <div className="fixed top-4 right-4 space-y-2 z-50">
+        <div className="fixed bottom-4 right-4 space-y-2 z-50">
             <AnimatePresence>
                 {messages.map((message) => (
                     <MessageItem

@@ -1,12 +1,41 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import AppBaseButton from "~/components/appBaseButton";
+import { useDispatch } from "react-redux";
 import AppBaseTitle from "~/components/appBaseTitle";
+import AppButton from "~/dashboard/components/appButton";
+import { type ContactFormData, contactSchema } from "~/schema/contactSchema";
+import { createContact } from "~/store/sagas/contactSaga";
 
 const Contacts = () => {
-    const { t } = useTranslation();
+        const { t } = useTranslation();
+    const dispatch = useDispatch();
+
+    // Initialize react-hook-form with Zod resolver
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { isSubmitting }
+    } = useForm<ContactFormData>({
+        resolver: zodResolver(contactSchema),
+        defaultValues: {
+            name: "",
+            email: "",
+            phone: "",
+            subject: "",
+            message: ""
+        }
+    });
+
+    // Handle form submission
+    const onSubmit = (data: ContactFormData) => {
+        dispatch(createContact(data));
+        reset(); // Reset form after successful submission
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100/30">
@@ -91,7 +120,7 @@ const Contacts = () => {
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">
                         {t("contactUs.cards.email.title")}
                     </h3>
-                    <p className="text-gray-600">contact@scar-soft.com</p>
+                    <p className="text-gray-600">contact@scarsoft.net</p>
                 </motion.div>
 
                 {/* Adresse */}
@@ -136,7 +165,7 @@ const Contacts = () => {
                         </p>
                     </div>
                     <div className="max-w-2xl mx-auto">
-                        <form className="space-y-6">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <motion.input
                                     initial={{ opacity: 0, x: -20 }}
@@ -150,6 +179,7 @@ const Contacts = () => {
                                     type="text"
                                     placeholder={t("contactUs.form.name")}
                                     className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
+                                    {...register("name")}
                                 />
                                 <motion.input
                                     initial={{ opacity: 0, x: -20 }}
@@ -161,6 +191,7 @@ const Contacts = () => {
                                         delay: 0.1
                                     }}
                                     type="email"
+                                    {...register("email")}
                                     placeholder={t("contactUs.form.email")}
                                     className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
@@ -176,6 +207,7 @@ const Contacts = () => {
                                         delay: 0.2
                                     }}
                                     type="tel"
+                                    {...register("phone")}
                                     placeholder={t("contactUs.form.phone")}
                                     className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
@@ -189,6 +221,7 @@ const Contacts = () => {
                                         delay: 0.3
                                     }}
                                     type="text"
+                                    {...register("subject")}
                                     placeholder={t("contactUs.form.subject")}
                                     className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200"
                                 />
@@ -202,16 +235,18 @@ const Contacts = () => {
                                     ease: "easeOut",
                                     delay: 0.4
                                 }}
+                                {...register("message")}
                                 placeholder={t("contactUs.form.message")}
                                 rows={6}
                                 className="w-full p-4 border border-transparent bg-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 resize-none"
                             />
-                            <AppBaseButton
-                                type="first"
-                                bgColor="bg-secondary"
-                                textColor="text-dark"
-                                text={t("contactUs.form.send")}
-                                className="w-1/3 rounded-xl"
+                            <AppButton
+                                type="primary"
+                                label="Envoyer"
+                                size="md"
+                                typeAttr="submit"
+                                disabled={isSubmitting}
+                                className="text-center bg-teal-800 dark:bg-teal-400 text-white dark:text-neutral-dark-text"
                             />
                         </form>
                     </div>

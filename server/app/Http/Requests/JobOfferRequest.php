@@ -202,7 +202,7 @@ class JobOfferRequest extends FormRequest
 
             // Validation conditionnelle pour les offres internes
             if ($this->boolean('is_internal')) {
-                $scarSoftCompany = \App\Models\Company::where('email', 'contact@scar-soft.com')->first();
+                $scarSoftCompany = \App\Models\Company::where('email', 'contact@scarsoft.net')->first();
                 if ($scarSoftCompany && $this->company_id != $scarSoftCompany->id) {
                     $validator->errors()->add(
                         'is_internal',

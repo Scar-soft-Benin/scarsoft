@@ -1,182 +1,58 @@
-// pages/Contacts.tsx
-import { useState, useRef, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { motion, useAnimate } from "motion/react";
-import Dialog from "../components/Dialog";
+import { useEffect } from "react";
 import Table, { type Column } from "../components/Table";
 import { useMessage } from "~/context/messageContext";
-import AppBaseButton from "~/components/appBaseButton";
-import { FaEnvelope } from "react-icons/fa";
-
-interface Contact {
-    id: string;
-    name: string;
-    email: string;
-    message: string;
-    date: string;
-}
-
-const mockContacts: Contact[] = [
-    {
-        id: "1",
-        name: "John Doe",
-        email: "john@example.com",
-        message: "Interested in services",
-        date: "2025-06-01"
-    },
-    {
-        id: "2",
-        name: "Jane Smith",
-        email: "jane@example.com",
-        message: "Partnership inquiry",
-        date: "2025-06-02"
-    }
-];
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "~/store";
+import { getAllContacts } from "~/store/sagas/contactSaga";
+import type { Contact } from "~/services/types/contact.types";
 
 export default function Contacts() {
     const { addMessage } = useMessage();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(
-        null
-    );
-    const [scope, animate] = useAnimate();
-    const modalContentRef = useRef<HTMLDivElement>(null);
+    const dispatch = useDispatch();
+    const contacts = useSelector((state: RootState) => state.contact.contacts);
+    const { error, loading } = useSelector((state: RootState) => state.contact);
 
-    const { control, handleSubmit, reset } = useForm({
-        defaultValues: {
-            replySubject: "",
-            replyMessage: ""
-        }
-    });
-
+    // Fetch contacts only when params change
     useEffect(() => {
-        if (isModalOpen && modalContentRef.current) {
-            animate(
-                scope.current,
-                { opacity: [0, 1], scale: [0.95, 1] },
-                { duration: 0.3, ease: "easeOut" }
-            );
-        }
-    }, [isModalOpen, animate]);
+        dispatch(getAllContacts());
+    }, [dispatch]);
 
-    const handleReply = (contact: Contact) => {
-        setSelectedContact(contact);
-        reset({
-            replySubject: `Re: Votre message du ${contact.date}`,
-            replyMessage: ""
-        });
-        setIsModalOpen(true);
-    };
-
-    const onSubmit = (data: { replySubject: string; replyMessage: string }) => {
-        if (selectedContact) {
-            console.log("Envoi de l'email à", selectedContact.email, data);
-            addMessage("Réponse envoyée avec succès.", "success");
+    // Handle errors separately
+    useEffect(() => {
+        if (error) {
+            addMessage(error.message, "error");
         }
-        setIsModalOpen(false);
-        reset();
-    };
+    }, [error, addMessage, dispatch]);
+    console.log("Contacts:", contacts);
 
     const columns: Column<Contact>[] = [
         { header: "Nom", field: "name" },
         { header: "Email", field: "email" },
+        { header: "Sujet", field: "subject" },
         { header: "Message", field: "message" },
-        { header: "Date", field: "date" },
-        {
-            header: "Action",
-            field: "action",
-            render: (row: Contact) => (
-                <AppBaseButton
-                    text="Répondre"
-                    icon={<FaEnvelope />}
-                    type="first"
-                    textColor=""
-                    bgColor="bg-transparent"
-                    iconPos="left"
-                    className="p-button-sm p-button-text"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        handleReply(row);
-                    }}
-                />
-            )
-        }
+        { header: "Date de création", field: "created_at" }
     ];
 
-    const dialogFooter = (
-        <div className="flex justify-end gap-2">
-            <AppBaseButton
-                text="Annuler"
-                type="second"
-                textColor=""
-                bgColor="bg-transparent"
-                className="p-button-sm p-button-outlined"
-                onClick={() => setIsModalOpen(false)}
-            />
-            <AppBaseButton
-                text="Envoyer"
-                type="first"
-                textColor=""
-                bgColor="bg-transparent"
-                className="p-button-sm p-button-raised"
-                onClick={handleSubmit(onSubmit)}
-            />
-        </div>
-    );
-
     return (
-        <>
+        <div className="p-6">
+            <div className="mb-4">
+                <h1 className="text-2xl font-bold text-neutral-light-text dark:text-neutral-dark-text mb-2">
+                    Gestion des Contacts
+                </h1>
+            </div>
+            {loading && (
+                <div className="text-center my-4">
+                    <span className="animate-spin">
+                        ⏳ Chargement des contacts...
+                    </span>
+                </div>
+            )}
             <Table
-                data={mockContacts}
+                data={Array.isArray(contacts) ? contacts : []}
                 columns={columns}
                 title="Messages de Contact"
-                detailPath="/contacts"
+                globalFilterFields={["name", "email", "subject", "message", "created_at"]}
             />
-            <Dialog
-                header={`Répondre à ${selectedContact?.name}`}
-                visible={isModalOpen}
-                onHide={() => setIsModalOpen(false)}
-                footer={dialogFooter}
-            >
-                <motion.div
-                    layout
-                    ref={scope}
-                    className="p-4 space-y-4"
-                >
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Sujet
-                        </label>
-                        <Controller
-                            name="replySubject"
-                            control={control}
-                            render={({ field }) => (
-                                <input
-                                    {...field}
-                                    type="text"
-                                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                />
-                            )}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Message
-                        </label>
-                        <Controller
-                            name="replyMessage"
-                            control={control}
-                            render={({ field }) => (
-                                <textarea
-                                    {...field}
-                                    rows={5}
-                                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-                                />
-                            )}
-                        />
-                    </div>
-                </motion.div>
-            </Dialog>
-        </>
+        </div>
     );
 }

@@ -134,7 +134,7 @@ return [
         */
         'default_company' => [
             'name' => 'ScarSoft',
-            'email' => 'contact@scar-soft.com',
+            'email' => 'contact@scarsoft.net',
             'is_internal' => true,
         ],
         

@@ -24,7 +24,7 @@ class CompanySeeder extends Seeder
 
         // Créer l'entreprise ScarSoft
         Company::firstOrCreate(
-            ['email' => 'contact@scar-soft.com'],
+            ['email' => 'contact@scarsoft.net'],
             [
                 'name' => 'ScarSoft',
                 'phone' => '+229 68 505 786',

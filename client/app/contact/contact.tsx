@@ -1,10 +1,39 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
+import { useForm } from "react-hook-form";
 import { useTranslation, Trans } from "react-i18next";
-import AppBaseButton from "~/components/appBaseButton";
+import { useDispatch } from "react-redux";
 import AppBaseTitle from "~/components/appBaseTitle";
+import AppButton from "~/dashboard/components/appButton";
+import { contactSchema, type ContactFormData } from "~/schema/contactSchema";
+import { createContact } from "~/store/sagas/contactSaga";
 
 const Contact = () => {
     const { t } = useTranslation();
+    const dispatch = useDispatch();
+
+    // Initialize react-hook-form with Zod resolver
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { isSubmitting }
+    } = useForm<ContactFormData>({
+        resolver: zodResolver(contactSchema),
+        defaultValues: {
+            name: "",
+            email: "",
+            phone: "",
+            subject: "",
+            message: ""
+        }
+    });
+
+    // Handle form submission
+    const onSubmit = (data: ContactFormData) => {
+        dispatch(createContact(data));
+        reset(); // Reset form after successful submission
+    };
 
     return (
         <>
@@ -53,7 +82,10 @@ const Contact = () => {
                     <h2 className="text-xl font-bold text-center mb-4">
                         {t("contact.form.title")}
                     </h2>
-                    <form className="flex flex-col space-y-4">
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="flex flex-col space-y-4"
+                    >
                         <motion.input
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
@@ -66,6 +98,7 @@ const Contact = () => {
                             type="text"
                             placeholder={t("contact.form.name")}
                             className="p-2 border border-gray-300 rounded-md"
+                            {...register("name")}
                         />
                         <motion.input
                             initial={{ opacity: 0, x: -20 }}
@@ -79,6 +112,7 @@ const Contact = () => {
                             type="email"
                             placeholder={t("contact.form.email")}
                             className="p-2 border border-gray-300 rounded-md"
+                            {...register("email")}
                         />
                         <motion.input
                             initial={{ opacity: 0, x: -20 }}
@@ -92,6 +126,7 @@ const Contact = () => {
                             type="tel"
                             placeholder={t("contact.form.phone")}
                             className="p-2 border border-gray-300 rounded-md"
+                            {...register("phone")}
                         />
                         <motion.input
                             initial={{ opacity: 0, x: -20 }}
@@ -105,6 +140,7 @@ const Contact = () => {
                             type="text"
                             placeholder={t("contact.form.subject")}
                             className="p-2 border border-gray-300 rounded-md"
+                            {...register("subject")}
                         />
                         <motion.textarea
                             initial={{ opacity: 0, x: -20 }}
@@ -118,12 +154,15 @@ const Contact = () => {
                             placeholder={t("contact.form.message")}
                             className="p-2 border border-gray-300"
                             rows={8}
+                            {...register("message")}
                         />
-                        <AppBaseButton
-                            type="first"
-                            bgColor="bg-secondary"
-                            textColor="text-dark"
-                            text={t("contact.form.send")}
+                        <AppButton
+                            type="primary"
+                            label="Envoyer"
+                            size="md"
+                            typeAttr="submit"
+                            disabled={isSubmitting}
+                            className="text-center bg-teal-800 dark:bg-teal-400 text-white dark:text-neutral-dark-text"
                         />
                     </form>
                 </div>

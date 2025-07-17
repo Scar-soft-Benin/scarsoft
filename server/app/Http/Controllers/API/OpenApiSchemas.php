@@ -7,7 +7,7 @@ namespace App\Http\Controllers\API;
  *     version="1.0.0",
  *     description="API complète pour la gestion des emplois, candidatures et contacts",
  *     @OA\Contact(
- *         email="contact@scar-soft.com",
+ *         email="contact@scarsoft.net",
  *         name="ScarSoft Support"
  *     )
  * )

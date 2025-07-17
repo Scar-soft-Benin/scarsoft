@@ -182,16 +182,16 @@ function* getAllCompaniesSaga(action: GetAllCompaniesAction) {
     try {
         yield put(showLoading());
         console.log("getAllCompaniesSaga: Calling companyService.getAllCompanies with params:", action.payload);
-        const response: ApiResponse<Company[]> = yield call(
+        const response: ApiResponse<GetAllCompaniesResponse> = yield call(
             companyService.getAllCompanies,
             action.payload
         );
         console.log("getAllCompaniesSaga: Get all companies response:", response);
         yield put(
             getAllCompaniesSuccess({
-                success: true,
-                message: response.message,
-                data: response.data,
+                success: response.data.success,
+                message: response.data.message,
+                data: response.data.data,
                 meta: response.meta,
             })
         );

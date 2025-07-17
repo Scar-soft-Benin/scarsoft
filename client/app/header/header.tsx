@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({
                                 ease: "easeOut",
                                 delay: 0.2
                             }}
-                            className="font-bold text-4xl md:text-6xl leading-tight"
+                            className="font-bold text-xl md:text-4xl leading-tight"
                         >
                             {title}
                         </motion.h2>

@@ -6,7 +6,8 @@ import type { ApiResponse } from "../types/common.types";
 import type {
     CreateJobPayload,
     CreateJobResponse,
-    GetAllJobsResponse
+    GetAllJobsResponse,
+    GetJobByIdResponse
 } from "../types/job.types";
 
 export const jobService = {
@@ -123,7 +124,7 @@ export const jobService = {
      */
     getJobById: async (
         id: number | string
-    ): Promise<ApiResponse<CreateJobResponse>> => {
+    ): Promise<ApiResponse<GetJobByIdResponse>> => {
         try {
             const response = await apiClient.get(`/job-offers/${id}`);
             console.log("jobService: Get job by ID response:", response.data);

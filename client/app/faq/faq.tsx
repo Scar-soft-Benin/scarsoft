@@ -27,7 +27,7 @@ const Faq = () => {
                     <div className="flex flex-col">
                         <div className="mb-4 sm:mb-8">
                             <p className="text-lg sm:text-2xl">
-                                contact@scar-soft.com
+                                contact@scarsoft.net
                             </p>
                         </div>
                         <div className="mb-4">

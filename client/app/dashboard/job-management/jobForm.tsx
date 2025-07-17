@@ -127,6 +127,7 @@ export default function JobForm({ job, onSave, onCancel }: JobFormProps) {
                 addMessage("Offre créée avec succès", "success");
             }
             onSave();
+            reset()
         } catch (error) {
             console.error("JobForm: Error in onSubmit:", error);
             addMessage("Erreur lors de la sauvegarde de l'offre", "error");

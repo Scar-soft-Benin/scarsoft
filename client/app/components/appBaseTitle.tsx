@@ -21,7 +21,7 @@ const AppBaseTitle: React.FC<AppBaseTitleProps> = ({
         >
             {/* Titre principal à gauche */}
             <div className="flex-flex-shrink-1">
-                <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-gray-800">
+                <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-800">
                     {title}
                 </h1>
             </div>

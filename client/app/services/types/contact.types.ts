@@ -30,13 +30,6 @@ export interface Meta {
   last_page: number;
 }
 
-export interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message: string;
-  meta?: Meta; // Included for pagination
-}
-
 // Payload pour créer un message de contact
 export interface CreateContactPayload {
   name: string;
@@ -83,6 +76,13 @@ export interface GetAllContactsResponse {
   meta?: Meta;
 }
 
+
+export interface GetContactDetailResponse {
+    success: boolean;
+    message: string;
+    data: Contact;
+}
+
 export interface UpdateContactStatusResponse {
   success: boolean;
   message: string;
@@ -92,4 +92,5 @@ export interface UpdateContactStatusResponse {
 export interface DeleteContactResponse {
   success: boolean;
   message: string;
+  data: { contactId: number };
 }
