@@ -14,6 +14,7 @@ import {
 } from "~/store/sagas/jobApplySaga";
 import { getAllJobsForAdmin } from "~/store/sagas/jobSaga";
 import type { RootState } from "~/store";
+import { apiClient } from "~/services/config/apiConfig";
 
 const getFileExtension = (contentType: string | null): string => {
     switch (contentType) {
@@ -64,36 +65,35 @@ export default function Recruitment() {
         }
     }, [error, addMessage]);
 
-    const handleDownloadCV = async (
-        candidateId: number,
-        fileType: string = "cv"
-    ) => {
-        console.log(
-            "handleDownloadCV: candidateId =",
-            candidateId,
-            "fileType =",
-            fileType
-        );
-        try {
-            const response = await fetch(
-                `/api/admin/job-applications/${candidateId}/download/${fileType}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
-                    }
-                }
-            );
+  const handleDownloadCV = async (candidateId: number, fileType: string = "cv") => {
+    console.log("handleDownloadCV: candidateId =", candidateId, "fileType =", fileType);
+    try {
+      const response = await apiClient(`/admin/job-applications/${candidateId}/download/${fileType}`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Accept": "application/json",
+        },
+      });
+      if (!response.status) throw new Error(`Échec du téléchargement du CV: ${response.statusText}`);
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("handleDownloadCV: Error response =", errorText);
-                throw new Error(
-                    `Échec du téléchargement du CV: ${response.statusText} (${response.status})`
-                );
-            }
+      const data = await response.data();
+      if (!data.success) throw new Error(data.message || "Erreur lors de la récupération du fichier");
 
-            const contentType = response.headers.get("Content-Type");
-            console.log("handleDownloadCV: Content-Type =", contentType);
+      const fileUrl = data.download_url;
+      const fileName = data.file_name || `cv_${candidateId}.pdf`;
+
+      const link = document.createElement("a");
+      link.href = `${fileUrl}`;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      addMessage("CV téléchargé avec succès", "success");
+    } catch (err) {
+      console.error("handleDownloadCV: Error =", err);
+      addMessage("Erreur lors du téléchargement du CV.", "error");
+    }
+  };
 
             const contentDisposition = response.headers.get(
                 "Content-Disposition"
