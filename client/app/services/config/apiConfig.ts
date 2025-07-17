@@ -37,6 +37,16 @@ const createApiClient = (): AxiosInstance => {
             if (config.data) {
                 config.data = sanitizePayload(config.data);
             }
+            // Ne pas sanitiser FormData
+            // if (!(config.data instanceof FormData)) {
+            //     config.data = sanitizePayload(config.data);
+            // }
+            console.log("apiClient: Request config:", {
+                url: config.url,
+                method: config.method,
+                headers: config.headers,
+                data: config.data instanceof FormData ? "FormData" : config.data,
+            });
             return config;
         },
         (error) => Promise.reject(error)
@@ -116,23 +126,26 @@ const createApiClient = (): AxiosInstance => {
 const sanitizePayload = (payload: unknown): unknown => {
     if (typeof payload === "string") {
         // Trim and escape potentially dangerous characters
-        return payload.trim().replace(/[<>]/g, "");
+        const isFilePattern = /^File:\s.+\(\d+\sbytes\)$/;
+        return isFilePattern.test(payload) ? payload : payload.trim().replace(/[<>]/g, "");
+        // return payload.trim().replace(/[<>]/g, "");
     }
     if (Array.isArray(payload)) {
         return payload.map(sanitizePayload);
     }
-    if (payload && typeof payload === "object") {
-        const sanitized: Record<string, unknown> = {};
-        for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key)) {
-                const value = (payload as Record<string, unknown>)[key];
-                if (value !== null && value !== undefined) {
-                    sanitized[key] = sanitizePayload(value);
-                }
-            }
-        }
-        return sanitized;
-    }
+    // if (payload && typeof payload === "object") {
+    //     const sanitized: Record<string, unknown> = {};
+    //     for (const key in payload) {
+    //         if (Object.prototype.hasOwnProperty.call(payload, key)) {
+    //             const value = (payload as Record<string, unknown>)[key];
+    //             sanitized[key] = sanitizePayload(value);
+    //             // if (value !== null && value !== undefined) {
+    //             //     sanitized[key] = sanitizePayload(value);
+    //             // }
+    //         }
+    //     }
+    //     return sanitized;
+    // }
     return payload;
 };
 

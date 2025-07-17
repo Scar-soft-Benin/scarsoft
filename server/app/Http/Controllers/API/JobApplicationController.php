@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -10,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Tag(
@@ -61,6 +63,8 @@ class JobApplicationController extends Controller
      */
     public function store(Request $request, int $jobOfferId): JsonResponse
     {
+
+
         $key = 'job_application:' . $request->ip() . ':' . $jobOfferId;
         if (RateLimiter::tooManyAttempts($key, 3)) {
             $seconds = RateLimiter::availableIn($key);
@@ -145,7 +149,7 @@ class JobApplicationController extends Controller
                     $request->file('cover_letter_file'),
                     $jobOfferId
                 );
-                
+
                 if (!$coverLetterUpload['success']) {
                     // Nettoyer le CV uploadé en cas d'échec
                     $this->fileUploadService->deleteFile($cvUpload['path']);
@@ -156,7 +160,7 @@ class JobApplicationController extends Controller
                         'error_code' => $coverLetterUpload['error_code'],
                     ], 400);
                 }
-                
+
                 $applicationData['cover_letter_path'] = $coverLetterUpload['path'];
             }
 
@@ -175,10 +179,9 @@ class JobApplicationController extends Controller
                     'submitted_at' => $application->created_at,
                 ],
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Nettoyer les fichiers en cas d'erreur
             if (isset($cvUpload['path'])) {
                 $this->fileUploadService->deleteFile($cvUpload['path']);
@@ -351,7 +354,6 @@ class JobApplicationController extends Controller
                 'message' => 'Statut de la candidature mis à jour avec succès',
                 'data' => $jobApplication->fresh()->load(['jobOffer.company', 'user', 'reviewer']),
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -386,7 +388,7 @@ class JobApplicationController extends Controller
             if ($jobApplication->cv_path) {
                 $this->fileUploadService->deleteFile($jobApplication->cv_path);
             }
-            
+
             if ($jobApplication->cover_letter_path) {
                 $this->fileUploadService->deleteFile($jobApplication->cover_letter_path);
             }
@@ -397,7 +399,6 @@ class JobApplicationController extends Controller
                 'success' => true,
                 'message' => 'Candidature supprimée avec succès',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

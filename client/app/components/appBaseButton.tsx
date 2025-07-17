@@ -26,7 +26,7 @@ const AppBaseButton: React.FC<AppBaseButtonProps> = ({
     ...rest
 }) => {
     const baseStyles =
-        "px-5 py-2 flex items-center justify-center transition-all";
+        "px-5 py-2 flex items-center justify-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500";
     const typeStyles =
         type === "first"
             ? "p-[10px_20px] rounded-[50px]"

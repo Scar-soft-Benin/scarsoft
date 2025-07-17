@@ -32,7 +32,7 @@ const Careers = () => {
     }, [dispatch]);
 
     const handleApply = (jobId: number) => {
-        navigate(`/carriere-candidature/${jobId}`);
+        navigate(`/carriere/candidature/${jobId}`);
     };
 
     const getTagSeverity = (type: string) => {

@@ -21,7 +21,7 @@ export interface CreateJobApplicationPayload {
   applicant_email: string;
   applicant_phone: string;
   cv: File; // Fichier brut pour multipart/form-data
-  cover_letter_type?: "text" | "file";
+  cover_letter_type: "text" | "file";
   cover_letter_content?: string;
   cover_letter_file?: File; // Fichier brut pour multipart/form-data
 }
@@ -54,7 +54,7 @@ export interface CreateJobApplicationResponse {
 export interface GetJobApplicationByIdResponse {
   success: boolean;
   message: string;
-  data: JobApplication;
+  data: JobApplication[];
 }
 
 export interface UpdateJobApplicationStatusResponse {
@@ -78,19 +78,9 @@ export interface GetAllJobApplicationsResponse {
   success: boolean;
   message: string;
   data: JobApplication[];
-  meta?: {
-    current_page?: number;
-    total?: number;
-    per_page?: number;
-    last_page?: number;
-  };
-}
+  
+};
 
-export interface GetJobApplicationStatisticsResponse {
-  success: boolean;
-  message: string;
-  data: JobApplicationStatistics;
-}
 
 export interface ApiResponse<T> {
   data: T;

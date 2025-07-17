@@ -13,7 +13,7 @@ export default [
         route("nos-service", "routes/nos-service.tsx"), // Service Page
         route("contactez-nous", "routes/contacts.tsx"), // Contact Page
         route("carrieres", "routes/carriere.tsx"), // ✅ Carrière Page
-        route("carriere-candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page
+        route("carriere/candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page
         route("nos-projets", "routes/nos-projets.tsx"), // Project Page
         route("faq", "routes/faq.tsx") // ✅ FAQ Page
     ]),
