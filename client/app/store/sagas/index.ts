@@ -4,6 +4,8 @@ import { jobSaga } from "./jobSaga";
 import { companySaga } from "./companySaga";
 import { jobApplySaga } from "./jobApplySaga";
 import { contactSaga } from "./contactSaga";
+import { notificationSaga } from "./notificationSaga";
+import { statisticsSaga } from "./statisticsSaga";
 
 export default function* rootSaga() {
     yield all([
@@ -11,6 +13,8 @@ export default function* rootSaga() {
         jobSaga(),
         companySaga(),
         jobApplySaga(),
-        contactSaga()
+        contactSaga(),
+        notificationSaga(),
+        statisticsSaga()
     ]); // Placeholder for future sagas
 }

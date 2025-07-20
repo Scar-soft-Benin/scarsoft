@@ -10,7 +10,8 @@ import type {
     CreateContactResponse,
     GetAllContactsResponse,
     UpdateContactStatusResponse,
-    DeleteContactResponse
+    DeleteContactResponse,
+    ReplyContactPayload
 } from "~/services/types/contact.types";
 import { addMessage } from "../reducer/messageReducer";
 import { showLoading, hideLoading } from "../reducer/loadingReducer";
@@ -24,6 +25,8 @@ import {
     GET_CONTACT_DETAILS_FAILURE,
     DELETE_CONTACT_SUCCESS,
     DELETE_CONTACT_FAILURE,
+    REPLY_TO_CONTACT_SUCCESS,
+    REPLY_TO_CONTACT_FAILURE,
     UPDATE_CONTACT_STATUS_SUCCESS,
     UPDATE_CONTACT_STATUS_FAILURE,
     GET_CONTACT_STATISTICS_SUCCESS,
@@ -43,6 +46,11 @@ export const GET_CONTACT_STATISTICS = "GET_CONTACT_STATISTICS";
 interface CreateContactAction {
     type: typeof CREATE_CONTACT;
     payload: CreateContactPayload;
+}
+
+interface ReplyContactAction {
+    type: typeof REPLY_TO_CONTACT;
+    payload: { contactId: string; data: ReplyContactPayload };
 }
 
 // Action Creators
@@ -68,6 +76,11 @@ export const getContactDetailsSuccess = (contact: Contact) => ({
 export const deleteContact = (contactId: string) => ({
     type: DELETE_CONTACT,
     payload: { contactId }
+});
+
+export const replyToContact = (payload: { contactId: string; data: ReplyContactPayload }) => ({
+    type: REPLY_TO_CONTACT,
+    payload
 });
 
 export const updateContactStatus = (
@@ -126,6 +139,19 @@ export const deleteContactFailure = (error: {
     error_code?: string;
 }) => ({
     type: DELETE_CONTACT_FAILURE,
+    payload: error
+});
+
+export const replyToContactSuccess = (contact: Contact) => ({
+    type: REPLY_TO_CONTACT_SUCCESS,
+    payload: contact
+});
+
+export const replyToContactFailure = (error: {
+    message: string;
+    error_code?: string;
+}) => ({
+    type: REPLY_TO_CONTACT_FAILURE,
     payload: error
 });
 
@@ -307,6 +333,42 @@ function* deleteContactSaga(action: {
     }
 }
 
+
+function* replyToContactSaga(action: ReplyContactAction) {
+    try {
+        yield put(showLoading());
+        console.log(
+            "replyToContactSaga: Calling contactService.replyToContact with payload:",
+            action.payload
+        );
+        const response: ApiResponse<Contact> = yield call(
+            contactService.replyToContact,
+            action.payload.contactId,
+            action.payload.data
+        );
+        console.log("replyToContactSaga: Reply to contact response:", response);
+        yield put(replyToContactSuccess(response.data));
+        yield put(
+            addMessage({
+                text:
+                    response.message ||
+                    "Réponse envoyée avec succès",
+                type: "success"
+            })
+        );
+    } catch (error: unknown) {
+        console.error("replyToContactSaga: Error replying to contact:", error);
+        const apiError = isApiError(error)
+            ? { message: error.message, error_code: error.error_code }
+            : { message: "Impossible d'envoyer la réponse" };
+        yield put(replyToContactFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+        console.log("replyToContactSaga: Saga completed.");
+    }
+}
+
 function* updateContactStatusSaga(action: {
     type: typeof UPDATE_CONTACT_STATUS;
     payload: Contact;
@@ -394,6 +456,7 @@ export function* contactSaga() {
     yield takeLatest(GET_ALL_CONTACTS, getAllContactsSaga);
     yield takeLatest(GET_CONTACT_DETAILS, getContactDetailsSaga);
     yield takeLatest(DELETE_CONTACT, deleteContactSaga);
+    yield takeLatest(REPLY_TO_CONTACT, replyToContactSaga);
     yield takeLatest(UPDATE_CONTACT_STATUS, updateContactStatusSaga);
     yield takeLatest(GET_CONTACT_STATISTICS, getContactStatisticsSaga);
 }

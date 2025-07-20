@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from "motion/react";
-import { type JSX } from "react";
+import { motion, AnimatePresence } from "framer-motion"; // Corrigé l'import (motion/react -> framer-motion)
+import { type JSX, useEffect } from "react";
 import {
     useMessage,
     type MessageType,
@@ -50,6 +50,16 @@ interface MessageItemProps {
 }
 
 function MessageItem({ message, onClose }: MessageItemProps) {
+    useEffect(() => {
+        // Définir un timer pour supprimer le message après 5 secondes
+        const timer = setTimeout(() => {
+            onClose();
+        }, 5000); // 5000ms = 5 secondes
+
+        // Nettoyer le timer lorsque le composant est démonté
+        return () => clearTimeout(timer);
+    }, [onClose]);
+
     return (
         <motion.div
             initial={{ opacity: 0, x: 50 }}

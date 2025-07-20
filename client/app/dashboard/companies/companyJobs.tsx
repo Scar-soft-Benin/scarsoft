@@ -36,7 +36,7 @@ export default function OffresEntreprise() {
         try {
             showLoading();
             const allJobs = await jobService.getAllJobs();
-            const filtered = allJobs.filter((job) => job.companyId === id);
+            const filtered = allJobs.filter((job: { companyId: string | undefined; }) => job.companyId === id);
             setOffers(filtered);
         } catch {
             addMessage("Impossible de charger les offres", "error");

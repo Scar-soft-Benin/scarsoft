@@ -14,7 +14,7 @@ import Loading from "~/components/loading";
 import type { Route } from "./+types/root";
 import "./app.css";
 import "../i18n.js";
-import Message from "./components/message";
+// import Message from "./components/message";
 import { MessageProvider } from "./context/messageContext";
 import { ThemeProvider } from "./context/themeContext";
 import { SidebarProvider } from "~/context/sidebarContext";
@@ -51,7 +51,7 @@ function AppContent() {
     return (
         <>
             {isLoading && <Loading />}
-            <Message />
+            {/* <Message /> */}
             
             <Outlet />
         </>

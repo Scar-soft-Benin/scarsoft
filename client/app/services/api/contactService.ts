@@ -6,7 +6,9 @@ import type {
     ContactStatistics,
     CreateContactResponse,
     GetAllContactsResponse,
-    GetContactDetailResponse
+    GetContactDetailResponse,
+    ReplyContactPayload,
+    Contact
 } from "~/services/types/contact.types";
 import { apiClient } from "../config/apiConfig";
 import { parseApiError } from "../utils/errorParser";
@@ -174,5 +176,40 @@ export const contactService = {
         } catch (error: unknown) {
             throw parseApiError(error);
         }
-    }
+    },
+
+
+    replyToContact: async (
+        contactId: string,
+        payload: ReplyContactPayload
+    ): Promise<ApiResponse<Contact>> => {
+        try {
+            console.log(
+                "contactService: Initiating replyToContact request with contactId:",
+                contactId,
+                "and payload:",
+                payload
+            );
+            console.log("contactService: apiClient config:", {
+                baseURL: apiClient.defaults.baseURL
+            });
+            const response = await apiClient.put(
+                `/admin/contacts/${contactId}/reply`,
+                payload
+            );
+            console.log(
+                "contactService: Reply to contact response:",
+                response
+            );
+            return {
+                data: response.data.data,
+                status: response.status,
+                message:
+                    response.data.message ||
+                    "Reply sent successfully"
+            };
+        } catch (error: unknown) {
+            throw parseApiError(error);
+        }
+    },
 };

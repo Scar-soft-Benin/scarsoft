@@ -23,6 +23,7 @@ export const GET_CONTACT_STATISTICS_SUCCESS = "GET_CONTACT_STATISTICS_SUCCESS";
 export const GET_CONTACT_STATISTICS_FAILURE = "GET_CONTACT_STATISTICS_FAILURE";
 
 interface ContactState {
+    
     contacts: Contact[];
     currentContact: Contact | null;
     statistics: ContactStatistics | null;
