@@ -256,7 +256,7 @@ class CompanyController extends Controller
 
         try {
             $company->update($request->only([
-                'name', 'email', 'phone', 'address', 'website', 
+                'name', 'email', 'phone', 'address', 'website',
                 'contact_person', 'status', 'notes'
             ]));
 
@@ -338,7 +338,7 @@ class CompanyController extends Controller
      *     )
      * )
      */
-    public function statistics(Company $company): JsonResponse
+    public function statisticsCompanyById(Company $company): JsonResponse
     {
         $stats = [
             'total_job_offers' => $company->jobOffers()->count(),
@@ -350,6 +350,41 @@ class CompanyController extends Controller
             }])->get()->sum(function($offer) {
                 return $offer->applications->count();
             }),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
+        ]);
+    }
+
+
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/companies/statistics/all",
+     *     summary="Get overall company statistics",
+     *     tags={"Company Management"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Overall company statistics retrieved successfully"
+     *     )
+     * )
+     */
+    public function statistics(): JsonResponse
+    {
+        $stats = [
+            'total' => Company::count(),
+            // 'active_job_offers' => Company::activeJobOffers()->count(),
+            // 'archived_job_offers' => Company::jobOffers()->archived()->count(),
+            // 'total_applications' => Company::jobOffers()->withCount('applications')->get()->sum('applications_count'),
+            // 'pending_applications' => Company::jobOffers()->with(['applications' => function($q) {
+            //     $q->where('status', 'pending');
+            // }])->get()->sum(function($offer) {
+            //     return $offer->applications->count();
+            // }),
         ];
 
         return response()->json([
