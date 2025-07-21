@@ -43,7 +43,7 @@ export const getHeaderConfig = (t: TFunction): Record<
     subtitle: t("header.career.subtitle"),
     btnText: t("header.career.button")
   },
-  "/carriere-candidature/:jobId": {
+  "/carriere/candidature/:jobId": {
     bannerImage: careerBanner,
     title: t("header.career.title"),
     subtitle: t("header.career.subtitle"),

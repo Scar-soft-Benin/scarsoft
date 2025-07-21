@@ -178,7 +178,7 @@ export const jobService = {
      * @returns A promise that resolves to the deletion response.
      */
     deleteJob: async (
-        id: string
+        id: number
     ): Promise<ApiResponse<{ success: boolean; message: string }>> => {
         try {
             const response = await apiClient.delete(`/admin/job-offers/${id}`);

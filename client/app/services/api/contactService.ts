@@ -161,7 +161,7 @@ export const contactService = {
             console.log("contactService: apiClient config:", {
                 baseURL: apiClient.defaults.baseURL
             });
-            const response = await apiClient.get("/admin/contacts/statistics");
+            const response = await apiClient.get("/admin/statistics/contacts");
             console.log(
                 "contactService: Get contact statistics response:",
                 response

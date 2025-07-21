@@ -17,6 +17,9 @@ import {
   GET_COMPANY_JOBS,
   GET_COMPANY_JOBS_SUCCESS,
   GET_COMPANY_JOBS_FAILURE,
+  GET_COMPANY_DETAILS,
+  GET_COMPANY_DETAILS_SUCCESS,
+  GET_COMPANY_DETAILS_FAILURE,
   CLEAR_ERROR,
 } from "../sagas/companySaga";
 
@@ -52,6 +55,9 @@ type CompanyAction =
   | { type: typeof GET_COMPANY_JOBS }
   | { type: typeof GET_COMPANY_JOBS_SUCCESS; payload: { companyId: string; jobs: Job[] } }
   | { type: typeof GET_COMPANY_JOBS_FAILURE; payload: { message: string; error_code?: string } }
+  | { type: typeof GET_COMPANY_DETAILS }
+  | { type: typeof GET_COMPANY_DETAILS_SUCCESS; payload: Company }
+  | { type: typeof GET_COMPANY_DETAILS_FAILURE; payload: { message: string; error_code?: string } }
   | { type: typeof CLEAR_ERROR };
 
 const companyReducer = (state = initialState, action: CompanyAction): CompanyState => {
@@ -98,6 +104,23 @@ const companyReducer = (state = initialState, action: CompanyAction): CompanySta
         loading: false,
         error: action.payload,
         companies: [],
+      };
+    case GET_COMPANY_DETAILS_SUCCESS:
+      console.log("companyReducer: GET_COMPANY_DETAILS_SUCCESS with payload:", action.payload);
+      return {
+        ...state,
+        companies: state.companies.map((company) =>
+          company.id === action.payload.id ? action.payload : company
+        ),
+        loading: false,
+        error: null,
+      };
+    case GET_COMPANY_DETAILS_FAILURE:
+      console.log("companyReducer: GET_COMPANY_DETAILS_FAILURE with payload:", action.payload);
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
       };
     case UPDATE_COMPANY_SUCCESS:
       console.log("companyReducer: UPDATE_COMPANY_SUCCESS with payload:", action.payload);

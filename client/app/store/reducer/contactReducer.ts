@@ -19,8 +19,7 @@ export const REPLY_TO_CONTACT_SUCCESS = "REPLY_TO_CONTACT_SUCCESS";
 export const REPLY_TO_CONTACT_FAILURE = "REPLY_TO_CONTACT_FAILURE";
 export const UPDATE_CONTACT_STATUS_SUCCESS = "UPDATE_CONTACT_STATUS_SUCCESS";
 export const UPDATE_CONTACT_STATUS_FAILURE = "UPDATE_CONTACT_STATUS_FAILURE";
-export const GET_CONTACT_STATISTICS_SUCCESS = "GET_CONTACT_STATISTICS_SUCCESS";
-export const GET_CONTACT_STATISTICS_FAILURE = "GET_CONTACT_STATISTICS_FAILURE";
+
 
 interface ContactState {
     
@@ -68,14 +67,6 @@ type ContactAction =
     | { type: typeof UPDATE_CONTACT_STATUS_SUCCESS; payload: Contact }
     | {
           type: typeof UPDATE_CONTACT_STATUS_FAILURE;
-          payload: { message: string; error_code?: string };
-      }
-    | {
-          type: typeof GET_CONTACT_STATISTICS_SUCCESS;
-          payload: ContactStatistics;
-      }
-    | {
-          type: typeof GET_CONTACT_STATISTICS_FAILURE;
           payload: { message: string; error_code?: string };
       };
 
@@ -226,27 +217,7 @@ const contactReducer = (
                 loading: false,
                 error: action.payload
             };
-        case GET_CONTACT_STATISTICS_SUCCESS:
-            console.log(
-                "contactReducer: GET_CONTACT_STATISTICS_SUCCESS with payload:",
-                action.payload
-            );
-            return {
-                ...state,
-                statistics: action.payload,
-                loading: false,
-                error: null
-            };
-        case GET_CONTACT_STATISTICS_FAILURE:
-            console.log(
-                "contactReducer: GET_CONTACT_STATISTICS_FAILURE with payload:",
-                action.payload
-            );
-            return {
-                ...state,
-                loading: false,
-                error: action.payload
-            };
+        
         default:
             return state;
     }

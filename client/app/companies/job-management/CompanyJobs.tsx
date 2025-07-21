@@ -4,25 +4,29 @@ import { useNavigate } from "react-router";
 import { useMessage } from "~/context/messageContext";
 import type { Job } from "~/services/types/job.types";
 import { FiArchive, FiEdit, FiEye, FiRefreshCw, FiTrash2 } from "react-icons/fi";
-import AppButton from "../components/appButton";
-import type { Column } from "../components/Table";
-import AppToolbar from "../components/appToolBar";
-import Table from "../components/Table";
-import Dialog from "../components/Dialog";
+// import AppButton from "../components/appButton";
+// import type { Column } from "../components/Table";
+// import AppToolbar from "../components/appToolBar";
+// import Table from "../components/Table";
+// import Dialog from "../components/Dialog";
 import type { RootState } from "~/store";
-import JobForm from "./jobForm";
-import {
-  getAllJobsForAdmin,
-  updateJob,
-  deleteJob,
-} from "~/store/sagas/jobSaga";
+// import {
+//   getAllJobsForCompany,
+//   updateJob,
+//   deleteJob,
+// } from "~/store/sagas/jobSaga";
+import CompanyJobForm from "./CompanyJobForm";
+import AppButton from "~/dashboard/components/appButton";
+import type { Column } from "~/dashboard/components/Table";
+import AppToolbar from "~/dashboard/components/appToolBar";
+import Table from "~/dashboard/components/Table";
+import CustomDialog from "../components/CustomDialog";
 
-
-interface JobsProps {
-  companyId?: number; // Nouveau prop
+interface CompanyJobsProps {
+  companyId: number; // Requis pour filtrer les offres
 }
 
-const Jobs = () => {
+export default function CompanyJobs({ companyId }: CompanyJobsProps) {
   const [showForm, setShowForm] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -33,10 +37,9 @@ const Jobs = () => {
   const jobs = useSelector((state: RootState) => state.job.jobs);
   const error = useSelector((state: RootState) => state.job.error);
 
-  useEffect(() => {
-    dispatch(getAllJobsForAdmin());
-    console.log("Jobs:", jobs);
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getAllJobsForCompany({ companyId }));
+  // }, [dispatch, companyId]);
 
   useEffect(() => {
     if (error) {
@@ -48,7 +51,7 @@ const Jobs = () => {
     setShowForm(false);
     setSelectedJob(null);
     addMessage("Offre créée ou mise à jour avec succès", "success");
-    dispatch(getAllJobsForAdmin());
+    // dispatch(getAllJobsForCompany({ companyId }));
   };
 
   const editJob = (rowData: Job) => {
@@ -61,7 +64,7 @@ const Jobs = () => {
       ...rowData,
       status: action === "archive" ? "archived" : "active",
     };
-    dispatch(updateJob(updatedJob));
+    // dispatch(updateJob(updatedJob));
   };
 
   const confirmDeleteJob = (rowData: Job) => {
@@ -71,7 +74,7 @@ const Jobs = () => {
 
   const handleDeleteConfirm = () => {
     if (jobToDelete) {
-      dispatch(deleteJob(jobToDelete.id.toString()));
+      // dispatch(deleteJob(jobToDelete.id.toString()));
       setShowDeleteConfirm(false);
       setJobToDelete(null);
     }
@@ -150,7 +153,7 @@ const Jobs = () => {
           outlined
           tooltip="Voir"
           onClick={() => {
-            navigate(`/carriere/candidature/${rowData.id}`);
+            navigate(`/carriere-candidature/${rowData.id}`);
           }}
         />
         <AppButton
@@ -246,7 +249,7 @@ const Jobs = () => {
       icon={<FiEye className="mr-2" />}
       type="primary"
       onClick={() => {
-        setSelectedJob(null); // Reset for new job creation
+        setSelectedJob(null);
         setShowForm(true);
       }}
       className="bg-teal-500 hover:bg-teal-600 text-white"
@@ -256,13 +259,13 @@ const Jobs = () => {
   const rightToolbarTemplate = () => null;
 
   return (
-    <div className="job-management">
+    <div className="company-jobs p-6">
       <div className="mb-4">
         <h2 className="text-2xl font-bold text-neutral-light-text dark:text-neutral-dark-text mb-2">
           Gestion des Offres d'Emploi
         </h2>
         <p className="text-neutral-light-secondary dark:text-neutral-dark-secondary">
-          Créez et consultez vos offres d'emploi.
+          Gérez les offres d'emploi de votre entreprise.
         </p>
       </div>
 
@@ -275,11 +278,10 @@ const Jobs = () => {
         data={jobs}
         columns={columns}
         title="Offres d'Emploi"
-        // detailPath="/carriere/candidature"
         globalFilterFields={["title", "type", "location", "salary"]}
       />
 
-      <Dialog
+      <CustomDialog
         visible={showForm}
         header={selectedJob ? "Modifier l'offre" : "Nouvelle offre"}
         onHide={() => {
@@ -288,7 +290,7 @@ const Jobs = () => {
         }}
         style={{ width: "80vw", maxWidth: "800px" }}
       >
-        <JobForm
+        <CompanyJobForm
           job={selectedJob}
           onSave={onJobSaved}
           onCancel={() => {
@@ -296,9 +298,9 @@ const Jobs = () => {
             setSelectedJob(null);
           }}
         />
-      </Dialog>
+      </CustomDialog>
 
-      <Dialog
+      <CustomDialog
         visible={showDeleteConfirm}
         header="Confirmer la suppression"
         onHide={() => {
@@ -328,9 +330,7 @@ const Jobs = () => {
             />
           </div>
         </div>
-      </Dialog>
+      </CustomDialog>
     </div>
   );
-};
-
-export default Jobs;
+}

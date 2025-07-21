@@ -24,7 +24,11 @@ export default [
         route("auth/login", "routes/auth/login.tsx"),
         route("auth/register", "routes/auth/register.tsx"),
         route("auth/verify-otp", "routes/auth/verifyOTP.tsx"),
-        route("auth/verify-email", "routes/auth/verifyEmail.tsx")
+        route("auth/verify-email", "routes/auth/verifyEmail.tsx"),
+
+        route("company/auth/login", "./routes/company/auth/CompanyLogin.tsx"),
+        route("company/auth/register", "./companies/CompanyForm.tsx"),
+        route("company/auth/verify", "./routes/company/auth/CompanyVerifyOTP.tsx"),
         // route("forgot-password", "routes/auth/forgotPassword.tsx")
     ]),
     layout("./layout/protectedLayout.tsx", [
@@ -43,6 +47,17 @@ export default [
             // route("settings/password", "./dashboard/settings/password.tsx"), // Password Settings
             // route("settings/notifications", "./dashboard/settings/notifications.tsx"), // Notification Settings
         ])
+    ]),
+    layout("./layout/companyLayout.tsx", [
+        
+        route("company/dashboard", "./companies/company.tsx", [
+            index("./companies/CompanyDashboard.tsx"),
+            route("jobs", "./companies/job-management/CompanyJobs.tsx"),
+            route("recruitment", "./companies/recruitment/CompanyRecruitment.tsx"),
+            route("analytics", "./companies/analytics/CompanyAnalytics.tsx"),
+            route("profile", "./companies/profils/CompanyProfile.tsx"),
+            // route("users", "./companies/company/CompanyUsers.tsx"),
+        ]),
     ]),
     route("maintenance", "routes/errors/maintenance.tsx"), // Under Construction Page
     route("*", "routes/errors/not-found.tsx") // Catch-all 404 Page

@@ -1,6 +1,6 @@
 // ~/components/Table.tsx
 import { useEffect, useRef, useState, type JSX } from "react";
-import { motion, useAnimate } from "motion/react";
+import { motion, useAnimate } from "framer-motion";
 import { useNavigate } from "react-router";
 import AppButton from "./appButton";
 

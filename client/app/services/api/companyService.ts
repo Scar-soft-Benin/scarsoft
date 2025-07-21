@@ -12,7 +12,7 @@ import { parseApiError } from "../utils/errorParser";
 
 
 export const companyService = {
-getAllCompanies: async (): Promise<ApiResponse<GetAllCompaniesResponse>> => {
+    getAllCompanies: async (): Promise<ApiResponse<GetAllCompaniesResponse>> => {
         try {
             const response = await apiClient.get("/admin/companies");
             console.log("companyService: Get all companies response:", response);
@@ -105,7 +105,7 @@ getAllCompanies: async (): Promise<ApiResponse<GetAllCompaniesResponse>> => {
                 "companyService: Initiating getCompanyJobs request with companyId:",
                 companyId
             );
-            const response = await apiClient.get(`/admin/companies/${companyId}/jobs`);
+            const response = await apiClient.get(`/admin/companies/${companyId}/jobs-offers`);
             console.log("companyService: Get company jobs response:", response);
             return {
                 data: response.data.data,

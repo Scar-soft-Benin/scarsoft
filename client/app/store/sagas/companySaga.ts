@@ -30,6 +30,9 @@ export const DELETE_COMPANY_FAILURE = "DELETE_COMPANY_FAILURE";
 export const GET_COMPANY_JOBS = "GET_COMPANY_JOBS";
 export const GET_COMPANY_JOBS_SUCCESS = "GET_COMPANY_JOBS_SUCCESS";
 export const GET_COMPANY_JOBS_FAILURE = "GET_COMPANY_JOBS_FAILURE";
+export const GET_COMPANY_DETAILS = "GET_COMPANY_DETAILS";
+export const GET_COMPANY_DETAILS_SUCCESS = "GET_COMPANY_DETAILS_SUCCESS";
+export const GET_COMPANY_DETAILS_FAILURE = "GET_COMPANY_DETAILS_FAILURE";
 export const CLEAR_ERROR = "CLEAR_ERROR";
 
 // Action Interfaces
@@ -40,7 +43,7 @@ interface CreateCompanyAction {
 
 interface GetAllCompaniesAction {
     type: typeof GET_ALL_COMPANIES;
-    payload: GetAllCompaniesPayload;
+    payload: GetAllCompaniesResponse;
 }
 
 interface UpdateCompanyAction {
@@ -89,6 +92,21 @@ export const getAllCompaniesFailure = (error: { message: string; error_code?: st
     payload: error,
 });
 
+export const getCompanyDetails = (id: string) => ({
+    type: GET_COMPANY_DETAILS,
+    payload: id,
+});
+
+export const getCompanyDetailsSuccess = (company: Company) => ({
+    type: GET_COMPANY_DETAILS_SUCCESS,
+    payload: company,
+});
+
+export const getCompanyDetailsFailure = (error: { message: string; error_code?: string }) => ({
+    type: GET_COMPANY_DETAILS_FAILURE,
+    payload: error,
+});
+
 export const updateCompany = (id: string, data: UpdateCompanyPayload): UpdateCompanyAction => ({
     type: UPDATE_COMPANY,
     payload: { id, data },
@@ -119,7 +137,7 @@ export const deleteCompanyFailure = (error: { message: string; error_code?: stri
     payload: error,
 });
 
-export const getCompanyJobs = (companyId: string): GetCompanyJobsAction => ({
+export const getCompanyJobs = (companyId: string) => ({
     type: GET_COMPANY_JOBS,
     payload: companyId,
 });
@@ -192,7 +210,7 @@ function* getAllCompaniesSaga(action: GetAllCompaniesAction) {
                 success: response.data.success,
                 message: response.data.message,
                 data: response.data.data,
-                meta: response.meta,
+                // meta: response.meta,
             })
         );
         yield put(
@@ -301,6 +319,32 @@ function* getCompanyJobsSaga(action: GetCompanyJobsAction) {
     }
 }
 
+function* getCompanyDetailsSaga(action: { type: typeof GET_COMPANY_DETAILS; payload: string }) {
+    try {
+        yield put(showLoading());
+        console.log("getCompanyDetailsSaga: Calling companyService.getCompanyDetails with id:", action.payload);
+        const response: ApiResponse<Company> = yield call(companyService.getCompanyDetails, action.payload);
+        console.log("getCompanyDetailsSaga: Get company details response:", response);
+        yield put(getCompanyDetailsSuccess(response.data));
+        yield put(
+            addMessage({
+                text: response.message || "Détails de l'entreprise chargés avec succès",
+                type: "success",
+            })
+        );
+    } catch (error: unknown) {
+        console.error("getCompanyDetailsSaga: Error fetching company details:", error);
+        const apiError = isApiError(error)
+            ? { message: error.message, error_code: error.error_code }
+            : { message: "Impossible de charger les détails de l'entreprise" };
+        yield put(getCompanyDetailsFailure(apiError));
+        yield put(addMessage({ text: apiError.message, type: "error" }));
+    } finally {
+        yield put(hideLoading());
+        console.log("getCompanyDetailsSaga: Saga completed.");
+    }
+}
+
 export function* companySaga() {
     console.log("companySaga: Initializing saga listeners");
     yield takeLatest(CREATE_COMPANY, createCompanySaga);
@@ -308,4 +352,5 @@ export function* companySaga() {
     yield takeLatest(UPDATE_COMPANY, updateCompanySaga);
     yield takeLatest(DELETE_COMPANY, deleteCompanySaga);
     yield takeLatest(GET_COMPANY_JOBS, getCompanyJobsSaga);
+    yield takeLatest(GET_COMPANY_DETAILS, getCompanyDetailsSaga);
 }

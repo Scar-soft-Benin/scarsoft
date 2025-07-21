@@ -11,7 +11,7 @@ export default function MainLayout() {
   const location = useLocation();
   const headerConfig = getHeaderConfig(t);
 
-  // Gestion des routes dynamiques (comme /carriere-candidature/123)
+  // Gestion des routes dynamiques (comme /carriere/candidature/123)
   const matchedPath =
     Object.keys(headerConfig).find((path) =>
       path.includes(":")

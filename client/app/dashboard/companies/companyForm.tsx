@@ -28,6 +28,7 @@ type CompanyFormData = z.infer<typeof companySchema>;
 interface CompanyFormProps {
     onSave: () => void;
     onCancel: () => void;
+    initialEmail?: string;
 }
 
 export default function CompanyForm({ onSave, onCancel }: CompanyFormProps) {
