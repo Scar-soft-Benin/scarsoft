@@ -803,16 +803,74 @@
                 ]
             }
         },
-        "/api/admin/companies/statistics": {
+        "/api/admin/companies/statistics/all": {
             "get": {
                 "tags": [
                     "Company Management"
                 ],
                 "summary": "Get overall company statistics",
-                "operationId": "8fdbb5f591ab3ff44ba2dfdf594f1c2f",
+                "operationId": "8895114ad63d28231333c148f02a9750",
                 "responses": {
                     "200": {
                         "description": "Overall company statistics retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/companies/{company}/job-offers": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Get job offers for a company",
+                "operationId": "be62b3fec3a065ca71d273f892bedd29",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job offers retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/companies/{company}/job-offers": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Get job offers for a company (admin view)",
+                "operationId": "0147cd65becd69b6560387071a1ae1c3",
+                "parameters": [
+                    {
+                        "name": "company",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Job offers retrieved successfully"
                     }
                 },
                 "security": [

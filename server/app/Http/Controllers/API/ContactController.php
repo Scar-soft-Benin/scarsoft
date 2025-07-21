@@ -348,7 +348,7 @@ class ContactController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/contacts/statistics",
+     *     path="/api/admin/statistics/contacts",
      *     summary="Get contact statistics (Admin only)",
      *     tags={"Contact Management"},
      *     security={{"bearerAuth":{}}},

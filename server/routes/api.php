@@ -98,25 +98,41 @@ Route::prefix('job-offers')->group(function () {
 Route::get('companies/{company}/statistics', [CompanyController::class, 'statisticsCompanyById'])
     ->name('companies.statistics');
 
+Route::get('companies/{company}/jobs-offers', [CompanyController::class, 'getCompanyJobOffers'])
+    ->name('companies.jobs-offers');
+
 // Routes d'administration protégées
 Route::prefix('admin')->middleware('jwt.auth')->group(function () {
 
+    // Routest des Statistics
+    Route::get('statistics/job-applications', [JobApplicationController::class, 'statistics'])
+        ->name('admin.job-applications.statistics');
+
+    Route::get('statistics/companies', [CompanyController::class, 'statistics'])
+        ->name('admin.statistics.companies');
+        
+    Route::get('statistics/company/{company}', [CompanyController::class, 'statisticsCompanyById'])
+        ->name('admin.statistics.company-by-id');
+        
+    Route::get('statistics/job-offers', [JobOfferController::class, 'statistics'])
+        ->name('admin.statistics.job-offers');
+
+    Route::get('statistics/contacts', [ContactController::class, 'statistics'])
+        ->name('admin.statistics.contacts');
+
     // Gestion des entreprises
     Route::apiResource('companies', CompanyController::class);
-    
-    Route::get('companies/statistics/all', [CompanyController::class, 'statistics'])
-        ->name('admin.companies.statistics-all');
 
-    Route::get('companies/{company}/statistics', [CompanyController::class, 'statisticsCompanyById'])
-        ->name('admin.companies.statistics-by-id');
+    Route::get('companies/{company}/jobs-offers', [CompanyController::class, 'getCompanyJobOffersForAdmin'])
+        ->name('admin.companies.jobs-offers');
+        
+
 
     // Gestion des contacts
     Route::prefix('contacts')->group(function () {
         Route::get('/', [ContactController::class, 'index'])
             ->name('admin.contacts.index');
 
-        Route::get('statistics', [ContactController::class, 'statistics'])
-            ->name('admin.contacts.statistics');
 
         Route::get('{contact}', [ContactController::class, 'show'])
             ->name('admin.contacts.show');
@@ -139,8 +155,6 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
         Route::post('/', [JobOfferController::class, 'store'])
             ->name('admin.job-offers.store');
 
-        Route::get('statistics', [JobOfferController::class, 'statistics'])
-            ->name('admin.job-offers.statistics');
 
         Route::get('{jobOffer}', [JobOfferController::class, 'show'])
             ->name('admin.job-offers.show');
@@ -156,9 +170,6 @@ Route::prefix('admin')->middleware('jwt.auth')->group(function () {
     Route::prefix('job-applications')->group(function () {
         Route::get('/', [JobApplicationController::class, 'index'])
             ->name('admin.job-applications.index');
-
-        Route::get('statistics', [JobApplicationController::class, 'statistics'])
-            ->name('admin.job-applications.statistics');
 
         Route::get('{jobApplication}', [JobApplicationController::class, 'show'])
             ->name('admin.job-applications.show');

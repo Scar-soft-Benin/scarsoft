@@ -322,7 +322,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/companies/{id}/statistics",
+     *     path="/api/admin/statistics/company/{id}",
      *     summary="Get company statistics",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -363,7 +363,7 @@ class CompanyController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/companies/statistics/all",
+     *     path="/api/admin/statistics/companies",
      *     summary="Get overall company statistics",
      *     tags={"Company Management"},
      *     security={{"bearerAuth":{}}},
@@ -390,6 +390,62 @@ class CompanyController extends Controller
         return response()->json([
             'success' => true,
             'data' => $stats,
+        ]);
+    }
+    /**
+     * @OA\Get(
+     *     path="/api/companies/{company}/job-offers",
+     *     summary="Get job offers for a company",
+     *     tags={"Company Management"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Job offers retrieved successfully"
+     *     )
+     * )
+     */
+
+    public function getCompanyJobOffers(Company $company): JsonResponse
+    {
+        $jobOffers = $company->jobOffers()->with(['applications', 'creator'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $jobOffers,
+        ]);
+    }
+    /**
+     * @OA\Get(
+     *     path="/api/admin/companies/{company}/job-offers",
+     *     summary="Get job offers for a company (admin view)",
+     *     tags={"Company Management"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="company",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Job offers retrieved successfully"
+     *     )
+     * )
+     */
+
+    public function getCompanyJobOffersForAdmin(Company $company): JsonResponse
+    {
+        $jobOffers = $company->jobOffers()->with(['applications', 'creator'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $jobOffers,
         ]);
     }
 }
