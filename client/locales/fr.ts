@@ -39,6 +39,9 @@ export default {
         home: "Accueil",
         about: "À propos",
         services: "Nos Services",
+        itSolutions: "Solutions IT",
+        digitalMarketing: "Marketing Digital",
+        recruitment: "Recrutement",
         projects: "Projets",
         careers: "Carrières",
         contact: "Contactez-nous"

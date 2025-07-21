@@ -11,6 +11,9 @@ export default [
         index("routes/home.tsx"), // Home Page
         route("a-propos", "routes/a-propos.tsx"), // About Us Page
         route("nos-service", "routes/nos-service.tsx"), // Service Page
+        route("nos-service/solution-it", "routes/ITSolution.tsx"), // Service Page
+        route("nos-service/marketing-digital", "routes/digitalMarketing.tsx"), // Service Page
+        route("nos-service/recrutement", "routes/recrutement.tsx"), // Service Page
         route("contactez-nous", "routes/contacts.tsx"), // Contact Page
         route("carrieres", "routes/carriere.tsx"), // ✅ Carrière Page
         route("carriere/candidature/:jobId", "routes/carriere-candidature.tsx"), // ✅ Carrière Page

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiMenu, FiX, FiChevronDown } from "react-icons/fi"; // Add FiChevronDown
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import AppBaseButton from "~/components/appBaseButton";
@@ -10,6 +10,7 @@ const Navbar = () => {
     const { t } = useTranslation();
     const [scrolled, setScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [openSubMenu, setOpenSubMenu] = useState<string | null>(null); // Track open sub-menu in mobile
 
     useEffect(() => {
         const handleScroll = () => {
@@ -22,10 +23,22 @@ const Navbar = () => {
     const menuItems = [
         { name: t("navbar.home"), link: "/" },
         { name: t("navbar.about"), link: "/a-propos" },
-        { name: t("navbar.services"), link: "/nos-service" },
+        {
+            name: t("navbar.services"),
+            link: "#",
+            subItems: [
+                { name: t("navbar.itSolutions"), link: "/nos-service/solution-it" },
+                { name: t("navbar.digitalMarketing"), link: "/nos-service/marketing-digital" },
+                { name: t("navbar.recruitment"), link: "/nos-service/recrutement" },
+            ],
+        },
         { name: t("navbar.projects"), link: "/nos-projets" },
-        { name: t("navbar.careers"), link: "/carrieres" }
+        { name: t("navbar.careers"), link: "/carrieres" },
     ];
+
+    const toggleSubMenu = (name: string) => {
+        setOpenSubMenu(openSubMenu === name ? null : name);
+    };
 
     return (
         <div className="p-2">
@@ -48,7 +61,7 @@ const Navbar = () => {
                             transition={{
                                 duration: 0.8,
                                 ease: [0.68, -0.55, 0.265, 1.55],
-                                delay: 0.5
+                                delay: 0.5,
                             }}
                             className="h-15 w-48 object-contain"
                         />
@@ -67,13 +80,30 @@ const Navbar = () => {
                     {/* Menu (desktop) */}
                     <ul className="hidden md:flex space-x-6 font-chivo">
                         {menuItems.map((item, index) => (
-                            <li key={index}>
+                            <li key={index} className="relative group">
                                 <Link
                                     to={item.link}
-                                    className="hover:text-secondary transition"
+                                    className="hover:text-secondary transition flex items-center"
                                 >
                                     {item.name}
+                                    {item.subItems && (
+                                        <FiChevronDown className="ml-1" />
+                                    )}
                                 </Link>
+                                {item.subItems && (
+                                    <ul className="absolute left-0 mt-2 w-48 bg-dime-green rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                                        {item.subItems.map((subItem, subIndex) => (
+                                            <li key={subIndex}>
+                                                <Link
+                                                    to={subItem.link}
+                                                    className="block px-4 py-2 text-sm hover:bg-secondary hover:text-white transition"
+                                                >
+                                                    {subItem.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </li>
                         ))}
                     </ul>
@@ -98,13 +128,48 @@ const Navbar = () => {
                         <ul className="space-y-10 mt-16 flex items-start flex-col">
                             {menuItems.map((item, index) => (
                                 <li key={index}>
-                                    <Link
-                                        to={item.link}
-                                        className="hover:text-secondary transition"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    >
-                                        {item.name}
-                                    </Link>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center">
+                                            <Link
+                                                to={item.link}
+                                                className="hover:text-secondary transition"
+                                                onClick={() => {
+                                                    if (!item.subItems) {
+                                                        setIsMenuOpen(false);
+                                                    }
+                                                }}
+                                            >
+                                                {item.name}
+                                            </Link>
+                                            {item.subItems && (
+                                                <button
+                                                    onClick={() => toggleSubMenu(item.name)}
+                                                    className="ml-2"
+                                                >
+                                                    <FiChevronDown
+                                                        className={`transition-transform ${
+                                                            openSubMenu === item.name ? "rotate-180" : ""
+                                                        }`}
+                                                    />
+                                                </button>
+                                            )}
+                                        </div>
+                                        {item.subItems && openSubMenu === item.name && (
+                                            <ul className="ml-4 mt-2 space-y-4">
+                                                {item.subItems.map((subItem, subIndex) => (
+                                                    <li key={subIndex}>
+                                                        <Link
+                                                            to={subItem.link}
+                                                            className="hover:text-secondary transition text-sm"
+                                                            onClick={() => setIsMenuOpen(false)}
+                                                        >
+                                                            {subItem.name}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
                                 </li>
                             ))}
                         </ul>
