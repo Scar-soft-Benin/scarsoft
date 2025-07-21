@@ -1,4 +1,5 @@
 import { useAuth } from "~/context/authContext";
+import { createSelector } from 'reselect';
 import { useEffect, useState, type JSX } from "react";
 import { FaBriefcase, FaUsers, FaBuilding, FaEnvelope } from "react-icons/fa";
 import AppBaseCard from "~/components/appBaseCard";
@@ -7,8 +8,8 @@ import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import type { RootState } from "~/store";
-import { getContactStatistics, getAllContacts } from "~/store/sagas/contactSaga";
-import { getJobStatistics, getJobApplyStatistics, getCompanyStatistics } from "~/store/sagas/statisticsSaga";
+import { getAllContacts } from "~/store/sagas/contactSaga";
+import { getJobStatistics, getJobApplyStatistics, getCompanyStatistics, getContactStatistics } from "~/store/sagas/statisticsSaga";
 import type { Contact } from "~/services/types/contact.types";
 
 interface StatCardProps {
@@ -46,11 +47,43 @@ export default function Overview() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const contactStats = useSelector((state: RootState) => state.contact.statistics);
+
+
+  // Sélecteurs de base
+  // const selectContactState = (state: RootState) => state.contact;
+  const selectStatisticsState = (state: RootState) => state.statistics;
+
+
+  // Sélecteurs mémorisés
+  const selectContactStats = createSelector(
+    [selectStatisticsState],
+    (statistics) => statistics?.contact.statistics || { total: 0 }
+  );
+
+  const selectJobStats = createSelector(
+    [selectStatisticsState],
+    (statistics) => statistics?.job?.statistics || { total: 0 }
+  );
+
+  const selectJobApplyStats = createSelector(
+    [selectStatisticsState],
+    (statistics) => statistics?.jobApply?.statistics || { total: 0 }
+  );
+
+  const selectCompanyStats = createSelector(
+    [selectStatisticsState],
+    (statistics) => statistics?.company?.statistics || { total: 0 }
+  );
   const contacts = useSelector((state: RootState) => state.contact.contacts);
-  const jobStats = useSelector((state: RootState) => state.statistics?.job?.statistics || { total: 0 });
-  const jobApplyStats = useSelector((state: RootState) => state.statistics?.jobApply?.statistics || { total: 0 });
-  const companyStats = useSelector((state: RootState) => state.statistics?.company?.statistics || { total: 0 });
+  // const jobStats = useSelector((state: RootState) => state.statistics?.job?.statistics || { total: 0 });
+  // const jobApplyStats = useSelector((state: RootState) => state.statistics?.jobApply?.statistics || { total: 0 });
+  // const companyStats = useSelector((state: RootState) => state.statistics?.company?.statistics || { total: 0 });
+
+
+  const contactStats = useSelector(selectContactStats);
+  const jobStats = useSelector(selectJobStats);
+  const jobApplyStats = useSelector(selectJobApplyStats);
+  const companyStats = useSelector(selectCompanyStats);
 
   const [stats, setStats] = useState({
     jobs: 0,
@@ -69,14 +102,40 @@ export default function Overview() {
   }, [dispatch]);
 
   useEffect(() => {
-    // Mise à jour des stats à partir du store Redux
-    setStats({
+    const newStats = {
       jobs: jobStats.total || 0,
       candidates: jobApplyStats.total || 0,
       companies: companyStats.total || 0,
       messages: contactStats?.total || 0,
+    };
+    // Mise à jour uniquement si les stats ont changé
+    setStats((prevStats) => {
+      if (
+        prevStats.jobs !== newStats.jobs ||
+        prevStats.candidates !== newStats.candidates ||
+        prevStats.companies !== newStats.companies ||
+        prevStats.messages !== newStats.messages
+      ) {
+        return newStats;
+      }
+      return prevStats;
     });
   }, [contactStats, jobStats, jobApplyStats, companyStats]);
+
+
+  // const error = useSelector((state: RootState) => ({
+  //   contactError: state.contact.error,
+  //   statisticsError: state.statistics.error,
+  // }));
+
+  // useEffect(() => {
+  //   if (error.contactError) {
+  //     addMessage(`Erreur lors du chargement des statistiques de contact: ${error.contactError.message}`, "error");
+  //   }
+  //   if (error.statisticsError) {
+  //     addMessage(`Erreur lors du chargement des statistiques: ${error.statisticsError.message}`, "error");
+  //   }
+  // }, [error, addMessage]);
 
   // Calcul du taux de messages non lus
   const unreadMessages = Array.isArray(contacts) ? contacts.filter((contact: Contact) => contact.status === "unread").length : 0;
@@ -116,7 +175,7 @@ export default function Overview() {
           value={stats.candidates}
           icon={<FaUsers />}
           color="border-blue-500"
-          onClick={() => navigate("/dashboard/recruitments")}
+          onClick={() => navigate("/dashboard/recruitment")}
         />
         <StatCard
           label="Entreprises"
@@ -180,7 +239,7 @@ export default function Overview() {
                 text="Voir les messages"
                 type="first"
                 // size="sm"
-                onClick={() => navigate("/dashboard/contacts")} textColor={""} bgColor={""}              />
+                onClick={() => navigate("/dashboard/contacts")} textColor={""} bgColor={""} />
             </div>
           </AppBaseCard>
         </motion.div>

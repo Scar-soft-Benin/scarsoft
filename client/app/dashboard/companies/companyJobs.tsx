@@ -1,10 +1,9 @@
-
-// ~/dashboard/compo/Jobs.tsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import { useMessage } from "~/context/messageContext";
 import { useLoading } from "~/context/loadingContext";
-import { jobService, type ExtendedJobOffer } from "~/services/jobService";
+import { motion } from "framer-motion";
 import { FiEye, FiEdit, FiArchive, FiRefreshCw, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import AppButton from "../components/appButton";
 import type { Column } from "../components/Table";
@@ -13,50 +12,63 @@ import Dialog from "../components/Dialog";
 import JobForm from "~/dashboard/job-management/jobForm";
 import AppBaseButton from "~/components/appBaseButton";
 import { FaArrowLeft } from "react-icons/fa";
+import { getCompanyDetails, getCompanyJobs } from "~/store/sagas/companySaga";
+import type { RootState } from "~/store";
+import type { Job } from "~/services/types/job.types";
+import { jobService } from "~/services/api/jobService";
+
 
 export default function OffresEntreprise() {
     const navigate = useNavigate();
-    const { id } = useParams();
-    const [offers, setOffers] = useState<ExtendedJobOffer[]>([]);
-    const [companyName, setCompanyName] = useState("Entreprise inconnue");
-    const [showForm, setShowForm] = useState(false);
-    const [editingJob, setEditingJob] = useState<ExtendedJobOffer | null>(null);
-    const [deleteDialog, setDeleteDialog] = useState(false);
-    const [jobToDelete, setJobToDelete] = useState<ExtendedJobOffer | null>(null);
+    const { id } = useParams<{ id: string }>();
+    const dispatch = useDispatch();
     const { showLoading, hideLoading } = useLoading();
     const { addMessage } = useMessage();
 
-    useEffect(() => {
-        if (!id) return;
-        setCompanyName(id === "1" ? "Scar-Soft" : "Entreprise");
-        loadOffers();
-    }, [id]);
+    // Récupérer les emplois et les détails de l'entreprise depuis le store Redux
+    const companyJobs = useSelector((state: RootState) => state.company.companyJobs[id || ""] || []);
+    const companyDetails = useSelector((state: RootState) => state.company.companies.find((c) => c.id.toString() === id));
+    const [companyName, setCompanyName] = useState("Entreprise inconnue");
+    const [offers, setOffers] = useState<Job[]>([]);
+    const [showForm, setShowForm] = useState(false);
+    const [editingJob, setEditingJob] = useState<Job | null>(null);
+    const [deleteDialog, setDeleteDialog] = useState(false);
+    const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
 
-    const loadOffers = async () => {
-        try {
-            showLoading();
-            const allJobs = await jobService.getAllJobs();
-            const filtered = allJobs.filter((job: { companyId: string | undefined; }) => job.companyId === id);
-            setOffers(filtered);
-        } catch {
-            addMessage("Impossible de charger les offres", "error");
-        } finally {
-            hideLoading();
+    useEffect(() => {
+        if (!id) {
+            addMessage("ID de l'entreprise manquant", "error");
+            return;
         }
-    };
+        // Dispatch des actions pour récupérer les emplois et les détails de l'entreprise
+        dispatch(getCompanyJobs(id));
+        dispatch(getCompanyDetails(id));
+    }, [id, dispatch, addMessage]);
+
+    // useEffect(() => {
+    //     // Mettre à jour les offres avec les données du store
+    //     setOffers(companyJobs);
+    // }, [companyJobs]);
+
+    useEffect(() => {
+        // Mettre à jour le nom de l'entreprise avec les données réelles
+        if (companyDetails) {
+            setCompanyName(companyDetails.name);
+        }
+    }, [companyDetails]);
 
     const handleAction = async (
         action: "archive" | "reactivate" | "delete",
-        job: ExtendedJobOffer
+        job: Job
     ) => {
         try {
             showLoading();
             switch (action) {
                 case "archive":
-                    await jobService.archiveJob(job.id);
+                    //   await jobService.archiveJob(job.id);
                     break;
                 case "reactivate":
-                    await jobService.reactivateJob(job.id);
+                    //   await jobService.reactivateJob(job.id);
                     break;
                 case "delete":
                     await jobService.deleteJob(job.id);
@@ -65,7 +77,8 @@ export default function OffresEntreprise() {
                     setJobToDelete(null);
                     break;
             }
-            await loadOffers();
+            // Recharger les emplois après une action
+            dispatch(getCompanyJobs(id!));
             addMessage("Action effectuée avec succès", "success");
         } catch {
             addMessage("Erreur lors de l'action", "error");
@@ -74,7 +87,7 @@ export default function OffresEntreprise() {
         }
     };
 
-    const columns: Column<ExtendedJobOffer>[] = [
+    const columns: Column<Job>[] = [
         { header: "Titre", field: "title" },
         { header: "Lieu", field: "location" },
         { header: "Type", field: "type" },
@@ -90,7 +103,7 @@ export default function OffresEntreprise() {
                         size="sm"
                         outlined
                         tooltip="Voir"
-                        onClick={() => navigate(`/carriere-candidature/${row.id}`)}
+                        onClick={() => navigate(`/carriere/candidature/${row.id}`)}
                     />
                     <AppButton
                         icon={<FiEdit />}
@@ -139,9 +152,18 @@ export default function OffresEntreprise() {
     ];
 
     return (
-        <div className="job-management">
-            <div className="mb-4 flex justify-between items-center">
-                
+        <motion.div
+            className="job-management p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
+            <motion.div
+                className="mb-4 flex justify-between items-center"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+            >
                 <AppBaseButton
                     text="Retour aux entreprises"
                     icon={<FaArrowLeft />}
@@ -150,15 +172,28 @@ export default function OffresEntreprise() {
                     bgColor="bg-transparent"
                     textColor="text-green-600"
                 />
-            </div>
+                <AppBaseButton
+                    text="Nouvelle offre"
+                    icon={<FiEdit />}
+                    onClick={() => setShowForm(true)}
+                    type="first"
+                    bgColor="bg-blue-600"
+                    textColor="text-white"
+                />
+            </motion.div>
 
-
-            <Table
-                data={offers}
-                columns={columns}
-                title={`Offres d'emploi de ${companyName}`}
-                detailPath="/carriere-candidature"
-            />
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <Table
+                    data={companyJobs}
+                    columns={columns}
+                    title={`Offres d'emploi de ${companyName}`}
+                    // detailPath="/carriere/candidature"
+                />
+            </motion.div>
 
             <Dialog
                 visible={showForm}
@@ -173,7 +208,7 @@ export default function OffresEntreprise() {
                     onSave={async () => {
                         setShowForm(false);
                         setEditingJob(null);
-                        await loadOffers();
+                        dispatch(getCompanyJobs(id!));
                         addMessage("Offre enregistrée", "success");
                     }}
                     onCancel={() => {
@@ -214,6 +249,6 @@ export default function OffresEntreprise() {
                     )}
                 </div>
             </Dialog>
-        </div>
+        </motion.div>
     );
 }

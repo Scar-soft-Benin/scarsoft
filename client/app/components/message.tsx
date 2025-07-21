@@ -54,7 +54,7 @@ function MessageItem({ message, onClose }: MessageItemProps) {
         // Définir un timer pour supprimer le message après 5 secondes
         const timer = setTimeout(() => {
             onClose();
-        }, 5000); // 5000ms = 5 secondes
+        }, 2000); // 5000ms = 5 secondes
 
         // Nettoyer le timer lorsque le composant est démonté
         return () => clearTimeout(timer);

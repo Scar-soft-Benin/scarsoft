@@ -29,8 +29,8 @@ import {
     REPLY_TO_CONTACT_FAILURE,
     UPDATE_CONTACT_STATUS_SUCCESS,
     UPDATE_CONTACT_STATUS_FAILURE,
-    GET_CONTACT_STATISTICS_SUCCESS,
-    GET_CONTACT_STATISTICS_FAILURE
+    // GET_CONTACT_STATISTICS_SUCCESS,
+    // GET_CONTACT_STATISTICS_FAILURE
 } from "../reducer/contactReducer";
 
 // Action Types
@@ -90,9 +90,7 @@ export const updateContactStatus = (
     type: UPDATE_CONTACT_STATUS,
     payload: { contactId, data }
 });
-export const getContactStatistics = () => ({
-    type: GET_CONTACT_STATISTICS
-});
+
 
 // Action Creators for Success and Failure
 export const createContactSuccess = (response: CreateContactResponse) => ({
@@ -168,18 +166,7 @@ export const updateContactStatusFailure = (error: {
     payload: error
 });
 
-export const getContactStatisticsSuccess = (statistics: ContactStatistics) => ({
-    type: GET_CONTACT_STATISTICS_SUCCESS,
-    payload: statistics
-});
 
-export const getContactStatisticsFailure = (error: {
-    message: string;
-    error_code?: string;
-}) => ({
-    type: GET_CONTACT_STATISTICS_FAILURE,
-    payload: error
-});
 
 // Error Type Guard
 function isApiError(
@@ -410,45 +397,7 @@ function* updateContactStatusSaga(action: {
     }
 }
 
-function* getContactStatisticsSaga() {
-    try {
-        yield put(showLoading());
-        console.log(
-            "getContactStatisticsSaga: Calling contactService.getContactStatistics"
-        );
-        const response: ApiResponse<ContactStatistics> = yield call(
-            contactService.getContactStatistics
-        );
-        console.log(
-            "getContactStatisticsSaga: Get contact statistics response:",
-            response
-        );
-        yield put(getContactStatisticsSuccess(response.data));
-        yield put(
-            addMessage({
-                text:
-                    response.message ||
-                    "Statistiques des contacts chargées avec succès",
-                type: "success"
-            })
-        );
-    } catch (error: unknown) {
-        console.error(
-            "getContactStatisticsSaga: Error fetching contact statistics:",
-            error
-        );
-        const apiError = isApiError(error)
-            ? { message: error.message, error_code: error.error_code }
-            : {
-                  message: "Impossible de charger les statistiques des contacts"
-              };
-        yield put(getContactStatisticsFailure(apiError));
-        yield put(addMessage({ text: apiError.message, type: "error" }));
-    } finally {
-        yield put(hideLoading());
-        console.log("getContactStatisticsSaga: Saga completed.");
-    }
-}
+
 
 export function* contactSaga() {
     console.log("contactSaga: Initializing saga listeners");
@@ -458,5 +407,4 @@ export function* contactSaga() {
     yield takeLatest(DELETE_CONTACT, deleteContactSaga);
     yield takeLatest(REPLY_TO_CONTACT, replyToContactSaga);
     yield takeLatest(UPDATE_CONTACT_STATUS, updateContactStatusSaga);
-    yield takeLatest(GET_CONTACT_STATISTICS, getContactStatisticsSaga);
 }
