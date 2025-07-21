@@ -410,7 +410,7 @@ class JobApplicationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/job-applications/statistics",
+     *     path="/api/admin/statistics/job-applications",
      *     summary="Get job applications statistics (Admin only)",
      *     tags={"Job Applications"},
      *     security={{"bearerAuth":{}}},

@@ -395,7 +395,7 @@ class JobOfferController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/job-offers/statistics",
+     *     path="/api/admin/statistics/job-offers",
      *     summary="Get job offers statistics (Admin only)",
      *     tags={"Job Offers"},
      *     security={{"bearerAuth":{}}},
