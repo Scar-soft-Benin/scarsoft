@@ -41,8 +41,8 @@ export default function CompanyLogin() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-neutral-light-bg dark:bg-neutral-dark-bg">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md p-6 bg-white dark:bg-neutral-dark-surface rounded-lg shadow-md">
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <h2 className="text-2xl font-bold text-neutral-light-text dark:text-neutral-dark-text mb-4">
           Connexion Entreprise
         </h2>

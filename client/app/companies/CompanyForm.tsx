@@ -14,7 +14,7 @@ const companySchema = z.object({
   email: z.string().email("Adresse email invalide"),
   phone: z
     .string()
-    .min(10, "Le numéro de téléphone doit contenir au moins 10 caractères"),
+    .min(6, "Le numéro de téléphone doit contenir au moins 6 caractères"),
   address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
   website: z.string().url("URL invalide").optional().or(z.literal("")),
   contact_person: z
@@ -238,7 +238,7 @@ export default function CompanyForm({ onSave, onCancel, initialEmail }: CompanyF
             )}
           </div>
 
-          <div>
+          <div className="col-span-1 md:col-span-2">
             <label
               htmlFor="contact_person"
               className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
