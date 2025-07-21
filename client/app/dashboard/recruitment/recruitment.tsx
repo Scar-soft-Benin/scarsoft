@@ -10,11 +10,14 @@ import type { JobApplication } from "~/services/types/jobApply.types";
 import { useMessage } from "~/context/messageContext";
 import {
     deleteJobApplication,
-    getAllJobApplications
+    getAllJobApplications,
 } from "~/store/sagas/jobApplySaga";
 import { getAllJobsForAdmin } from "~/store/sagas/jobSaga";
 import type { RootState } from "~/store";
-import { apiClient } from "~/services/config/apiConfig";
+import { apiClient, STORAGE_BASE_URL } from "~/services/config/apiConfig";
+import type { AxiosResponse } from "axios";
+import { clearNotificationError, sendToCandidate, sendToCompany } from "~/store/sagas/notificationSaga";
+import { Controller, useForm } from "react-hook-form";
 
 const getFileExtension = (contentType: string | null): string => {
     switch (contentType) {
@@ -29,30 +32,36 @@ const getFileExtension = (contentType: string | null): string => {
     }
 };
 
-
 type Recruitment = JobApplication;
 
+interface FormData {
+    recipientEmail: string;
+    message: string;
+}
+
 export default function Recruitment() {
-    const [mailType, setMailType] = useState<"candidat" | "entreprise" | null>(
-        null
-    );
-    const [selectedCandidate, setSelectedCandidate] =
-        useState<Recruitment | null>(null);
+    const [mailType, setMailType] = useState<"candidat" | "entreprise" | null>(null);
+    const [selectedCandidate, setSelectedCandidate] = useState<Recruitment | null>(null);
     const [showMailForm, setShowMailForm] = useState(false);
     const [message, setMessage] = useState("");
     const [recipientEmail, setRecipientEmail] = useState("");
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [candidateToDelete, setCandidateToDelete] =
-        useState<Recruitment | null>(null);
+    const [candidateToDelete, setCandidateToDelete] = useState<Recruitment | null>(null);
     const [showTypeDialog, setShowTypeDialog] = useState(false);
 
     const dispatch = useDispatch();
     const { addMessage } = useMessage();
-    const jobApplys = useSelector(
-        (state: RootState) => state.jobApply.jobApplications
-    );
+    const jobApplys = useSelector((state: RootState) => state.jobApply.jobApplications);
     const jobs = useSelector((state: RootState) => state.job.jobs);
     const error = useSelector((state: RootState) => state.jobApply.error);
+    const notificationError = useSelector((state: RootState) => state.notification.error);
+
+    const { control, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
+        defaultValues: {
+            recipientEmail: "",
+            message: "",
+        },
+    });
 
     useEffect(() => {
         dispatch(getAllJobApplications());
@@ -63,144 +72,159 @@ export default function Recruitment() {
         if (error) {
             addMessage(error.message, "error");
         }
-    }, [error, addMessage]);
+        if (notificationError) {
+            addMessage(notificationError.message, "error");
+            dispatch(clearNotificationError());
+        }
+    }, [error, notificationError, addMessage, dispatch]);
 
-  const handleDownloadCV = async (candidateId: number, fileType: string = "cv") => {
-    console.log("handleDownloadCV: candidateId =", candidateId, "fileType =", fileType);
-    try {
-      const response = await apiClient(`/admin/job-applications/${candidateId}/download/${fileType}`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Accept": "application/json",
-        },
-      });
-      if (!response.status) throw new Error(`Échec du téléchargement du CV: ${response.statusText}`);
 
-      const data = await response.data();
-      if (!data.success) throw new Error(data.message || "Erreur lors de la récupération du fichier");
+    // Télécharge le CV ou un autre fichier associé à une candidature
+    const handleDownloadCV = async (candidateId: number, fileType: string = "cv", openInNewTab: boolean = false) => {
+        try {
+            // Vérifier la présence d'un token
+            const token = localStorage.getItem("auth_token");
+            if (!token) {
+                addMessage("Aucun token d'authentification trouvé", "error");
+                return;
+            }
 
-      const fileUrl = data.download_url;
-      const fileName = data.file_name || `cv_${candidateId}.pdf`;
+            // Faire une requête pour obtenir les informations de téléchargement (JSON attendu)
+            const response: AxiosResponse<{ success: boolean; download_url?: string; file_name?: string }> =
+                await apiClient(`/admin/job-applications/${candidateId}/download/${fileType}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+                        Accept: "application/json", // Attendre une réponse JSON
+                    },
+                });
 
-      const link = document.createElement("a");
-      link.href = `${fileUrl}`;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      addMessage("CV téléchargé avec succès", "success");
-    } catch (err) {
-      console.error("handleDownloadCV: Error =", err);
-      addMessage("Erreur lors du téléchargement du CV.", "error");
-    }
-  };
+            // Vérifier si la réponse est réussie
+            if (!response.data.success || !response.data.download_url) {
+                throw new Error("URL de téléchargement non trouvée dans la réponse du serveur");
+            }
 
-            const contentDisposition = response.headers.get(
-                "Content-Disposition"
-            );
-            let fileName = `cv_${candidateId}${getFileExtension(contentType)}`;
-            if (contentDisposition) {
-                const fileNameMatch =
-                    contentDisposition.match(/filename="(.+)"/);
-                if (fileNameMatch && fileNameMatch[1]) {
-                    fileName = fileNameMatch[1];
+            const fileUrl = response.data.download_url;
+            let fileName = response.data.file_name || `cv_${candidateId}.pdf`;
+
+            // Extraire l'extension depuis l'URL si fileName n'est pas fourni
+            if (!response.data.file_name) {
+                const urlParts = fileUrl.split(".");
+                const extension = urlParts.length > 1 ? `.${urlParts.pop()}` : ".pdf";
+                fileName = `cv_${candidateId}${extension}`;
+            }
+
+            // Préfixer l'URL avec la base si elle est relative
+            const baseUrl = STORAGE_BASE_URL; // Remplacez par votre URL de base si différente
+            const absoluteFileUrl = fileUrl.startsWith("http") ? fileUrl : `${baseUrl}${fileUrl}`;
+
+            console.log("Téléchargement du fichier depuis l'URL:", absoluteFileUrl);
+
+
+            if (openInNewTab) {
+                // Ouvrir dans un nouvel onglet pour visualisation
+                window.open(absoluteFileUrl, "_blank");
+                addMessage("Fichier ouvert dans un nouvel onglet", "success");
+            } else {
+                const link = document.createElement("a");
+                link.href = absoluteFileUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                // window.URL.revokeObjectURL(url);
+
+                addMessage("Fichier téléchargé avec succès", "success");
+            }
+        } catch (err) {
+            // Si la réponse est un Blob JSON, tenter de le parser pour extraire l'erreur
+            if (err instanceof Error && err.message.includes("Réponse inattendue")) {
+                try {
+                    const errorBlob = (err as any).response?.data;
+                    if (errorBlob instanceof Blob) {
+                        const errorText = await errorBlob.text();
+                        const errorJson = JSON.parse(errorText);
+                        addMessage(
+                            `Erreur lors du téléchargement du fichier: ${errorJson.message || errorText}`,
+                            "error"
+                        );
+                        return;
+                    }
+                } catch (parseError) {
+                    // Ignorez les erreurs de parsing, utilisez le message par défaut
                 }
             }
-            console.log("handleDownloadCV: FileName =", fileName);
-
-            const blob = await response.blob();
-            console.log(
-                "handleDownloadCV: Blob size =",
-                blob.size,
-                "type =",
-                blob.type
-            );
-
-            if (contentType?.includes("application/json")) {
-                const text = await blob.text();
-                console.error(
-                    "handleDownloadCV: Unexpected JSON response =",
-                    text
-                );
-                throw new Error(
-                    "Réponse inattendue du serveur: format JSON au lieu d'un fichier."
-                );
-            }
-
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            addMessage("CV téléchargé avec succès", "success");
-        } catch (err) {
-            console.error("handleDownloadCV: Error =", err);
-            addMessage(
-                `Erreur lors du téléchargement du CV: ${err}`,
-                "error"
-            );
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            addMessage(`Erreur lors du téléchargement du fichier: ${errorMessage}`, "error");
         }
     };
 
+    // Ouvre le dialogue pour choisir le type de destinataire (candidat ou entreprise)
     const handleSendEmail = (rowData: JobApplication) => {
         setSelectedCandidate(rowData);
         setShowTypeDialog(true);
     };
 
+    // Confirme le type de destinataire et ouvre le formulaire d'envoi d'email
     const confirmMailType = (type: "candidat" | "entreprise") => {
         if (!selectedCandidate) return;
         setMailType(type);
-        setRecipientEmail(
-            type === "candidat" ? selectedCandidate.applicant_email : ""
-        );
+
+        let email = "";
+        if (type === "candidat") {
+            email = selectedCandidate.applicant_email;
+        } else if (type === "entreprise") {
+            const job = jobs.find((j) => j.id === Number(selectedCandidate.job_offer_id));
+            email = job?.company_contact_email || "";
+        }
+        reset({ recipientEmail: email, message: "" }); // Réinitialise avec l'email approprié
         setShowTypeDialog(false);
         setShowMailForm(true);
     };
 
+    // Envoie l'email au destinataire
     const sendEmail = async () => {
         if (!recipientEmail || !message || !selectedCandidate) {
             addMessage("Tous les champs sont requis", "error");
             return;
         }
 
+        const jobOfferId = Number(selectedCandidate.job_offer_id); // Conversion de string à number
+        if (isNaN(jobOfferId)) {
+            addMessage("ID de l'offre d'emploi invalide", "error");
+            return;
+        }
+
         const payload = {
-            candidateId: selectedCandidate.id,
-            to: recipientEmail,
+            candidate_email: recipientEmail,
             message,
-            type: mailType
+            job_offer_id: jobOfferId,
         };
 
-        try {
-            const response = await fetch("/api/send-candidate-email", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error("Échec de l'envoi");
-
-            addMessage("Email envoyé avec succès !", "success");
-            setShowMailForm(false);
-            setMessage("");
-            setMailType(null);
-            setRecipientEmail("");
-            setSelectedCandidate(null);
-        } catch (err) {
-            console.error(err);
-            addMessage("Erreur lors de l'envoi du mail.", "error");
+        if (mailType === "candidat") {
+            dispatch(sendToCandidate(payload));
+        } else if (mailType === "entreprise") {
+            dispatch(sendToCompany({
+                company_email: recipientEmail,
+                message,
+                candidate_id: selectedCandidate.id,
+                job_offer_id: jobOfferId,
+            }));
         }
+
+        setShowMailForm(false);
+        setMessage("");
+        setMailType(null);
+        setRecipientEmail("");
+        setSelectedCandidate(null);
     };
 
+    // Ouvre le dialogue de confirmation de suppression
     const confirmDelete = (candidate: Recruitment) => {
         setCandidateToDelete(candidate);
         setShowDeleteDialog(true);
     };
 
+    // Supprime une candidature
     const deleteCandidate = () => {
         if (!candidateToDelete) return;
         dispatch(deleteJobApplication(candidateToDelete.id));
@@ -244,9 +268,7 @@ export default function Recruitment() {
 
         return (
             <span
-                className={`px-2 py-1 rounded-md border-l-4 ${getClassName(
-                    rowData.status
-                )}`}
+                className={`px-2 py-1 rounded-md border-l-4 ${getClassName(rowData.status)}`}
             >
                 {getLabel(rowData.status)}
             </span>
@@ -256,13 +278,12 @@ export default function Recruitment() {
     // Rendu personnalisé pour le poste (job_offer_id -> titre de l'offre)
     const jobTitleTemplate = (rowData: JobApplication) => {
         const job = jobs.find(
-            (j) =>
-                j.id.toString() === rowData.job_offer_id ||
-                j.id === Number(rowData.job_offer_id)
+            (j) => j.id.toString() === rowData.job_offer_id || j.id === Number(rowData.job_offer_id)
         );
         return <span>{job ? job.title : rowData.job_offer_id}</span>;
     };
 
+    // Rendu des actions (télécharger, envoyer, supprimer)
     const actionsTemplate = (rowData: Recruitment) => (
         <div className="flex gap-2 justify-center">
             <AppButton
@@ -270,8 +291,8 @@ export default function Recruitment() {
                 type="info"
                 size="sm"
                 outlined
-                tooltip="Télécharger CV"
-                onClick={() => handleDownloadCV(rowData.id, "cv")}
+                tooltip="Ouvrir CV pour téléchargement"
+                onClick={() => handleDownloadCV(rowData.id, "cv", true)} // Ouvrir dans un nouvel onglet
             />
             <AppButton
                 icon={<FiMail />}
@@ -297,38 +318,38 @@ export default function Recruitment() {
             header: "Nom",
             field: "applicant_name",
             filterable: true,
-            sortable: true
+            sortable: true,
         },
         {
             header: "Email",
             field: "applicant_email",
             filterable: true,
-            sortable: true
+            sortable: true,
         },
         {
             header: "Poste",
             field: "job_offer_id",
             render: jobTitleTemplate,
             filterable: true,
-            sortable: true
+            sortable: true,
         },
         {
             header: "Date",
             field: "created_at",
             filterable: true,
-            sortable: true
+            sortable: true,
         },
         {
             header: "Statut",
             field: "status",
             render: statusTemplate,
             filterable: true,
-            sortable: true
+            sortable: true,
         },
-        { header: "Actions", field: "actions", render: actionsTemplate }
+        { header: "Actions", field: "actions", render: actionsTemplate },
     ];
 
-    const leftToolbarTemplate = () => null; // Pas de bouton "Nouvelle candidature" nécessaire ici
+    const leftToolbarTemplate = () => null;
     const rightToolbarTemplate = () => null;
 
     return (
@@ -338,25 +359,17 @@ export default function Recruitment() {
                     Gestion des Candidatures
                 </h2>
                 <p className="text-neutral-light-secondary dark:text-neutral-dark-secondary">
-                    Consultez et gérez les candidatures reçues pour vos offres
-                    d'emploi.
+                    Consultez et gérez les candidatures reçues pour vos offres d'emploi.
                 </p>
             </div>
 
-            <AppToolbar
-                left={leftToolbarTemplate()}
-                right={rightToolbarTemplate()}
-            />
+            <AppToolbar left={leftToolbarTemplate()} right={rightToolbarTemplate()} />
 
             <Table
                 data={jobApplys || []}
                 columns={columns}
                 title="Candidatures"
-                globalFilterFields={[
-                    "applicant_name",
-                    "applicant_email",
-                    "job_offer_id"
-                ]}
+                globalFilterFields={["applicant_name", "applicant_email", "job_offer_id"]}
             />
 
             <Dialog
@@ -384,16 +397,13 @@ export default function Recruitment() {
                 }
             >
                 <p className="text-neutral-light-text dark:text-neutral-dark-text">
-                    Voulez-vous envoyer cette candidature à un candidat ou à une
-                    entreprise ?
+                    Voulez-vous envoyer cette candidature à un candidat ou à une entreprise ?
                 </p>
             </Dialog>
 
             <Dialog
                 visible={showMailForm}
-                header={`Envoyer à ${
-                    mailType === "candidat" ? "le candidat" : "une entreprise"
-                }`}
+                header={`Envoyer à ${mailType === "candidat" ? "le candidat" : "une entreprise"}`}
                 onHide={() => setShowMailForm(false)}
                 footer={
                     <div className="flex justify-end gap-2">
@@ -405,24 +415,54 @@ export default function Recruitment() {
                         <AppButton
                             label="Envoyer"
                             type="primary"
-                            onClick={sendEmail}
+                            onClick={handleSubmit(sendEmail)}
                         />
                     </div>
                 }
             >
-                <input
-                    type="email"
-                    placeholder="Adresse e-mail"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    className="w-full mb-3 p-2 border rounded"
+                <Controller
+                    name="recipientEmail"
+                    control={control}
+                    rules={{ required: "L'adresse e-mail est requise" }}
+                    render={({ field }) => (
+                        <input
+                            id="recipientEmail"
+                            {...field}
+                            type="email"
+                            className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                                errors.recipientEmail
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                            } focus:ring-primary focus:border-primary`}
+                            placeholder="Adresse e-mail"
+                        />
+                    )}
                 />
-                <textarea
-                    placeholder="Message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="w-full mb-3 p-2 border rounded"
+                {errors.recipientEmail && (
+                    <small className="text-danger">{errors.recipientEmail.message}</small>
+                )}
+
+                <Controller
+                    name="message"
+                    control={control}
+                    rules={{ required: "Le message est requis" }}
+                    render={({ field }) => (
+                        <textarea
+                            id="message"
+                            {...field}
+                            rows={6}
+                            className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                                errors.message
+                                    ? "border-danger"
+                                    : "border-neutral-light-border dark:border-neutral-dark-border"
+                            } focus:ring-primary focus:border-primary`}
+                            placeholder="Écrivez votre message ici..."
+                        />
+                    )}
                 />
+                {errors.message && (
+                    <small className="text-danger">{errors.message.message}</small>
+                )}
             </Dialog>
 
             <Dialog

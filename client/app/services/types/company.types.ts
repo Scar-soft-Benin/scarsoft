@@ -50,6 +50,7 @@ export interface CreateCompanyResponse {
 }
 
 export interface GetAllCompaniesResponse {
+    meta?: null;
     success: boolean;
     message: string;
     data: Company[];

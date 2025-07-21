@@ -780,7 +780,7 @@
                     "Company Management"
                 ],
                 "summary": "Get company statistics",
-                "operationId": "e6abc75156e814b7cb0ba76ac96bcab4",
+                "operationId": "ccc851b1f1bff4e6bdbcaa6ad7ded2a2",
                 "parameters": [
                     {
                         "name": "id",
@@ -794,6 +794,25 @@
                 "responses": {
                     "200": {
                         "description": "Company statistics retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/companies/statistics": {
+            "get": {
+                "tags": [
+                    "Company Management"
+                ],
+                "summary": "Get overall company statistics",
+                "operationId": "8fdbb5f591ab3ff44ba2dfdf594f1c2f",
+                "responses": {
+                    "200": {
+                        "description": "Overall company statistics retrieved successfully"
                     }
                 },
                 "security": [

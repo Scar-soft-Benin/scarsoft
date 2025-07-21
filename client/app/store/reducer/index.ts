@@ -6,6 +6,8 @@ import jobReducer from "./jobReducer";
 import companyReducer from "./companyReducer";
 import jobApplyReducer from "./jobApplyReducer";
 import contactReducer from "./contactReducer";
+import notificationReducer from "./notificationReducer";
+import statisticsReducer from "./statisticsReducer";
 
 const rootReducer = combineReducers({
     auth: authReducer,
@@ -14,7 +16,9 @@ const rootReducer = combineReducers({
     job: jobReducer,
     company: companyReducer,
     jobApply: jobApplyReducer,
-    contact: contactReducer
+    contact: contactReducer,
+    notification: notificationReducer,
+    statistics: statisticsReducer,
 });
 
 export default rootReducer;
