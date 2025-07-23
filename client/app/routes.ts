@@ -23,9 +23,7 @@ export default [
         route("auth/verify-otp", "routes/auth/verifyOTP.tsx"),
         route("auth/verify-email", "routes/auth/verifyEmail.tsx"),
 
-        route("company/auth/login", "./routes/company/auth/CompanyLogin.tsx"),
-        route("company/auth/register", "./companies/CompanyForm.tsx"),
-        route("company/auth/verify", "./routes/company/auth/CompanyVerifyOTP.tsx"),
+
         // route("forgot-password", "routes/auth/forgotPassword.tsx")
     ]),
     layout("./layout/protectedLayout.tsx", [
@@ -45,8 +43,11 @@ export default [
             // route("settings/notifications", "./dashboard/settings/notifications.tsx"), // Notification Settings
         ])
     ]),
+    route("company/auth/login", "./routes/company/auth/CompanyLogin.tsx"),
+    route("company/auth/register", "./companies/CompanyForm.tsx"),
+    route("company/auth/verify", "./routes/company/auth/CompanyVerifyOTP.tsx"),
     layout("./layout/companyLayout.tsx", [
-        
+
         route("company/dashboard", "./companies/company.tsx", [
             index("./companies/CompanyDashboard.tsx"),
             route("jobs", "./companies/job-management/CompanyJobs.tsx"),

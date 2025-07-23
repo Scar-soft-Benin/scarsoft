@@ -1,13 +1,11 @@
-// ~/routes/company/auth/CompanyVerify.tsx
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useLocation } from "react-router";
 import { useMessage } from "~/context/messageContext";
-// import AppButton from "../../components/appButton";
+// import AppButton from "~/components/appButton";
 import { apiClient } from "~/services/config/apiConfig";
-import AppBaseButton from "~/components/appBaseButton";
 import AppButton from "~/dashboard/components/appButton";
 
 const verifySchema = z.object({
@@ -52,54 +50,58 @@ export default function CompanyVerify() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-neutral-light-bg dark:bg-neutral-dark-bg">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md p-6 bg-white dark:bg-neutral-dark-surface rounded-lg shadow-md">
+      <div className="w-full max-w-md p-6 bg-white dark:bg-neutral-dark-surface rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-neutral-light-text dark:text-neutral-dark-text mb-4">
-          Vérification OTP
+          Vérification
         </h2>
-        <p className="mb-4 text-neutral-light-secondary dark:text-neutral-dark-secondary">
-          Un OTP a été envoyé à {email}.
+        <p className="text-neutral-light-secondary dark:text-neutral-dark-secondary mb-4">
+          Un OTP a été envoyé à {email}. Entrez-le ci-dessous pour continuer.
         </p>
-        <div className="mb-4">
-          <label
-            htmlFor="otp"
-            className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
-          >
-            OTP
-          </label>
-          <Controller
-            name="otp"
-            control={control}
-            render={({ field }) => (
-              <input
-                id="otp"
-                {...field}
-                className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
-                  errors.otp ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
-                } focus:ring-primary focus:border-primary`}
-                placeholder="Entrez l'OTP"
-              />
-            )}
-          />
-          {errors.otp && <small className="text-danger">{errors.otp.message}</small>}
-        </div>
-        <div className="flex justify-between items-center">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label
+              htmlFor="otp"
+              className="block text-sm font-bold text-neutral-light-text dark:text-neutral-dark-text"
+            >
+              OTP *
+            </label>
+            <Controller
+              name="otp"
+              control={control}
+              render={({ field }) => (
+                <input
+                  id="otp"
+                  {...field}
+                  className={`mt-1 w-full p-2 border rounded-md text-neutral-light-text dark:text-neutral-dark-text bg-neutral-light-surface dark:bg-neutral-dark-surface ${
+                    errors.otp ? "border-danger" : "border-neutral-light-border dark:border-neutral-dark-border"
+                  } focus:ring-primary focus:border-primary`}
+                  placeholder="Entrez l'OTP"
+                />
+              )}
+            />
+            {errors.otp && <small className="text-danger">{errors.otp.message}</small>}
+          </div>
           <AppButton
             label="Vérifier"
             type="primary"
             size="md"
             typeAttr="submit"
             disabled={isSubmitting}
-            className="bg-teal-800 dark:bg-teal-400 text-white dark:text-neutral-dark-text"
+            className="w-full bg-teal-800 dark:bg-teal-400 text-white dark:text-neutral-dark-text"
           />
-          <button
-            type="button"
-            onClick={resendOTP}
-            className="text-sm text-primary hover:underline"
-          >
-            Renvoyer OTP
-          </button>
-        </div>
-      </form>
+          <p className="text-center text-sm text-neutral-light-text dark:text-neutral-dark-text">
+            Pas reçu l'OTP ?{" "}
+            <button
+              type="button"
+              onClick={resendOTP}
+              className="text-primary hover:underline"
+              disabled={isSubmitting}
+            >
+              Renvoyer
+            </button>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
