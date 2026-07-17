@@ -49,11 +49,11 @@ export default [
     layout("./layout/companyLayout.tsx", [
 
         route("company/dashboard", "./companies/company.tsx", [
-            index("./companies/CompanyDashboard.tsx"),
+            index("./companies/companyDashboard.tsx"),
             route("jobs", "./companies/job-management/CompanyJobs.tsx"),
-            route("recruitment", "./companies/recruitment/CompanyRecruitment.tsx"),
-            route("analytics", "./companies/analytics/CompanyAnalytics.tsx"),
-            route("profile", "./companies/profils/CompanyProfile.tsx"),
+            route("recruitment", "./companies/recruitment/companyRecruitment.tsx"),
+            route("analytics", "./companies/analytics/companyAnalytics.tsx"),
+            route("profile", "./companies/profils/companyProfile.tsx"),
             // route("users", "./companies/company/CompanyUsers.tsx"),
         ]),
     ]),
